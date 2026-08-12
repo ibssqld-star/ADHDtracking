@@ -1,0 +1,2918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Anchor — stay on track, on time</title>
+<style>
+  :root{
+    color-scheme: light;
+    --page:#f9f9f7;
+    --surface-1:#fcfcfb;
+    --surface-2:#f3f2ee;
+    --surface-3:#eceae3;
+    --text-primary:#0b0b0b;
+    --text-secondary:#52514e;
+    --text-muted:#898781;
+    --gridline:#e1e0d9;
+    --baseline:#c3c2b7;
+    --border:rgba(11,11,11,0.10);
+    --now-color:#2a78d6;
+    --next-color:#eb6834;
+    --later-color:#1baf7a;
+    --status-good:#0ca30c;
+    --status-warning:#fab219;
+    --status-serious:#ec835a;
+    --status-critical:#d03b3b;
+    --success-text:#006300;
+    --on-accent:#ffffff;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:where(:not([data-theme="light"])){
+      color-scheme: dark;
+      --page:#0d0d0d;
+      --surface-1:#1a1a19;
+      --surface-2:#232322;
+      --surface-3:#2b2b29;
+      --text-primary:#ffffff;
+      --text-secondary:#c3c2b7;
+      --text-muted:#898781;
+      --gridline:#2c2c2a;
+      --baseline:#383835;
+      --border:rgba(255,255,255,0.10);
+      --now-color:#3987e5;
+      --next-color:#d95926;
+      --later-color:#199e70;
+      --success-text:#0ca30c;
+    }
+  }
+  :root[data-theme="dark"]{
+    color-scheme: dark;
+    --page:#0d0d0d;
+    --surface-1:#1a1a19;
+    --surface-2:#232322;
+    --surface-3:#2b2b29;
+    --text-primary:#ffffff;
+    --text-secondary:#c3c2b7;
+    --text-muted:#898781;
+    --gridline:#2c2c2a;
+    --baseline:#383835;
+    --border:rgba(255,255,255,0.10);
+    --now-color:#3987e5;
+    --next-color:#d95926;
+    --later-color:#199e70;
+    --success-text:#0ca30c;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: var(--page);
+    color: var(--text-primary);
+    min-height:100vh;
+  }
+  .app-shell{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:28px 12px;
+  }
+  .intro{
+    max-width:390px;
+    margin:0 auto 14px auto;
+    text-align:center;
+  }
+  .intro h1{ font-size:15px; margin:0 0 4px 0; letter-spacing:.02em;}
+  .intro p{ font-size:12.5px; color:var(--text-secondary); margin:0;}
+
+  .wrap{ display:flex; flex-direction:column; align-items:center; }
+
+  .phone{
+    width:390px; max-width:94vw;
+    height:820px; max-height:84vh;
+    background:var(--surface-1);
+    border-radius:44px;
+    border:9px solid #111;
+    box-shadow:0 30px 60px rgba(0,0,0,0.25);
+    overflow:hidden;
+    position:relative;
+    display:flex; flex-direction:column;
+  }
+  :root[data-theme="dark"] .phone, @media (prefers-color-scheme: dark){ .phone{ border-color:#000; } }
+
+  .notch{
+    position:absolute; top:0; left:50%; transform:translateX(-50%);
+    width:120px; height:22px; background:#111; border-radius:0 0 16px 16px; z-index:20;
+  }
+  .statusbar{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:14px 24px 4px 24px;
+    font-size:12.5px; font-variant-numeric:tabular-nums;
+    color:var(--text-secondary);
+    flex-shrink:0;
+  }
+  .statusbar .right{ display:flex; align-items:center; gap:6px; }
+  .theme-toggle{
+    border:1px solid var(--border); background:var(--surface-2); color:var(--text-secondary);
+    border-radius:999px; width:22px;height:22px; font-size:11px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  .topbar{ padding:6px 20px 10px 20px; flex-shrink:0; }
+  .topbar .eyebrow{ font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--text-muted); margin:0 0 2px 0;}
+  .topbar h2{ font-size:21px; margin:0; }
+  .topbar .sub{ font-size:12.5px; color:var(--text-secondary); margin-top:2px;}
+
+  .storage-warning{
+    display:none; align-items:center; justify-content:space-between; gap:8px;
+    background:rgba(250,178,25,0.16); color:#8a5a00; font-size:10.5px; font-weight:600; line-height:1.4;
+    padding:7px 10px 7px 12px; margin:2px 20px 8px 20px; border-radius:10px;
+  }
+  :root[data-theme="dark"] .storage-warning, @media (prefers-color-scheme:dark){ .storage-warning{ color:var(--status-warning); } }
+  .storage-warning button{
+    background:none; border:none; color:inherit; font-size:15px; cursor:pointer; flex-shrink:0; padding:0 2px; line-height:1;
+  }
+
+  .screens{ position:relative; flex:1; overflow:hidden; }
+  .screen{
+    position:absolute; inset:0;
+    padding:4px 20px 18px 20px;
+    overflow-y:auto;
+    opacity:0; pointer-events:none;
+    transform:translateY(6px);
+    transition:opacity .18s ease, transform .18s ease;
+  }
+  .screen.active{ opacity:1; pointer-events:auto; transform:translateY(0); }
+  .screen::-webkit-scrollbar{ width:0; }
+
+  .bottomnav{
+    display:flex; justify-content:space-around; align-items:center;
+    padding:10px 6px 16px 6px;
+    border-top:1px solid var(--gridline);
+    background:var(--surface-1);
+    flex-shrink:0;
+  }
+  .navbtn{
+    display:flex; flex-direction:column; align-items:center; gap:3px;
+    background:none; border:none; cursor:pointer;
+    color:var(--text-muted); font-size:10.5px; font-family:inherit;
+    padding:4px 8px; border-radius:10px;
+  }
+  .navbtn svg{ width:22px; height:22px; }
+  .navbtn.active{ color:var(--now-color); }
+
+  /* ---- shared bits ---- */
+  h3.section-title{ font-size:13px; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted); margin:18px 0 8px 0;}
+  h3.section-title:first-child{ margin-top:6px; }
+
+  .card{
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:14px;
+    margin-bottom:10px;
+  }
+  .card.tight{ padding:12px; }
+
+  .dot{ width:8px; height:8px; border-radius:50%; display:inline-block; flex-shrink:0; }
+  .dot.now{ background:var(--now-color); }
+  .dot.next{ background:var(--next-color); }
+  .dot.later{ background:var(--later-color); }
+
+  .tag{
+    display:inline-flex; align-items:center; gap:5px;
+    font-size:11px; font-weight:600; color:var(--text-secondary);
+    background:var(--surface-3); border-radius:999px; padding:3px 9px;
+  }
+
+  .btn{
+    font-family:inherit; border:none; cursor:pointer; border-radius:999px;
+    font-weight:600; font-size:14px; padding:12px 18px;
+    display:inline-flex; align-items:center; justify-content:center; gap:6px;
+  }
+  .btn-primary{ background:var(--now-color); color:#fff; }
+  .btn-secondary{ background:var(--surface-3); color:var(--text-primary); }
+  .btn-ghost{ background:none; color:var(--text-secondary); padding:8px 4px; }
+  .btn-block{ width:100%; }
+  .btn-sm{ padding:8px 12px; font-size:12.5px; }
+  .btn:active{ transform:scale(.97); }
+  .btn[disabled]{ opacity:.45; cursor:default; }
+
+  .stat-row{ display:flex; gap:10px; margin:14px 0 4px 0; }
+  .stat{
+    flex:1; background:var(--surface-2); border:1px solid var(--border); border-radius:14px;
+    padding:10px 12px;
+  }
+  .stat .value{ font-size:22px; font-weight:700; font-variant-numeric:tabular-nums; line-height:1.1;}
+  .stat .label{ font-size:10.5px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.04em; margin-top:2px;}
+
+  /* right now hero */
+  .hero-card{
+    background:linear-gradient(180deg, var(--surface-2), var(--surface-1));
+    border:1px solid var(--border); border-radius:20px; padding:18px;
+    margin-top:8px;
+  }
+  .hero-label{ font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--text-muted); }
+  .hero-title{ font-size:19px; font-weight:700; margin:6px 0 10px 0; line-height:1.25;}
+  .hero-meta{ display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--text-secondary); margin-bottom:14px;}
+  .hero-actions{ display:flex; gap:8px; }
+  .empty-note{ color:var(--text-secondary); font-size:13px; text-align:center; padding:30px 10px; }
+
+  /* mini timeline strip on Right Now */
+  .mini-strip{ position:relative; height:34px; background:var(--surface-2); border-radius:10px; border:1px solid var(--border); overflow:hidden; margin-top:4px;}
+  .mini-block{ position:absolute; top:4px; bottom:4px; border-radius:6px; opacity:.85; }
+  .mini-now-marker{ position:absolute; top:-2px; bottom:-2px; width:2px; background:var(--text-primary); }
+
+  /* board */
+  .board-cols{ display:flex; gap:10px; margin-top:6px; }
+  .board-col{ flex:1; min-width:0; }
+  .board-col-head{ display:flex; align-items:center; gap:6px; font-size:12px; font-weight:700; margin-bottom:8px; }
+  .board-col-head .count{ color:var(--text-muted); font-weight:500; }
+  .board-col-body{
+    min-height:88px; border-radius:14px; padding:2px;
+    transition: background-color .15s ease, box-shadow .15s ease;
+  }
+  .board-col-body.drag-over-now{ background:rgba(42,120,214,0.10); box-shadow: inset 0 0 0 2px var(--now-color); }
+  .board-col-body.drag-over-next{ background:rgba(235,104,52,0.10); box-shadow: inset 0 0 0 2px var(--next-color); }
+  .board-col-body.drag-over-later{ background:rgba(27,175,122,0.10); box-shadow: inset 0 0 0 2px var(--later-color); }
+  .task-card{
+    background:var(--surface-2); border:1px solid var(--border); border-radius:12px;
+    padding:9px 10px; margin-bottom:8px; cursor:grab;
+    touch-action:none; user-select:none; -webkit-user-select:none;
+    transition: opacity .15s ease;
+  }
+  .task-card .t{ font-size:12px; font-weight:600; line-height:1.3; margin-bottom:4px;}
+  .task-card .m{ font-size:10.5px; color:var(--text-muted); }
+  .task-card.done .t{ text-decoration:line-through; color:var(--text-muted); }
+  .task-card.dragging{ opacity:.28; }
+  .drag-ghost{
+    position:fixed; z-index:60; pointer-events:none;
+    transform:scale(1.04) rotate(-1.4deg);
+    box-shadow:0 16px 30px rgba(0,0,0,.28);
+    cursor:grabbing;
+  }
+
+  .ai-settings-toggle{
+    width:100%; display:flex; align-items:center; justify-content:space-between;
+    background:none; border:none; cursor:pointer; font-family:inherit;
+    font-size:12.5px; font-weight:700; color:var(--text-primary); padding:0;
+  }
+  .ai-settings-toggle .ai-dot{ width:7px; height:7px; border-radius:50%; background:var(--status-critical); display:inline-block; margin-right:7px; }
+  .ai-settings-toggle .ai-dot.set{ background:var(--status-good); }
+  #ai-settings-body input{
+    width:100%; border-radius:12px; border:1px solid var(--border); background:var(--surface-1);
+    color:var(--text-primary); font-family:inherit; font-size:13px; padding:9px 12px;
+  }
+  .ai-badge{
+    display:inline-flex; align-items:center; gap:5px; font-size:10.5px; font-weight:700;
+    padding:3px 8px; border-radius:999px; background:rgba(42,120,214,0.14); color:var(--now-color);
+  }
+  .ai-badge .sdot{ width:6px; height:6px; border-radius:50%; background:currentColor; }
+  .ai-step-row{
+    display:flex; align-items:flex-start; gap:10px; padding:10px 0; border-bottom:1px solid var(--gridline);
+  }
+  .ai-step-row:last-of-type{ border-bottom:none; }
+  .ai-step-row .chk{
+    width:19px; height:19px; border-radius:50%; border:2px solid var(--baseline); flex-shrink:0; cursor:pointer; margin-top:1px;
+    display:flex; align-items:center; justify-content:center; font-size:11px; color:#fff;
+  }
+  .ai-step-row .chk.on{ background:var(--status-good); border-color:var(--status-good); }
+  .ai-step-row .body{ flex:1; cursor:pointer; }
+  .ai-step-row .title{ font-size:13.5px; font-weight:700; }
+  .ai-step-row.done .title{ text-decoration:line-through; color:var(--text-muted); }
+  .ai-step-row .detail{ font-size:11.5px; color:var(--text-secondary); margin-top:2px; line-height:1.4; }
+  .ai-step-row .est{ font-size:10.5px; color:var(--text-muted); margin-top:3px; }
+  .ai-step-row .step-chevron{ color:var(--text-muted); font-size:11px; padding:2px 0 0 2px; flex-shrink:0; }
+  .step-workspace{
+    background:var(--surface-2); border-radius:12px; padding:12px; margin:-2px 0 12px 0;
+  }
+  .step-notes{
+    width:100%; min-height:80px; resize:vertical; border-radius:10px; border:1px solid var(--border);
+    background:var(--surface-1); color:var(--text-primary); font-family:inherit; font-size:13px;
+    padding:10px 12px; line-height:1.5;
+  }
+  .step-ai-actions{ display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+  .step-ai-actions .btn{ flex:1; min-width:100px; }
+  .doc-required-list{ font-size:11.5px; color:var(--text-secondary); line-height:1.6; margin:0; padding-left:18px; }
+  .deadline-note{
+    display:flex; align-items:flex-start; gap:8px; font-size:12px; color:var(--text-secondary);
+    line-height:1.5; margin-bottom:12px; background:var(--surface-2); border-radius:10px; padding:8px 10px;
+  }
+  .ai-loading{ display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--text-secondary); padding:14px 0; }
+  .ai-spinner{
+    width:16px; height:16px; border-radius:50%; border:2px solid var(--gridline); border-top-color:var(--now-color);
+    animation:ai-spin .7s linear infinite; flex-shrink:0;
+  }
+  @keyframes ai-spin{ to{ transform:rotate(360deg); } }
+  .ai-error{ font-size:12px; color:var(--status-critical); background:rgba(208,59,59,0.1); border-radius:10px; padding:10px 12px; line-height:1.5; }
+  .chat-log{ display:flex; flex-direction:column; gap:8px; margin:12px 0; max-height:220px; overflow-y:auto; }
+  .chat-bubble{ max-width:88%; padding:8px 11px; border-radius:14px; font-size:12.5px; line-height:1.45; }
+  .chat-bubble.user{ align-self:flex-end; background:var(--now-color); color:#fff; border-bottom-right-radius:4px; }
+  .chat-bubble.ai{ align-self:flex-start; background:var(--surface-3); color:var(--text-primary); border-bottom-left-radius:4px; }
+  .chat-input-row{ display:flex; gap:6px; }
+  .chat-input-row input{
+    flex:1; border-radius:12px; border:1px solid var(--border); background:var(--surface-2);
+    color:var(--text-primary); font-family:inherit; font-size:13px; padding:9px 12px;
+  }
+
+  .project-card{
+    background:var(--surface-2); border:1px solid var(--border); border-radius:14px;
+    padding:12px 14px; margin-bottom:10px; cursor:pointer;
+  }
+  .project-card.done{ opacity:.55; }
+  .pc-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:8px; }
+  .pc-title{ font-size:13.5px; font-weight:700; line-height:1.3; }
+  .pc-meta{ font-size:11px; color:var(--text-muted); margin-top:4px; }
+  .pc-track{ height:6px; border-radius:99px; background:var(--gridline); overflow:hidden; margin-top:9px; }
+  .pc-fill{ height:100%; background:var(--now-color); border-radius:99px; }
+  .pc-start{ margin-top:10px; }
+
+  .modal-backdrop{
+    position:absolute; inset:0; background:rgba(0,0,0,.35);
+    display:flex; align-items:flex-end; z-index:30;
+    opacity:0; pointer-events:none; transition:opacity .15s ease;
+  }
+  .modal-backdrop.open{ opacity:1; pointer-events:auto; }
+  .modal-sheet{
+    background:var(--surface-1); width:100%; border-radius:22px 22px 0 0;
+    padding:18px 20px 26px 20px; transform:translateY(12px); transition:transform .18s ease;
+    max-height:78%; overflow-y:auto;
+  }
+  .modal-backdrop.open .modal-sheet{ transform:translateY(0); }
+  .modal-handle{ width:36px; height:4px; background:var(--baseline); border-radius:99px; margin:0 auto 14px auto; }
+  .modal-close{ position:absolute; top:14px; right:16px; background:none; border:none; color:var(--text-muted); font-size:20px; cursor:pointer;}
+
+  .step-row{ display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--gridline); }
+  .step-row:last-of-type{ border-bottom:none; }
+  .step-row .chk{
+    width:19px; height:19px; border-radius:50%; border:2px solid var(--baseline); flex-shrink:0; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; font-size:11px; color:#fff;
+  }
+  .step-row .chk.on{ background:var(--status-good); border-color:var(--status-good); }
+  .step-row .label{ font-size:13.5px; }
+  .step-row.done .label{ text-decoration:line-through; color:var(--text-muted); }
+  .step-row.first .label{ font-weight:700; }
+
+  .bucket-picker{ display:flex; gap:6px; margin-top:14px; }
+  .bucket-btn{
+    flex:1; text-align:center; padding:8px 4px; border-radius:10px; font-size:11.5px; font-weight:600;
+    border:1.5px solid var(--border); background:var(--surface-2); color:var(--text-secondary); cursor:pointer;
+  }
+  .bucket-btn.active-now{ border-color:var(--now-color); color:var(--now-color); }
+  .bucket-btn.active-next{ border-color:var(--next-color); color:var(--next-color); }
+  .bucket-btn.active-later{ border-color:var(--later-color); color:var(--later-color); }
+
+  /* capture */
+  .capture-input-wrap{ position:relative; margin-top:10px; }
+  textarea.capture-input{
+    width:100%; min-height:84px; resize:none; border-radius:14px; border:1px solid var(--border);
+    background:var(--surface-2); color:var(--text-primary); font-family:inherit; font-size:14.5px;
+    padding:12px 46px 12px 12px; margin-top:0;
+  }
+  textarea.capture-input:focus{ outline:2px solid var(--now-color); outline-offset:1px; }
+  .mic-btn{
+    position:absolute; right:8px; bottom:8px; width:34px; height:34px; border-radius:50%;
+    border:none; cursor:pointer; display:flex; align-items:center; justify-content:center;
+    background:var(--now-color); color:#fff; box-shadow:0 2px 8px rgba(0,0,0,.18); flex-shrink:0;
+  }
+  .mic-btn svg{ width:16px; height:16px; }
+  .mic-btn.recording{ background:var(--status-critical); animation:mic-pulse 1.3s ease-in-out infinite; }
+  @keyframes mic-pulse{ 0%,100%{ box-shadow:0 0 0 0 rgba(208,59,59,.45); } 50%{ box-shadow:0 0 0 9px rgba(208,59,59,0); } }
+  .mic-status{
+    display:none; align-items:center; gap:8px; margin-top:9px; font-size:12px; color:var(--text-secondary);
+  }
+  .mic-status .bars{ display:flex; align-items:flex-end; gap:2.5px; height:14px; }
+  .mic-status .bars span{
+    width:2.5px; border-radius:2px; background:var(--status-critical); height:4px;
+    animation:bar-bounce 0.9s ease-in-out infinite;
+  }
+  .mic-status .bars span:nth-child(2){ animation-delay:.12s; }
+  .mic-status .bars span:nth-child(3){ animation-delay:.24s; }
+  .mic-status .bars span:nth-child(4){ animation-delay:.36s; }
+  @keyframes bar-bounce{ 0%,100%{ height:4px; } 50%{ height:14px; } }
+  .capture-hint{ font-size:11.5px; color:var(--text-muted); margin-top:8px; line-height:1.5; }
+  .toast{
+    position:absolute; left:20px; right:20px; bottom:90px;
+    background:var(--surface-3); border:1px solid var(--border); border-radius:14px;
+    padding:12px 14px; box-shadow:0 8px 24px rgba(0,0,0,.18);
+    display:flex; align-items:flex-start; gap:10px;
+    transform:translateY(14px); opacity:0; transition:transform .22s ease, opacity .22s ease;
+    pointer-events:none; z-index:25;
+  }
+  .toast.show{ transform:translateY(0); opacity:1; }
+  .toast .tt{ font-size:13px; font-weight:600; }
+  .toast .ts{ font-size:11.5px; color:var(--text-secondary); margin-top:2px;}
+
+  /* timeline */
+  .tl-legend{ display:flex; gap:14px; margin:8px 0 12px 0; }
+  .tl-legend .item{ display:flex; align-items:center; gap:5px; font-size:11.5px; color:var(--text-secondary); }
+  .tl-toggle{ display:flex; gap:6px; margin-bottom:10px; }
+  .tl-toggle button{
+    flex:1; padding:7px; border-radius:10px; font-size:11.5px; font-weight:600; cursor:pointer;
+    border:1px solid var(--border); background:var(--surface-2); color:var(--text-secondary);
+  }
+  .tl-toggle button.on{ background:var(--now-color); color:#fff; border-color:var(--now-color); }
+  .tl-body{ position:relative; }
+  .tl-row{ display:flex; }
+  .tl-hourlabel{ width:44px; font-size:10.5px; color:var(--text-muted); padding-top:1px; flex-shrink:0; font-variant-numeric:tabular-nums;}
+  .tl-track{ position:relative; flex:1; border-top:1px solid var(--gridline); height:64px; }
+  .tl-block{
+    position:absolute; left:4px; right:4px; border-radius:8px; padding:0 8px;
+    font-size:10.5px; font-weight:600; color:#fff; overflow:hidden;
+    display:flex; align-items:center; white-space:nowrap; text-overflow:ellipsis;
+    box-shadow:0 0 0 2px var(--surface-1);
+  }
+  .tl-now-line{ position:absolute; left:44px; right:0; height:2px; background:var(--text-primary); z-index:5; }
+  .tl-now-line::before{
+    content:"now"; position:absolute; left:-3px; top:-8px; transform:translateX(-100%);
+    font-size:9.5px; font-weight:700; color:var(--text-primary); text-transform:uppercase;
+  }
+  table.tl-table{ width:100%; border-collapse:collapse; font-size:12px; margin-top:6px; }
+  table.tl-table th{ text-align:left; color:var(--text-muted); font-weight:600; font-size:10.5px; text-transform:uppercase; padding-bottom:6px; border-bottom:1px solid var(--gridline);}
+  table.tl-table td{ padding:8px 4px; border-bottom:1px solid var(--gridline); }
+
+  /* reminders */
+  .rem-card{ background:var(--surface-2); border:1px solid var(--border); border-radius:14px; padding:12px 14px; margin-bottom:10px; }
+  .rem-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:8px; }
+  .rem-title{ font-size:13.5px; font-weight:700; }
+  .rem-when{ font-size:11.5px; color:var(--text-secondary); margin-top:2px; }
+  .status-chip{ display:flex; align-items:center; gap:5px; font-size:10.5px; font-weight:700; padding:3px 8px; border-radius:999px; white-space:nowrap;}
+  .status-chip.good{ background:rgba(12,163,12,.12); color:var(--status-good); }
+  .status-chip.warning{ background:rgba(250,178,25,.16); color:#8a5a00; }
+  :root[data-theme="dark"] .status-chip.warning, @media (prefers-color-scheme:dark){ .status-chip.warning{ color:var(--status-warning);} }
+  .status-chip.serious{ background:rgba(236,131,90,.16); color:#a1401b; }
+  :root[data-theme="dark"] .status-chip.serious, @media (prefers-color-scheme:dark){ .status-chip.serious{ color:var(--status-serious);} }
+  .status-chip.critical{ background:rgba(208,59,59,.14); color:var(--status-critical); }
+  .status-chip .sdot{ width:6px; height:6px; border-radius:50%; background:currentColor; }
+
+  .escalation{ display:flex; gap:5px; margin-top:10px; }
+  .escalation .seg{ flex:1; height:5px; border-radius:99px; background:var(--gridline); }
+  .escalation .seg.on-good{ background:var(--status-good); }
+  .escalation .seg.on-warning{ background:var(--status-warning); }
+  .escalation .seg.on-critical{ background:var(--status-critical); }
+
+  .intensity-row{ display:flex; gap:6px; margin:6px 0 18px 0; }
+  .intensity-row button{
+    flex:1; padding:9px; border-radius:12px; font-size:12px; font-weight:600; cursor:pointer;
+    border:1px solid var(--border); background:var(--surface-2); color:var(--text-secondary);
+  }
+  .intensity-row button.on{ background:var(--text-primary); color:var(--surface-1); border-color:var(--text-primary); }
+
+  .day-row{ display:flex; gap:5px; margin:8px 0; }
+  .day-row button{
+    flex:1; padding:8px 0; border-radius:10px; font-size:11.5px; font-weight:700; cursor:pointer;
+    border:1px solid var(--border); background:var(--surface-2); color:var(--text-secondary);
+  }
+  .day-row button.on{ background:var(--now-color); color:#fff; border-color:var(--now-color); }
+  .repeat-badge{ color:var(--now-color); margin-right:3px; }
+
+  .add-form{ display:flex; flex-direction:column; gap:8px; margin-top:6px; }
+  .add-form input{
+    border-radius:12px; border:1px solid var(--border); background:var(--surface-2); color:var(--text-primary);
+    font-family:inherit; font-size:13.5px; padding:10px 12px;
+  }
+  .card input[type="tel"]{
+    width:100%; margin-top:10px; border-radius:12px; border:1px solid var(--border);
+    background:var(--surface-1); color:var(--text-primary); font-family:inherit; font-size:13px; padding:9px 12px;
+  }
+  .text-field{
+    width:100%; border-radius:12px; border:1px solid var(--border); background:var(--surface-2); color:var(--text-primary);
+    font-family:inherit; font-size:13.5px; padding:10px 12px; box-sizing:border-box;
+  }
+  .field-label{ font-size:11px; color:var(--text-muted); margin:10px 0 4px 0; }
+  .attach-chip{ color:var(--next-color); margin-right:3px; }
+  .due-chip{ font-size:10.5px; font-weight:700; padding:1px 6px; border-radius:99px; margin-left:6px; }
+  .due-chip.due-future{ background:var(--surface-2); color:var(--text-muted); }
+  .due-chip.due-today{ background:var(--status-warning); color:#3a2900; }
+  .due-chip.due-over{ background:var(--status-critical); color:#fff; }
+  .attach-preview img{ max-width:100%; border-radius:10px; margin-top:6px; display:block; }
+  .attach-preview .txt{ max-height:120px; overflow:auto; font-size:12px; white-space:pre-wrap; background:var(--surface-2); border-radius:10px; padding:8px; margin-top:6px; }
+
+  /* focus screen */
+  .focus-screen{ display:flex; flex-direction:column; align-items:center; padding-top:10px; }
+  .focus-back{ align-self:flex-start; background:none; border:none; color:var(--text-secondary); font-size:13px; cursor:pointer; padding:6px 0; }
+  .focus-task{ font-size:16px; font-weight:700; text-align:center; margin:6px 0 2px 0; padding:0 10px; }
+  .focus-step{ font-size:12.5px; color:var(--text-secondary); text-align:center; margin-bottom:10px; }
+  .ring-wrap{ position:relative; width:220px; height:220px; margin:10px auto; }
+  .ring-time{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .ring-time .mm{ font-size:38px; font-weight:700; font-variant-numeric:tabular-nums; }
+  .ring-time .state{ display:flex; align-items:center; gap:5px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; margin-top:4px; }
+  .ring-time .state .sdot{ width:7px; height:7px; border-radius:50%; }
+  .focus-controls{ display:flex; gap:8px; margin-top:16px; width:100%; }
+  .companion-row{
+    display:flex; align-items:center; justify-content:space-between; width:100%;
+    background:var(--surface-2); border:1px solid var(--border); border-radius:14px; padding:10px 14px; margin-top:18px;
+  }
+  .companion-row .cl{ font-size:12.5px; }
+  .switch{ width:38px; height:22px; border-radius:99px; background:var(--gridline); position:relative; cursor:pointer; flex-shrink:0; }
+  .switch.on{ background:var(--now-color); }
+  .switch .knob{ position:absolute; top:2px; left:2px; width:18px; height:18px; border-radius:50%; background:#fff; transition:left .15s ease; }
+  .switch.on .knob{ left:18px; }
+  .companion-pulse{ width:9px; height:9px; border-radius:50%; background:var(--status-good); }
+  .companion-pulse.animating{ animation:pulse 1.6s ease-in-out infinite; }
+  @keyframes pulse{ 0%,100%{ box-shadow:0 0 0 0 rgba(12,163,12,.45); } 50%{ box-shadow:0 0 0 8px rgba(12,163,12,0); } }
+
+  .sms-banner{
+    position:absolute; top:34px; left:10px; right:10px; z-index:45;
+    background:rgba(26,26,25,0.96); color:#fff; border-radius:16px; padding:10px 12px;
+    display:flex; gap:10px; align-items:flex-start;
+    transform:translateY(-140%); opacity:0;
+    transition:transform .3s cubic-bezier(.2,.9,.3,1.2), opacity .2s ease;
+    box-shadow:0 12px 28px rgba(0,0,0,.35);
+  }
+  .sms-banner.show{ transform:translateY(0); opacity:1; }
+  .sms-banner .icon{
+    width:30px; height:30px; border-radius:9px; background:var(--status-critical);
+    display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:14px;
+  }
+  .sms-banner .body{ flex:1; min-width:0; }
+  .sms-banner .row1{ display:flex; justify-content:space-between; gap:8px; font-size:10.5px; font-weight:700; opacity:.75; text-transform:uppercase; letter-spacing:.03em; }
+  .sms-banner .msg-title{ font-weight:700; font-size:12.5px; margin:2px 0 1px 0; }
+  .sms-banner .msg-body{ font-size:12px; line-height:1.4; opacity:.92; }
+
+  .focus-skip{ margin-top:10px; }
+  .text-log-note{ display:flex; align-items:center; gap:6px; }
+
+  .starter-note{ font-size:11.5px; color:var(--text-muted); text-align:center; margin-top:14px; line-height:1.5; padding:0 8px;}
+
+  .done-panel{ text-align:center; padding:8px 4px; }
+  .done-panel .big{ font-size:34px; margin-bottom:6px; }
+  .done-panel h4{ margin:4px 0 4px 0; font-size:17px; }
+  .done-panel p{ font-size:12.5px; color:var(--text-secondary); margin:0 0 16px 0; }
+  .done-actions{ display:flex; flex-direction:column; gap:8px; }
+
+  .visually-hidden{ position:absolute; width:1px;height:1px; overflow:hidden; clip:rect(0 0 0 0); }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+<div class="wrap">
+  <div class="intro">
+    <h1>Anchor — a time &amp; focus companion for ADHD brains</h1>
+    <p>Interactive prototype. Tap around: bottom nav, task cards, the Start button.</p>
+  </div>
+
+  <div class="phone">
+    <div class="notch"></div>
+    <div class="sms-banner" id="sms-banner">
+      <div class="icon">💬</div>
+      <div class="body">
+        <div class="row1"><span>Text message · Anchor</span><span class="msg-time">now</span></div>
+        <div class="msg-title"></div>
+        <div class="msg-body"></div>
+      </div>
+    </div>
+    <div class="statusbar">
+      <span id="clock-readout">9:41</span>
+      <div class="right">
+        <button class="theme-toggle" id="theme-toggle" title="Toggle light/dark" aria-label="Toggle theme">◐</button>
+      </div>
+    </div>
+
+    <div class="topbar">
+      <p class="eyebrow" id="top-eyebrow">Right now</p>
+      <h2 id="top-title">Good afternoon</h2>
+      <p class="sub" id="top-sub">Here's the one thing to focus on.</p>
+    </div>
+
+    <div class="storage-warning" id="storage-warning">
+      <span>This browser won't save changes here between opens — everything will reset next time you open the file.</span>
+      <button id="storage-warning-dismiss" aria-label="Dismiss">×</button>
+    </div>
+
+    <main class="screens" id="screens">
+
+      <!-- RIGHT NOW -->
+      <section class="screen active" id="screen-now">
+        <div id="now-hero"></div>
+
+        <div class="stat-row">
+          <div class="stat"><div class="value" id="stat-done">0</div><div class="label">Done today</div></div>
+          <div class="stat"><div class="value" id="stat-focus">0m</div><div class="label">Focused time</div></div>
+          <div class="stat"><div class="value" id="stat-next-rem">—</div><div class="label">Next reminder</div></div>
+        </div>
+
+        <h3 class="section-title">Today at a glance</h3>
+        <div class="mini-strip" id="mini-strip"></div>
+        <button class="btn btn-ghost" style="padding-left:0;font-size:12px;" data-nav="timeline">View full day →</button>
+      </section>
+
+      <!-- CAPTURE -->
+      <section class="screen" id="screen-capture">
+        <p style="font-size:13px;color:var(--text-secondary);margin:4px 0 0 0;">Get it out of your head. Type it or say it — Anchor will sort it for you.</p>
+        <div class="capture-input-wrap">
+          <textarea class="capture-input" id="capture-text" placeholder="e.g. Call the vet about Milo's checkup tomorrow, or just: reply to Dana"></textarea>
+          <button class="mic-btn" id="mic-btn" type="button" aria-label="Speak your brain dump instead of typing">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="3" width="6" height="11" rx="3"/>
+              <path d="M5 11a7 7 0 0 0 14 0"/>
+              <path d="M12 18v3"/>
+            </svg>
+          </button>
+        </div>
+        <div class="mic-status" id="mic-status">
+          <span class="bars"><span></span><span></span><span></span><span></span></span>
+          <span id="mic-status-text">Listening …</span>
+        </div>
+        <div id="capture-extra-fields">
+          <p class="field-label">Due date (optional)</p>
+          <input type="date" id="capture-due" class="text-field" />
+          <p class="field-label">Attach a file (optional) — a form, letter, or photo of it</p>
+          <input type="file" id="capture-file" accept=".txt,.pdf,text/plain,application/pdf,image/*" style="font-size:11.5px;" />
+          <div id="capture-file-status" style="font-size:11px;color:var(--text-muted);margin-top:4px;"></div>
+        </div>
+        <button class="btn btn-ghost btn-sm" id="repeat-toggle" type="button" style="padding-left:0;margin-top:6px;">↻ Repeat this <span id="repeat-toggle-label"></span></button>
+        <div id="repeat-body" style="display:none;">
+          <div class="intensity-row" id="repeat-type-row">
+            <button type="button" class="on" data-repeat-type="none">Doesn't repeat</button>
+            <button type="button" data-repeat-type="weekly">Weekly</button>
+            <button type="button" data-repeat-type="monthly">Monthly</button>
+          </div>
+          <div id="repeat-weekly" style="display:none;">
+            <p style="font-size:11px;color:var(--text-muted);margin:0 0 4px 0;">Repeats on:</p>
+            <div class="day-row" id="repeat-day-row">
+              <button type="button" data-day="0">S</button>
+              <button type="button" data-day="1">M</button>
+              <button type="button" data-day="2">T</button>
+              <button type="button" data-day="3">W</button>
+              <button type="button" data-day="4">T</button>
+              <button type="button" data-day="5">F</button>
+              <button type="button" data-day="6">S</button>
+            </div>
+          </div>
+          <div id="repeat-monthly" style="display:none;">
+            <p style="font-size:11px;color:var(--text-muted);margin:8px 0 4px 0;">Day(s) of the month:</p>
+            <input type="text" id="repeat-month-days" placeholder="e.g. 1, 15" />
+          </div>
+        </div>
+        <button class="btn btn-primary btn-block" id="capture-submit" style="margin-top:10px;">Add &amp; triage</button>
+        <p class="capture-hint">Anchor looks for urgency words ("today", "asap") and due-by words ("tomorrow", "next week") to guess a bucket — and splits longer entries into a few small steps automatically. Tap the mic to speak a brain dump instead of typing it; it sorts itself the moment you stop talking. You can always move things around on the Board.</p>
+
+        <h3 class="section-title">Recently captured</h3>
+        <div id="capture-recent"></div>
+      </section>
+
+      <!-- BOARD -->
+      <section class="screen" id="screen-board">
+        <p style="font-size:13px;color:var(--text-secondary);margin:4px 0 10px 0;">Only three buckets. Drag a card to re-sort it, or tap it to open.</p>
+        <div class="board-cols">
+          <div class="board-col">
+            <div class="board-col-head"><span class="dot now"></span>Now <span class="count" id="count-now"></span></div>
+            <div id="col-now" class="board-col-body"></div>
+          </div>
+          <div class="board-col">
+            <div class="board-col-head"><span class="dot next"></span>Next <span class="count" id="count-next"></span></div>
+            <div id="col-next" class="board-col-body"></div>
+          </div>
+          <div class="board-col">
+            <div class="board-col-head"><span class="dot later"></span>Later <span class="count" id="count-later"></span></div>
+            <div id="col-later" class="board-col-body"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PROJECTS (deep work: paperwork & studying, AI-assisted) -->
+      <section class="screen" id="screen-projects">
+        <p style="font-size:13px;color:var(--text-secondary);margin:4px 0 10px 0;">For the stuff that takes more than one sitting — forms, applications, studying, reading. Paste or upload it and Anchor's AI breaks it into small steps, then works through it with you in 25-minute rounds.</p>
+
+        <div class="card" id="sync-card">
+          <button class="ai-settings-toggle" id="sync-toggle" type="button">
+            <span><span class="ai-dot" id="sync-dot"></span>Account &amp; sync <span id="sync-status" style="font-weight:500;color:var(--text-muted);"></span></span>
+            <span id="sync-chevron">▾</span>
+          </button>
+          <div id="sync-body" style="display:none;">
+            <p style="font-size:11.5px;color:var(--text-secondary);line-height:1.5;margin:8px 0;">Sign in to sync your tasks, board, and projects between your phone and computer. This is optional — the app still works fully offline on one device if you skip it. Your AI key is never synced; you'll re-enter it on each device.</p>
+            <div id="sync-signed-out">
+              <input type="email" id="sync-email" placeholder="Email" autocomplete="email" />
+              <input type="password" id="sync-password" placeholder="Password (6+ characters)" autocomplete="current-password" style="margin-top:8px;" />
+              <button class="btn btn-primary btn-sm" id="sync-signin-btn" style="margin-top:8px;">Log in</button>
+              <button class="btn btn-secondary btn-sm" id="sync-signup-btn" style="margin-top:8px;">Create account</button>
+              <div id="sync-auth-msg" style="font-size:11px;color:var(--text-muted);margin-top:6px;"></div>
+            </div>
+            <div id="sync-signed-in" style="display:none;">
+              <p style="font-size:12px;margin:4px 0;">Signed in as <strong id="sync-email-label"></strong></p>
+              <p style="font-size:11px;color:var(--text-muted);margin:0 0 8px 0;" id="sync-last">Not synced yet.</p>
+              <button class="btn btn-secondary btn-sm" id="sync-now-btn">Sync now</button>
+              <button class="btn btn-ghost btn-sm" id="sync-signout-btn">Sign out</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" id="ai-settings-card">
+          <button class="ai-settings-toggle" id="ai-settings-toggle" type="button">
+            <span><span class="ai-dot" id="ai-key-dot"></span>AI settings <span id="ai-key-status" style="font-weight:500;color:var(--text-muted);"></span></span>
+            <span id="ai-settings-chevron">▾</span>
+          </button>
+          <div id="ai-settings-body" style="display:none;">
+            <p style="font-size:11.5px;color:var(--text-secondary);line-height:1.5;margin:8px 0;">This app has no server of its own — the AI features work by calling Anthropic's API directly from your phone with your own key. The key is stored only in this file's local storage and sent straight to Anthropic, never anywhere else. Get a key at console.anthropic.com (billed separately from a Claude subscription, pay-per-use — a document breakdown typically costs a fraction of a cent to a few cents).</p>
+            <input type="password" id="ai-api-key" placeholder="sk-ant-... (your API key)" autocomplete="off" />
+            <input type="text" id="ai-model" placeholder="Model (default: claude-sonnet-4-5)" style="margin-top:8px;" />
+            <button class="btn btn-secondary btn-sm" id="ai-key-save" style="margin-top:8px;">Save</button>
+            <button class="btn btn-ghost btn-sm" id="ai-key-clear" style="margin-top:8px;">Clear key</button>
+          </div>
+        </div>
+
+        <h3 class="section-title">In progress</h3>
+        <div id="projects-list"></div>
+
+        <h3 class="section-title">New from a document</h3>
+        <div class="card">
+          <p style="font-size:11.5px;color:var(--text-secondary);margin:0 0 8px 0;">Paste the text of a form, letter, or study guide — or upload a .txt or .pdf — and let AI turn it into a step-by-step plan.</p>
+          <textarea class="capture-input" id="doc-paste" placeholder="Paste document text here..." style="min-height:70px;"></textarea>
+          <input type="file" id="doc-file" accept=".txt,.pdf,text/plain,application/pdf" style="margin-top:8px;font-size:11.5px;" />
+          <div id="doc-file-status" style="font-size:11px;color:var(--text-muted);margin-top:4px;"></div>
+          <button class="btn btn-primary btn-block" id="doc-breakdown" style="margin-top:10px;">Break this down with AI</button>
+        </div>
+
+        <h3 class="section-title">Add manually</h3>
+        <div class="add-form">
+          <input type="text" id="project-title" placeholder="What is it? e.g. Renew passport" />
+          <input type="number" id="project-est" placeholder="Rough total time in minutes (optional)" min="1" />
+          <button class="btn btn-secondary" id="project-add">Add project</button>
+        </div>
+      </section>
+
+      <!-- TIMELINE -->
+      <section class="screen" id="screen-timeline">
+        <div class="tl-legend">
+          <span class="item"><span class="dot now"></span>Now</span>
+          <span class="item"><span class="dot next"></span>Next</span>
+          <span class="item"><span class="dot later"></span>Later</span>
+        </div>
+        <div class="tl-toggle">
+          <button id="tl-visual-btn" class="on">Visual</button>
+          <button id="tl-list-btn">List view</button>
+        </div>
+        <div id="tl-visual"></div>
+        <div id="tl-list" style="display:none;"></div>
+      </section>
+
+      <!-- REMINDERS -->
+      <section class="screen" id="screen-reminders">
+        <p style="font-size:13px;color:var(--text-secondary);margin:4px 0 4px 0;">Commitments get gentle-then-firmer nudges, so nothing slips through.</p>
+        <h3 class="section-title">Reminder intensity</h3>
+        <div class="intensity-row" id="intensity-row">
+          <button data-int="gentle">Gentle</button>
+          <button data-int="standard" class="on">Standard</button>
+          <button data-int="persistent">Persistent</button>
+        </div>
+        <p id="intensity-desc" style="font-size:11.5px;color:var(--text-muted);margin:-10px 0 14px 0;"></p>
+
+        <h3 class="section-title">Overtime check-ins</h3>
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
+            <div>
+              <div style="font-weight:700;font-size:13px;">Text me if a focus session runs over</div>
+              <div style="font-size:11.5px;color:var(--text-muted);margin-top:2px;">Every 5 minutes until you mark it done or stop the session.</div>
+            </div>
+            <div class="switch on" id="sms-switch"><div class="knob"></div></div>
+          </div>
+          <input type="tel" id="sms-phone" placeholder="Phone number for texts" />
+        </div>
+
+        <h3 class="section-title">Upcoming</h3>
+        <div id="reminders-list"></div>
+
+        <h3 class="section-title">Add a commitment</h3>
+        <div class="add-form">
+          <input type="text" id="rem-title" placeholder="What is it?" />
+          <input type="text" id="rem-when" placeholder="When? e.g. Fri 2pm, in 3 days" />
+          <button class="btn btn-secondary" id="rem-add">Add commitment</button>
+        </div>
+      </section>
+
+      <!-- FOCUS -->
+      <section class="screen focus-screen" id="screen-focus">
+        <button class="focus-back" id="focus-back">← Back</button>
+        <div id="focus-body"></div>
+      </section>
+
+    </main>
+
+    <div class="modal-backdrop" id="modal-backdrop">
+      <div class="modal-sheet" id="modal-sheet">
+        <button class="modal-close" id="modal-close">×</button>
+        <div class="modal-handle"></div>
+        <div id="modal-content"></div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast">
+      <span class="dot now" id="toast-dot"></span>
+      <div>
+        <div class="tt" id="toast-title"></div>
+        <div class="ts" id="toast-sub"></div>
+      </div>
+    </div>
+
+    <nav class="bottomnav" id="bottomnav">
+      <button class="navbtn active" data-nav="now">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.6" fill="currentColor" stroke="none"/></svg>
+        Today
+      </button>
+      <button class="navbtn" data-nav="capture">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
+        Capture
+      </button>
+      <button class="navbtn" data-nav="board">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3.5" y="4" width="5" height="16" rx="1.5"/><rect x="9.7" y="4" width="5" height="10" rx="1.5"/><rect x="15.9" y="4" width="5" height="13" rx="1.5"/></svg>
+        Board
+      </button>
+      <button class="navbtn" data-nav="projects">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4.5" y="3" width="12" height="15" rx="1.5"/><rect x="7.5" y="6" width="12" height="15" rx="1.5"/></svg>
+        Projects
+      </button>
+      <button class="navbtn" data-nav="timeline">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.3 2"/></svg>
+        Timeline
+      </button>
+      <button class="navbtn" data-nav="reminders">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 1 0-12 0c0 6-2.2 7-2.2 7h16.4S18 14 18 8Z"/><path d="M10 19a2 2 0 0 0 4 0"/></svg>
+        Reminders
+      </button>
+    </nav>
+  </div>
+
+  <div class="intro" style="margin-top:16px;">
+    <p>Colors follow a fixed, colorblind-checked palette: blue = Now, orange = Next, aqua = Later — consistent everywhere in the app.</p>
+  </div>
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+(function(){
+  "use strict";
+
+  /* ---------------- cloud sync (optional — only used if you sign in) ---------------- */
+  var SUPABASE_URL = "https://rrieputwlxsjeejhxlly.supabase.co";
+  var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJyaWVwdXR3bHhzamVlamh4bGx5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxODYxODUsImV4cCI6MjA5Nzc2MjE4NX0.z7wiBXfprvIX03zLZbOaGTZ1NR81Jy0EfiP3VEGV3M0";
+  var sb = null;
+  try{
+    if(window.supabase && window.supabase.createClient){
+      sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
+  } catch(e){ sb = null; }
+  var cloudUser = null; /* {id, email} while signed in, else null */
+  var cloudPushTimer = null;
+  var cloudSyncing = false;
+
+  /* ---------------- state ---------------- */
+  var state = {
+    screen: "now",
+    tasks: [
+      { id:1, title:"Reply to the landlord about the leaky faucet", bucket:"now", est:10,
+        steps:["Open the email app","Read the message once, all the way through","Write a two-sentence reply"], stepDone:[false,false,false], done:false, focusedSec:0 },
+      { id:2, title:"Pack the gym bag for tomorrow", bucket:"next", est:8,
+        steps:["Get the bag from the closet","Add clothes and shoes","Add a water bottle"], stepDone:[false,false,false], done:false, focusedSec:0 },
+      { id:3, title:"Pay the electricity bill", bucket:"next", est:5,
+        steps:["Open the banking app","Find the bill","Confirm the payment"], stepDone:[false,false,false], done:false, focusedSec:0 },
+      { id:4, title:"Plan a birthday dinner for mom", bucket:"later", est:20,
+        steps:["Pick three restaurant options","Text sister to compare","Book the table"], stepDone:[false,false,false], done:false, focusedSec:0 },
+      { id:5, title:"Clear out the inbox", bucket:"later", est:15,
+        steps:["Archive anything already read","Unsubscribe from one newsletter","Flag whatever is left"], stepDone:[false,false,false], done:false, focusedSec:0 }
+    ],
+    nextTaskId: 6,
+    nowCursor: 0,
+    recurringTemplates: [],
+    nextRecurringId: 1,
+    reminders: [],
+    nextRemId: 1,
+    completedToday: 2,
+    focusedTodaySec: 21*60,
+    intensity: "standard",
+    textRemindersEnabled: true,
+    phoneNumber: "",
+    projects: [
+      { id:1, title:"Renew the passport application", totalEstMin:90, loggedMin:25, sessions:1, done:false,
+        docText:"", aiSteps:[], aiSummary:"", requiredDocs:[], deadlineNote:"", chat:[], aiStatus:"idle", aiError:"" },
+      { id:2, title:"Study for the certification exam", totalEstMin:null, loggedMin:50, sessions:2, done:false,
+        docText:"", aiSteps:[], aiSummary:"", requiredDocs:[], deadlineNote:"", chat:[], aiStatus:"idle", aiError:"" }
+    ],
+    nextProjectId: 3,
+    apiKey: "",
+    aiModel: "",
+    focus: {
+      taskId:null, mode:"full", stepIndex:0, totalSec:0, remainingSec:0, timer:null, running:false, companion:false,
+      remindersSent:[], textLog:[],
+      kind:"quick", projectId:null, deepPhase:"work", round:1
+    },
+    modalTaskId: null
+  };
+  var DEMO_TEXT_INTERVAL_SEC = 15; /* demo speed: represents "every 5 real minutes" in the product copy */
+  var DEEP_WORK_ROUND_SEC = 25*60;
+  var DEEP_BREAK_SEC = 5*60;
+
+  var intensityCopy = {
+    gentle: "Fewer nudges. One reminder, close to the deadline.",
+    standard: "A heads-up a day before, then again an hour before.",
+    persistent: "Multiple nudges as the deadline gets closer, including a firm final one."
+  };
+
+  function seedReminders(){
+    var now = new Date();
+    state.reminders = [
+      mkReminder("Dentist appointment", addHours(now, 20)),
+      mkReminder("Submit expense report", addHours(now, 68)),
+      mkReminder("Call mom", addHours(now, 3))
+    ];
+  }
+  function mkReminder(title, due){
+    var id = state.nextRemId++;
+    return { id:id, title:title, due:due };
+  }
+  function addHours(d, h){ return new Date(d.getTime() + h*3600*1000); }
+
+  /* ---------------- helpers ---------------- */
+  function $(id){ return document.getElementById(id); }
+  function fmtClock(d){
+    var h = d.getHours(), m = d.getMinutes();
+    var ampm = h >= 12 ? "PM" : "AM";
+    var h12 = h % 12; if(h12===0) h12=12;
+    return h12 + ":" + (m<10?"0":"") + m + " " + ampm;
+  }
+  function fmtDueShort(due){
+    var now = new Date();
+    var diffMs = due - now;
+    var diffH = diffMs/3600000;
+    if(diffH < 0) return "overdue";
+    if(diffH < 1) return Math.round(diffH*60) + "m away";
+    if(diffH < 36) return Math.round(diffH) + "h away";
+    return Math.round(diffH/24) + "d away";
+  }
+  function escalationStage(due){
+    var diffH = (due-new Date())/3600000;
+    if(diffH <= 2) return "critical";
+    if(diffH <= 24) return "warning";
+    return "good";
+  }
+  function statusLabel(stage){
+    return stage==="critical" ? "Due soon" : stage==="warning" ? "Coming up" : "On the radar";
+  }
+  function bucketLabel(b){ return b==="now"?"Now":b==="next"?"Next":"Later"; }
+  function mmss(sec){
+    sec = Math.max(0, Math.round(sec));
+    var m = Math.floor(sec/60), s = sec%60;
+    return m + ":" + (s<10?"0":"") + s;
+  }
+
+  /* ---------------- nav ---------------- */
+  function switchScreen(name){
+    state.screen = name;
+    document.querySelectorAll(".screen").forEach(function(s){ s.classList.remove("active"); });
+    $("screen-"+name).classList.add("active");
+    document.querySelectorAll(".navbtn").forEach(function(b){
+      b.classList.toggle("active", b.getAttribute("data-nav")===name);
+    });
+    var headers = {
+      now: ["Right now","Good afternoon","Here's the one thing to focus on."],
+      capture: ["Capture","Brain dump","Empty your head — sort it in one tap."],
+      board: ["Board","Three buckets","Now, Next, and Later. Nothing else."],
+      projects: ["Projects","Deep work","Paperwork and studying — 25-minute rounds with real breaks."],
+      timeline: ["Timeline","Today, visually","See where the time actually goes."],
+      reminders: ["Reminders","Commitments","Escalating nudges so nothing slips."]
+    };
+    var h = headers[name];
+    if(h){ $("top-eyebrow").textContent=h[0]; $("top-title").textContent=h[1]; $("top-sub").textContent=h[2]; }
+    render();
+  }
+  document.querySelectorAll("[data-nav]").forEach(function(el){
+    el.addEventListener("click", function(){ switchScreen(el.getAttribute("data-nav")); });
+  });
+
+  /* ---------------- greeting ---------------- */
+  function greetingWord(){
+    var h = new Date().getHours();
+    if(h < 5) return "Still up?";
+    if(h < 12) return "Good morning";
+    if(h < 18) return "Good afternoon";
+    return "Good evening";
+  }
+
+  /* ---------------- Right Now ---------------- */
+  function activeNowTasks(){ return state.tasks.filter(function(t){ return t.bucket==="now" && !t.done; }); }
+
+  function renderNow(){
+    if($("top-title") && state.screen==="now"){ $("top-title").textContent = greetingWord(); }
+    var list = activeNowTasks();
+    var hero = $("now-hero");
+    if(list.length===0){
+      hero.innerHTML = '<div class="hero-card"><p class="empty-note">Nothing marked Now. Head to the Board and pull something up, or capture something new.</p>' +
+        '<button class="btn btn-secondary btn-block" data-nav="capture">Capture something</button></div>';
+    } else {
+      if(state.nowCursor >= list.length) state.nowCursor = 0;
+      var t = list[state.nowCursor];
+      var firstStep = t.steps[t.stepDone.indexOf(false) === -1 ? 0 : t.stepDone.indexOf(false)];
+      hero.innerHTML =
+        '<div class="hero-card">' +
+          '<div class="hero-label">Focus on this</div>' +
+          '<div class="hero-title">'+esc(t.title)+'</div>' +
+          '<div class="hero-meta"><span class="tag"><span class="dot now"></span>~'+t.est+' min</span><span class="tag">First step: '+esc(firstStep)+'</span></div>' +
+          '<div class="hero-actions">' +
+            '<button class="btn btn-primary" style="flex:2;" id="hero-start">Start focus</button>' +
+            '<button class="btn btn-secondary" id="hero-swap">Swap</button>' +
+          '</div>' +
+        '</div>';
+      $("hero-start").onclick = function(){ startFocus(t.id, "full"); };
+      $("hero-swap").onclick = function(){ state.nowCursor = (state.nowCursor+1) % list.length; renderNow(); };
+    }
+
+    $("stat-done").textContent = state.completedToday;
+    $("stat-focus").textContent = Math.round(state.focusedTodaySec/60) + "m";
+    var upcoming = state.reminders.slice().sort(function(a,b){ return a.due-b.due; })[0];
+    $("stat-next-rem").textContent = upcoming ? fmtDueShort(upcoming.due) : "—";
+
+    renderMiniStrip();
+  }
+
+  function renderMiniStrip(){
+    var strip = $("mini-strip");
+    strip.innerHTML = "";
+    var startHour = 7, endHour = 21;
+    var totalMin = (endHour-startHour)*60;
+    var blocks = scheduledBlocks();
+    blocks.forEach(function(b){
+      var leftPct = ((b.startMin - startHour*60) / totalMin) * 100;
+      var widthPct = (b.dur / totalMin) * 100;
+      if(leftPct < 0 || leftPct > 100) return;
+      var el = document.createElement("div");
+      el.className = "mini-block";
+      el.style.left = Math.max(0,leftPct) + "%";
+      el.style.width = Math.max(2,widthPct) + "%";
+      el.style.background = bucketColor(b.bucket);
+      strip.appendChild(el);
+    });
+    var now = new Date();
+    var nowMin = now.getHours()*60 + now.getMinutes();
+    if(nowMin >= startHour*60 && nowMin <= endHour*60){
+      var pct = ((nowMin-startHour*60)/totalMin)*100;
+      var marker = document.createElement("div");
+      marker.className = "mini-now-marker";
+      marker.style.left = pct + "%";
+      strip.appendChild(marker);
+    }
+  }
+
+  function bucketColor(b){
+    return getComputedStyle(document.documentElement).getPropertyValue(
+      b==="now" ? "--now-color" : b==="next" ? "--next-color" : "--later-color"
+    ).trim();
+  }
+
+  /* assign fake, deterministic start times across the day so the timeline has something to show */
+  function scheduledBlocks(){
+    var order = ["now","next","later"];
+    var cursorMin = Math.max(new Date().getHours()*60 - 30, 8*60);
+    var blocks = [];
+    order.forEach(function(bucket){
+      state.tasks.filter(function(t){ return t.bucket===bucket && !t.done; }).forEach(function(t){
+        blocks.push({ id:t.id, bucket:bucket, title:t.title, startMin:cursorMin, dur:t.est });
+        cursorMin += t.est + 20;
+      });
+    });
+    return blocks;
+  }
+
+  /* ---------------- Capture ---------------- */
+  var capturedLog = [];
+
+  /* ---------------- repeating tasks ---------------- */
+  var DAY_NAMES = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  var repeatType = "none";        /* "none" | "weekly" | "monthly" — transient, for the capture form only */
+  var repeatWeekDays = [];        /* 0=Sun..6=Sat */
+
+  function todayStr(d){
+    d = d || new Date();
+    return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+  }
+
+  function ordinal(n){
+    var s = ["th","st","nd","rd"], v = n%100;
+    return n + (s[(v-20)%10] || s[v] || s[0]);
+  }
+
+  var MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  /* dueVal is a plain "YYYY-MM-DD" string from a <input type=date> — compare by that string,
+     not a parsed Date, to avoid timezone drift shifting the day */
+  function formatDueDate(dueVal){
+    if(!dueVal) return null;
+    var today = todayStr();
+    if(dueVal < today) return { text: "Overdue", status: "over" };
+    if(dueVal === today) return { text: "Due today", status: "today" };
+    var parts = dueVal.split("-");
+    var label = MONTH_NAMES[parseInt(parts[1],10)-1] + " " + parseInt(parts[2],10);
+    return { text: "Due " + label, status: "future" };
+  }
+
+  /* whole-day difference between two "YYYY-MM-DD" strings — parsed as local midnight so
+     DST/timezone shifts can't nudge the count by a day */
+  function daysBetween(fromStr, toStr){
+    var a = new Date(fromStr + "T00:00:00");
+    var b = new Date(toStr + "T00:00:00");
+    return Math.round((b - a) / 86400000);
+  }
+
+  function parseMonthDays(raw){
+    return (raw||"").split(",").map(function(s){ return parseInt(s.trim(),10); })
+      .filter(function(n){ return n>=1 && n<=31; });
+  }
+
+  function formatRepeatSchedule(tpl){
+    if(tpl.repeatType==="weekly"){
+      return "Repeats weekly on " + tpl.weekDays.slice().sort().map(function(d){ return DAY_NAMES[d]; }).join(", ");
+    }
+    if(tpl.repeatType==="monthly"){
+      return "Repeats monthly on the " + tpl.monthDays.slice().sort(function(a,b){return a-b;}).map(ordinal).join(", ");
+    }
+    return "";
+  }
+
+  function templateDueToday(tpl, d){
+    d = d || new Date();
+    if(tpl.repeatType==="weekly") return (tpl.weekDays||[]).indexOf(d.getDay()) !== -1;
+    if(tpl.repeatType==="monthly") return (tpl.monthDays||[]).indexOf(d.getDate()) !== -1;
+    return false;
+  }
+
+  function materializeTemplate(tpl){
+    var task = {
+      id: state.nextTaskId++, title: tpl.title, bucket: tpl.bucket, est: tpl.est,
+      steps: tpl.steps.slice(), stepDone: tpl.steps.map(function(){return false;}),
+      done:false, focusedSec:0, recurringId: tpl.id
+    };
+    state.tasks.push(task);
+    tpl.lastGeneratedDate = todayStr();
+    return task;
+  }
+
+  /* run at startup and whenever the calendar date rolls over: create today's instance
+     of any repeating task that's due and hasn't already been generated today */
+  function generateDueRecurringTasks(){
+    var today = todayStr();
+    var created = false;
+    (state.recurringTemplates||[]).forEach(function(tpl){
+      if(tpl.lastGeneratedDate === today) return;
+      if(templateDueToday(tpl)){ materializeTemplate(tpl); created = true; }
+    });
+    return created;
+  }
+
+  function resetRepeatForm(){
+    repeatType = "none"; repeatWeekDays = [];
+    document.querySelectorAll("#repeat-type-row button").forEach(function(b){ b.classList.toggle("on", b.getAttribute("data-repeat-type")==="none"); });
+    document.querySelectorAll("#repeat-day-row button").forEach(function(b){ b.classList.remove("on"); });
+    $("repeat-month-days").value = "";
+    $("repeat-weekly").style.display = "none";
+    $("repeat-monthly").style.display = "none";
+    $("repeat-body").style.display = "none";
+    $("repeat-toggle-label").textContent = "";
+    $("capture-extra-fields").style.display = "block";
+  }
+
+  $("repeat-toggle").addEventListener("click", function(){
+    var body = $("repeat-body");
+    body.style.display = body.style.display==="block" ? "none" : "block";
+  });
+  document.querySelectorAll("#repeat-type-row button").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      repeatType = btn.getAttribute("data-repeat-type");
+      document.querySelectorAll("#repeat-type-row button").forEach(function(b){ b.classList.toggle("on", b===btn); });
+      $("repeat-weekly").style.display = repeatType==="weekly" ? "block" : "none";
+      $("repeat-monthly").style.display = repeatType==="monthly" ? "block" : "none";
+      $("repeat-toggle-label").textContent = repeatType==="none" ? "" : ("— " + repeatType);
+      /* a due date / attachment describes a single occurrence, so hide them once a repeat pattern is chosen */
+      $("capture-extra-fields").style.display = repeatType==="none" ? "block" : "none";
+    });
+  });
+
+  /* -- due date & file attachment (optional, applies to non-repeating tasks) -- */
+  var pendingAttachment = null; /* { name, kind:"text"|"image", content } */
+  function resetCaptureExtra(){
+    pendingAttachment = null;
+    $("capture-due").value = "";
+    $("capture-file").value = "";
+    $("capture-file-status").textContent = "";
+  }
+  $("capture-file").addEventListener("change", async function(){
+    var file = $("capture-file").files[0];
+    if(!file) return;
+    var statusEl = $("capture-file-status");
+    statusEl.textContent = "Reading " + file.name + "...";
+    try{
+      if(file.type.indexOf("image/")===0){
+        if(file.size > 1.5*1024*1024){
+          statusEl.textContent = "That image is too large — keep it under 1.5MB (device storage is limited).";
+          $("capture-file").value = "";
+          return;
+        }
+        var dataUrl = await new Promise(function(resolve, reject){
+          var reader = new FileReader();
+          reader.onload = function(){ resolve(reader.result); };
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+        pendingAttachment = { name: file.name, kind: "image", content: dataUrl };
+        statusEl.textContent = "Attached image: " + file.name;
+      } else {
+        var text;
+        if(file.type === "application/pdf" || /\.pdf$/i.test(file.name)){
+          text = await extractPdfText(file);
+        } else {
+          text = await file.text();
+        }
+        if(!text || !text.trim()){
+          statusEl.textContent = "Could not find readable text in that file.";
+          return;
+        }
+        pendingAttachment = { name: file.name, kind: "text", content: text.slice(0, 20000) };
+        statusEl.textContent = "Attached: " + file.name + " (" + Math.round(text.length/1000) + "k characters).";
+      }
+    } catch(err){
+      statusEl.textContent = "Could not read that file: " + err.message;
+    }
+  });
+  document.querySelectorAll("#repeat-day-row button").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var day = parseInt(btn.getAttribute("data-day"),10);
+      btn.classList.toggle("on");
+      var idx = repeatWeekDays.indexOf(day);
+      if(btn.classList.contains("on")){ if(idx===-1) repeatWeekDays.push(day); }
+      else { if(idx!==-1) repeatWeekDays.splice(idx,1); }
+    });
+  });
+
+  function submitCapture(source){
+    var raw = $("capture-text").value.trim();
+    if(!raw) return;
+    var lower = raw.toLowerCase();
+    var bucket = "later", reason = "No rush words found — parked for later.";
+    if(/\b(today|asap|now|urgent|right away)\b/.test(lower)){ bucket="now"; reason = 'Saw "today / asap" — flagged urgent.'; }
+    else if(/\b(tomorrow|next week|soon|this week)\b/.test(lower)){ bucket="next"; reason = 'Saw a near-term date word — queued for Next.'; }
+
+    /* a due date that's coming up fast is its own kind of urgency — let it override the word-guess,
+       the same way a manual "urgent" would (only applies to non-repeating tasks, where due date is set) */
+    if(repeatType === "none" && $("capture-due").value){
+      var dueDaysAway = daysBetween(todayStr(), $("capture-due").value);
+      if(dueDaysAway <= 1){
+        bucket = "now";
+        reason = dueDaysAway <= 0 ? "Due today — short notice, flagged urgent." : "Due tomorrow — short notice, flagged urgent.";
+      } else if(dueDaysAway <= 6 && bucket !== "now"){
+        bucket = "next";
+        reason = "Due in " + dueDaysAway + " days — queued for Next.";
+      }
+    }
+
+    var steps;
+    var parts = raw.split(/,| and /i).map(function(s){ return s.trim(); }).filter(Boolean);
+    if(parts.length > 1){ steps = parts.slice(0,4); }
+    else if(raw.length > 42){ steps = [ "Get started — open whatever this needs", raw ]; }
+    else { steps = [ raw ]; }
+    var est = Math.max(5, Math.min(30, Math.round(raw.length/3)));
+
+    if(repeatType==="weekly" || repeatType==="monthly"){
+      var monthDays = parseMonthDays($("repeat-month-days").value);
+      if(repeatType==="weekly" && repeatWeekDays.length===0){
+        showToast(bucket, "Pick at least one day", "Choose which day(s) this should repeat on, or turn repeat off.");
+        return;
+      }
+      if(repeatType==="monthly" && monthDays.length===0){
+        showToast(bucket, "Add a day of the month", "e.g. \"1, 15\" — or turn repeat off.");
+        return;
+      }
+      var tpl = {
+        id: state.nextRecurringId++, title: raw, bucket: bucket, est: est, steps: steps,
+        repeatType: repeatType, weekDays: repeatWeekDays.slice(), monthDays: monthDays,
+        lastGeneratedDate: null
+      };
+      state.recurringTemplates.push(tpl);
+      var madeToday = templateDueToday(tpl) ? (materializeTemplate(tpl), true) : false;
+      capturedLog.unshift({ title: raw, bucket: bucket, reason: formatRepeatSchedule(tpl), viaVoice: source==="voice" });
+      showToast(bucket, "Set to repeat", formatRepeatSchedule(tpl) + (madeToday ? " — added to " + bucketLabel(bucket) + " for today too." : "."));
+      resetRepeatForm();
+    } else {
+      var dueVal = $("capture-due").value || null;
+      var task = {
+        id: state.nextTaskId++, title: raw, bucket: bucket, est: est,
+        steps: steps, stepDone: steps.map(function(){return false;}), done:false, focusedSec:0,
+        dueDate: dueVal, attachment: pendingAttachment
+      };
+      state.tasks.push(task);
+      capturedLog.unshift({ title: raw, bucket: bucket, reason: reason, viaVoice: source==="voice" });
+      var extraBits = (dueVal ? " Due " + formatDueDate(dueVal).text + "." : "") + (pendingAttachment ? " File attached." : "");
+      showToast(bucket, "Sorted into " + bucketLabel(bucket), (source==="voice" ? "Captured by voice. " : "") + reason + extraBits);
+      resetCaptureExtra();
+    }
+    $("capture-text").value = "";
+    renderCaptureLog();
+    renderBoard(); renderNow();
+    saveState();
+  }
+  $("capture-submit").addEventListener("click", function(){ submitCapture("text"); });
+
+  /* -- verbal entry -- */
+  var recognition = null;
+  var micRecording = false;
+  var speechSupported = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+  var demoPhrases = [
+    "Call the vet about Milo's checkup tomorrow",
+    "Pick up the dry cleaning today, it is urgent",
+    "Text Sam back about the weekend plans next week"
+  ];
+  var demoIndex = 0;
+
+  function updateMicUI(recording, demo){
+    micRecording = recording;
+    $("mic-btn").classList.toggle("recording", recording);
+    $("mic-status").style.display = recording ? "flex" : "none";
+    $("mic-status-text").textContent = recording ? (demo ? "Listening (demo mode) …" : "Listening …") : "";
+  }
+
+  function typeIntoTextarea(text, done){
+    var el = $("capture-text");
+    el.value = "";
+    var i = 0;
+    var iv = setInterval(function(){
+      el.value += text.charAt(i);
+      i++;
+      if(i >= text.length){ clearInterval(iv); if(done) done(); }
+    }, 16);
+  }
+
+  var demoActive = false;
+  function runFallbackDemo(){
+    demoActive = true;
+    updateMicUI(true, true);
+    setTimeout(function(){
+      var phrase = demoPhrases[demoIndex % demoPhrases.length];
+      demoIndex++;
+      typeIntoTextarea(phrase, function(){
+        demoActive = false;
+        updateMicUI(false);
+        setTimeout(function(){ submitCapture("voice"); }, 350);
+      });
+    }, 1400);
+  }
+
+  function initRecognition(){
+    var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognition = new SR();
+    recognition.lang = "en-US";
+    recognition.interimResults = true;
+    recognition.continuous = false;
+    recognition.onresult = function(e){
+      var text = "";
+      for(var i=0;i<e.results.length;i++){ text += e.results[i][0].transcript; }
+      $("capture-text").value = text;
+    };
+    recognition.onend = function(){
+      if(demoActive) return;
+      updateMicUI(false);
+      var val = $("capture-text").value.trim();
+      if(val){ setTimeout(function(){ submitCapture("voice"); }, 250); }
+    };
+    recognition.onerror = function(e){
+      if(e && (e.error === "no-speech" || e.error === "aborted")){ updateMicUI(false); return; }
+      runFallbackDemo();
+    };
+  }
+
+  $("mic-btn").addEventListener("click", function(){
+    if(micRecording){
+      if(recognition){ try{ recognition.stop(); }catch(e){} }
+      else { updateMicUI(false); }
+      return;
+    }
+    if(speechSupported){
+      try{
+        if(!recognition) initRecognition();
+        updateMicUI(true);
+        recognition.start();
+      } catch(err){ runFallbackDemo(); }
+    } else {
+      runFallbackDemo();
+    }
+  });
+
+  function renderCaptureLog(){
+    var wrap = $("capture-recent");
+    if(capturedLog.length===0){ wrap.innerHTML = '<p class="empty-note" style="padding:14px 4px;">Nothing captured yet.</p>'; return; }
+    wrap.innerHTML = capturedLog.slice(0,6).map(function(c){
+      return '<div class="card tight"><div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start;">' +
+        '<div style="font-size:13px;font-weight:600;flex:1;">'+esc(c.title)+'</div>' +
+        '<span class="tag"><span class="dot '+c.bucket+'"></span>'+bucketLabel(c.bucket)+'</span>' +
+        '</div><div style="font-size:11px;color:var(--text-muted);margin-top:4px;">'+esc(c.reason)+'</div></div>';
+    }).join("");
+  }
+
+  var toastTimer = null;
+  function showToast(bucket, title, sub){
+    $("toast-dot").className = "dot " + bucket;
+    $("toast-title").textContent = title;
+    $("toast-sub").textContent = sub;
+    var t = $("toast");
+    t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ t.classList.remove("show"); }, 2600);
+  }
+
+  /* ---------------- Board ---------------- */
+  function renderBoard(){
+    ["now","next","later"].forEach(function(bucket){
+      var items = state.tasks.filter(function(t){ return t.bucket===bucket; });
+      $("count-"+bucket).textContent = "(" + items.length + ")";
+      var col = $("col-"+bucket);
+      if(items.length===0){ col.innerHTML = '<p style="font-size:11px;color:var(--text-muted);padding:6px 2px;">Drop here</p>'; return; }
+      col.innerHTML = items.map(function(t){
+        var doneCls = t.done ? " done" : "";
+        var repeats = t.recurringId && state.recurringTemplates.some(function(tpl){ return tpl.id===t.recurringId; });
+        var due = t.dueDate ? formatDueDate(t.dueDate) : null;
+        return '<div class="task-card'+doneCls+'" data-task="'+t.id+'">' +
+          '<div class="t">'+(repeats ? '<span class="repeat-badge" title="Repeating task">↻</span>' : '')+(t.attachment ? '<span class="attach-chip" title="Has an attached file">📎</span>' : '')+esc(t.title)+(due ? '<span class="due-chip due-'+due.status+'">'+due.text+'</span>' : '')+'</div>' +
+          '<div class="m">~'+t.est+' min · '+t.stepDone.filter(Boolean).length+'/'+t.steps.length+' steps</div>' +
+        '</div>';
+      }).join("");
+      col.querySelectorAll(".task-card").forEach(function(card){
+        attachCardDrag(card, parseInt(card.getAttribute("data-task"),10));
+      });
+    });
+  }
+
+  /* -- drag & drop between buckets (pointer events: works for mouse + touch) -- */
+  function attachCardDrag(cardEl, taskId){
+    cardEl.addEventListener("pointerdown", function(e){
+      if(e.pointerType === "mouse" && e.button !== 0) return;
+      var startX = e.clientX, startY = e.clientY;
+      var pointerId = e.pointerId;
+      var moved = false;
+      var ghost = null;
+      var origRect = cardEl.getBoundingClientRect();
+
+      try{ cardEl.setPointerCapture(pointerId); }catch(err){}
+
+      function beginDrag(){
+        cardEl.classList.add("dragging");
+        ghost = cardEl.cloneNode(true);
+        ghost.classList.add("drag-ghost");
+        ghost.style.width = origRect.width + "px";
+        ghost.style.left = origRect.left + "px";
+        ghost.style.top = origRect.top + "px";
+        document.body.appendChild(ghost);
+      }
+      function onMove(ev){
+        var dx = ev.clientX - startX, dy = ev.clientY - startY;
+        if(!moved && Math.hypot(dx, dy) > 6){ moved = true; beginDrag(); }
+        if(moved && ghost){
+          ghost.style.left = (origRect.left + dx) + "px";
+          ghost.style.top = (origRect.top + dy) + "px";
+          updateDragOver(ev.clientX, ev.clientY);
+        }
+      }
+      function onUp(ev){
+        cardEl.removeEventListener("pointermove", onMove);
+        cardEl.removeEventListener("pointerup", onUp);
+        cardEl.removeEventListener("pointercancel", onUp);
+        try{ cardEl.releasePointerCapture(pointerId); }catch(err){}
+        if(moved){
+          if(ghost && ghost.parentNode) ghost.parentNode.removeChild(ghost);
+          cardEl.classList.remove("dragging");
+          clearDragOverHighlights();
+          finishDrag(ev.clientX, ev.clientY, taskId);
+        } else {
+          openTaskModal(taskId);
+        }
+      }
+      cardEl.addEventListener("pointermove", onMove);
+      cardEl.addEventListener("pointerup", onUp);
+      cardEl.addEventListener("pointercancel", onUp);
+    });
+  }
+
+  function bucketAtPoint(x, y){
+    var buckets = ["now","next","later"];
+    for(var i=0;i<buckets.length;i++){
+      var col = $("col-" + buckets[i]);
+      var host = col.closest(".board-col") || col;
+      var r = host.getBoundingClientRect();
+      if(x >= r.left && x <= r.right && y >= r.top - 24 && y <= r.bottom + 40){ return buckets[i]; }
+    }
+    return null;
+  }
+  function updateDragOver(x, y){
+    clearDragOverHighlights();
+    var bucket = bucketAtPoint(x, y);
+    if(bucket){ $("col-" + bucket).classList.add("drag-over-" + bucket); }
+  }
+  function clearDragOverHighlights(){
+    ["now","next","later"].forEach(function(b){ $("col-" + b).classList.remove("drag-over-" + b); });
+  }
+
+  function finishDrag(x, y, taskId){
+    var bucket = bucketAtPoint(x, y);
+    if(!bucket) return; // dropped outside any column — leave it where it was
+    var task = state.tasks.find(function(t){ return t.id === taskId; });
+    if(!task) return;
+    var oldBucket = task.bucket;
+
+    var idx = state.tasks.indexOf(task);
+    state.tasks.splice(idx, 1);
+
+    var targetCards = Array.prototype.slice.call($("col-" + bucket).querySelectorAll(".task-card"));
+    var insertBeforeTaskId = null;
+    for(var i=0;i<targetCards.length;i++){
+      var r = targetCards[i].getBoundingClientRect();
+      if(y < r.top + r.height/2){ insertBeforeTaskId = parseInt(targetCards[i].getAttribute("data-task"),10); break; }
+    }
+    task.bucket = bucket;
+    if(insertBeforeTaskId !== null){
+      var beforeTask = state.tasks.find(function(t){ return t.id === insertBeforeTaskId; });
+      var insertIdx = beforeTask ? state.tasks.indexOf(beforeTask) : state.tasks.length;
+      state.tasks.splice(insertIdx, 0, task);
+    } else {
+      var lastIdxOfBucket = -1;
+      for(var j=0;j<state.tasks.length;j++){ if(state.tasks[j].bucket === bucket) lastIdxOfBucket = j; }
+      state.tasks.splice(lastIdxOfBucket + 1, 0, task);
+    }
+
+    renderBoard();
+    if(state.screen === "now") renderNow();
+    if(oldBucket !== bucket){ showToast(bucket, "Moved to " + bucketLabel(bucket), task.title); }
+    saveState();
+  }
+
+  /* ---------------- Projects (deep work: paperwork & studying) ---------------- */
+  function renderProjects(){
+    var wrap = $("projects-list");
+    var active = state.projects.filter(function(p){ return !p.done; });
+    var done = state.projects.filter(function(p){ return p.done; });
+    var html = "";
+    if(active.length === 0){
+      html += '<p class="empty-note">Nothing in progress. Add a project below — passport renewal, a big study push, whatever needs more than one sitting.</p>';
+    } else {
+      html += active.map(projectCardHtml).join("");
+    }
+    if(done.length){
+      html += '<h3 class="section-title">Completed</h3>' + done.map(projectCardHtml).join("");
+    }
+    wrap.innerHTML = html;
+    wrap.querySelectorAll(".project-card").forEach(function(card){
+      card.addEventListener("click", function(){ openProjectModal(parseInt(card.getAttribute("data-project"),10)); });
+    });
+    wrap.querySelectorAll(".pc-start").forEach(function(btn){
+      btn.addEventListener("click", function(e){
+        e.stopPropagation();
+        startDeepSession(parseInt(btn.getAttribute("data-project-start"),10));
+      });
+    });
+  }
+
+  function projectCardHtml(p){
+    var pct = p.totalEstMin ? Math.min(100, Math.round((p.loggedMin / p.totalEstMin) * 100)) : Math.min(100, Math.round((p.loggedMin / Math.max(60, p.loggedMin || 60)) * 100));
+    var sessions = p.sessions || 0;
+    var hasAi = p.aiSteps && p.aiSteps.length > 0;
+    var doneSteps = hasAi ? p.aiSteps.filter(function(s){ return s.done; }).length : 0;
+    return '<div class="project-card' + (p.done ? ' done' : '') + '" data-project="' + p.id + '">' +
+      '<div class="pc-top">' +
+        '<div class="pc-title">' + esc(p.title) + '</div>' +
+        (p.done ? '<span class="tag">Done</span>' : (hasAi ? '<span class="ai-badge"><span class="sdot"></span>AI plan</span>' : '')) +
+      '</div>' +
+      '<div class="pc-meta">' + p.loggedMin + (p.totalEstMin ? (' / ' + p.totalEstMin + ' min') : ' min logged') + ' · ' + sessions + ' session' + (sessions === 1 ? '' : 's') + (hasAi ? (' · ' + doneSteps + '/' + p.aiSteps.length + ' steps') : '') + '</div>' +
+      '<div class="pc-track"><div class="pc-fill" style="width:' + pct + '%;"></div></div>' +
+      (p.done ? '' : '<button class="btn btn-secondary btn-sm pc-start" data-project-start="' + p.id + '">Start a round</button>') +
+    '</div>';
+  }
+
+  function openProjectModal(id){
+    var p = state.projects.find(function(x){ return x.id === id; });
+    if(!p) return;
+    expandedStepIndex = null;
+    ensureProjectAiFields(p);
+    var pct = p.totalEstMin ? Math.min(100, Math.round((p.loggedMin / p.totalEstMin) * 100)) : Math.min(100, Math.round((p.loggedMin / Math.max(60, p.loggedMin || 60)) * 100));
+    var sessions = p.sessions || 0;
+    var hasAi = p.aiSteps.length > 0;
+
+    var html =
+      '<div style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);">Deep work project</div>' +
+      '<div style="font-size:17px;font-weight:700;margin:6px 0 12px 0;">' + esc(p.title) + '</div>' +
+      '<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-secondary);margin-bottom:6px;">' +
+        '<span>' + p.loggedMin + (p.totalEstMin ? (' / ' + p.totalEstMin + ' min') : ' min logged') + '</span>' +
+        '<span>' + sessions + ' session' + (sessions === 1 ? '' : 's') + '</span>' +
+      '</div>' +
+      '<div class="pc-track" style="margin-bottom:16px;"><div class="pc-fill" style="width:' + pct + '%;"></div></div>';
+
+    if(p.aiSummary){
+      html += '<p style="font-size:12.5px;color:var(--text-secondary);line-height:1.5;margin:0 0 10px 0;">' + esc(p.aiSummary) + '</p>';
+    }
+    if(p.deadlineNote){
+      html += '<div class="deadline-note"><span class="status-chip warning" style="flex-shrink:0;"><span class="sdot"></span>Note</span><span>' + esc(p.deadlineNote) + '</span></div>';
+    }
+    if(p.requiredDocs && p.requiredDocs.length){
+      html += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted);margin-bottom:4px;">You will likely need</div>' +
+        '<ul class="doc-required-list">' + p.requiredDocs.map(function(d){ return '<li>' + esc(d) + '</li>'; }).join("") + '</ul>';
+    }
+
+    if(hasAi){
+      html += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted);margin:14px 0 2px 0;">Work through it here</div>';
+      html += '<div id="ai-step-list">' + p.aiSteps.map(function(s, i){ return stepRowHtml(s, i); }).join("") + '</div>';
+
+      html += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted);margin:16px 0 2px 0;">Ask AI about the whole document</div>';
+      html += '<div class="chat-log" id="chat-log">' + renderChatBubbles(p.chat) + '</div>';
+      html += '<div class="chat-input-row"><input type="text" id="chat-input" placeholder="e.g. What counts as proof of address?" />' +
+        '<button class="btn btn-primary btn-sm" id="chat-send">Ask</button></div>';
+      html += '<div id="chat-loading" style="display:none;" class="ai-loading"><span class="ai-spinner"></span>Thinking...</div>';
+    } else {
+      html += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted);margin:12px 0 4px 0;">Get an AI plan for this</div>';
+      html += '<textarea class="capture-input" id="modal-doc-text" placeholder="Paste the document text here to get a step-by-step plan" style="min-height:70px;margin-top:0;">' + esc(p.docText || "") + '</textarea>';
+      if(p.aiStatus === "loading"){
+        html += '<div class="ai-loading"><span class="ai-spinner"></span>Reading through this and breaking it into steps...</div>';
+      } else if(p.aiStatus === "error"){
+        html += '<div class="ai-error">' + esc(p.aiError || "Something went wrong.") + '</div>' +
+          '<button class="btn btn-secondary btn-block" id="modal-breakdown-retry" style="margin-top:8px;">Try again</button>';
+      } else {
+        html += '<button class="btn btn-secondary btn-block" id="modal-breakdown" style="margin-top:8px;">Break this down with AI</button>';
+      }
+    }
+
+    html += (p.done ? '' : '<button class="btn btn-primary btn-block" id="project-start-round" style="margin-top:16px;">Start a focus round (25 min)</button>');
+    html += (p.done ? '<p class="empty-note" style="padding:10px 0;">Marked done.</p>' : '<button class="btn btn-ghost btn-block" id="project-mark-done" style="margin-top:8px;">Mark project done</button>');
+
+    $("modal-content").innerHTML = html;
+
+    if(!p.done){
+      $("project-start-round").onclick = function(){ closeModal(); startDeepSession(p.id); };
+      $("project-mark-done").onclick = function(){ markProjectDone(p.id); };
+    }
+    if(hasAi){
+      wireStepRows(p);
+      var sendBtn = $("chat-send"), chatInput = $("chat-input");
+      sendBtn.onclick = function(){ sendProjectChat(p.id); };
+      chatInput.addEventListener("keydown", function(e){ if(e.key === "Enter"){ sendProjectChat(p.id); } });
+      var log = $("chat-log");
+      log.scrollTop = log.scrollHeight;
+    } else {
+      var mb = $("modal-breakdown"), mbr = $("modal-breakdown-retry");
+      if(mb) mb.onclick = function(){ p.docText = $("modal-doc-text").value.trim(); runBreakdown(p.id); };
+      if(mbr) mbr.onclick = function(){ runBreakdown(p.id); };
+    }
+    $("modal-backdrop").classList.add("open");
+  }
+
+  function ensureProjectAiFields(p){
+    if(p.docText === undefined) p.docText = "";
+    if(!Array.isArray(p.aiSteps)) p.aiSteps = [];
+    if(p.aiSummary === undefined) p.aiSummary = "";
+    if(!Array.isArray(p.requiredDocs)) p.requiredDocs = [];
+    if(p.deadlineNote === undefined) p.deadlineNote = "";
+    if(!Array.isArray(p.chat)) p.chat = [];
+    if(p.aiStatus === undefined) p.aiStatus = "idle";
+    if(p.aiError === undefined) p.aiError = "";
+    p.aiSteps.forEach(function(s){
+      if(s.notes === undefined) s.notes = "";
+      if(s.aiNote === undefined) s.aiNote = "";
+      if(s.aiNoteLoading === undefined) s.aiNoteLoading = false;
+    });
+  }
+
+  function renderChatBubbles(chat){
+    if(!chat || chat.length === 0){
+      return '<p style="font-size:11.5px;color:var(--text-muted);">Ask about a required document, an unfamiliar term, or what to do next — answers stay short and concrete.</p>';
+    }
+    return chat.map(function(m){
+      return '<div class="chat-bubble ' + (m.role === "user" ? "user" : "ai") + '">' + esc(m.text) + '</div>';
+    }).join("");
+  }
+
+  /* ---------------- per-step workspace (draft/notes + inline AI help) ---------------- */
+  var expandedStepIndex = null; /* index of the step whose workspace is open, transient — not persisted */
+
+  function stepRowHtml(s, i){
+    var open = expandedStepIndex === i;
+    var html = '<div class="ai-step-row' + (s.done ? ' done' : '') + '" data-ai-step="' + i + '">' +
+      '<span class="chk' + (s.done ? ' on' : '') + '" data-ai-check="' + i + '">' + (s.done ? '✓' : '') + '</span>' +
+      '<div class="body" data-ai-expand="' + i + '">' +
+        '<div class="title">' + esc(s.title) + '</div>' +
+        (s.detail ? '<div class="detail">' + esc(s.detail) + '</div>' : '') +
+        (s.estMin ? '<div class="est">~' + s.estMin + ' min</div>' : '') +
+      '</div>' +
+      '<span class="step-chevron">' + (open ? "▴" : "▾") + '</span>' +
+    '</div>';
+    if(open){
+      html += '<div class="step-workspace" data-workspace="' + i + '">' +
+        '<textarea class="step-notes" id="step-notes-' + i + '" placeholder="Write or work through this step here...">' + esc(s.notes || "") + '</textarea>' +
+        '<div class="step-ai-actions">' +
+          '<button class="btn btn-secondary btn-sm" data-step-help="start" data-step-idx="' + i + '">Help me start</button>' +
+          '<button class="btn btn-secondary btn-sm" data-step-help="hint" data-step-idx="' + i + '">Give me a hint</button>' +
+          '<button class="btn btn-secondary btn-sm" data-step-help="check" data-step-idx="' + i + '">Check what I have</button>' +
+        '</div>' +
+        (s.aiNoteLoading ? '<div class="ai-loading"><span class="ai-spinner"></span>Thinking...</div>' :
+          (s.aiNote ? '<div class="chat-bubble ai" style="max-width:100%;margin-top:8px;">' + esc(s.aiNote) + '</div>' : '')) +
+      '</div>';
+    }
+    return html;
+  }
+
+  function wireStepRows(p){
+    var list = $("ai-step-list");
+    list.querySelectorAll("[data-ai-check]").forEach(function(el){
+      el.addEventListener("click", function(e){
+        e.stopPropagation();
+        var i = parseInt(el.getAttribute("data-ai-check"), 10);
+        p.aiSteps[i].done = !p.aiSteps[i].done;
+        saveState();
+        refreshStepList(p);
+      });
+    });
+    list.querySelectorAll("[data-ai-expand]").forEach(function(el){
+      el.addEventListener("click", function(){
+        var i = parseInt(el.getAttribute("data-ai-expand"), 10);
+        expandedStepIndex = (expandedStepIndex === i) ? null : i;
+        refreshStepList(p);
+      });
+    });
+    wireStepWorkspace(p);
+  }
+
+  function wireStepWorkspace(p){
+    if(expandedStepIndex === null) return;
+    var i = expandedStepIndex;
+    var notesEl = $("step-notes-" + i);
+    if(notesEl){
+      notesEl.addEventListener("click", function(e){ e.stopPropagation(); });
+      notesEl.addEventListener("blur", function(){
+        p.aiSteps[i].notes = notesEl.value;
+        saveState();
+      });
+    }
+    $("ai-step-list").querySelectorAll("[data-step-help]").forEach(function(btn){
+      btn.addEventListener("click", function(e){
+        e.stopPropagation();
+        var idx = parseInt(btn.getAttribute("data-step-idx"), 10);
+        var kind = btn.getAttribute("data-step-help");
+        var liveNotes = $("step-notes-" + idx);
+        if(liveNotes){ p.aiSteps[idx].notes = liveNotes.value; }
+        askStepHelp(p.id, idx, kind);
+      });
+    });
+  }
+
+  function refreshStepList(p){
+    var list = $("ai-step-list");
+    list.innerHTML = p.aiSteps.map(function(s, i){ return stepRowHtml(s, i); }).join("");
+    wireStepRows(p);
+  }
+
+  var STEP_HELP_PROMPTS = {
+    start: "The user is about to start this specific step and has not written much yet. Give them one concrete way to begin — an opening sentence, a first move, or a starting point. Do not write the whole thing for them. 2-3 sentences max.",
+    hint: "The user wants a hint for this specific step without being handed the full answer. Give one concise, encouraging nudge in the right direction — not the solution. 2-3 sentences max.",
+    check: "The user has written or worked through something for this step (see their current text below). Give brief, specific, encouraging feedback: what is working, and one concrete thing to improve or double-check. Do not rewrite it for them unless they ask. 2-4 sentences max."
+  };
+
+  async function askStepHelp(projectId, stepIndex, kind){
+    var p = state.projects.find(function(x){ return x.id === projectId; });
+    if(!p) return;
+    var s = p.aiSteps[stepIndex];
+    if(!s) return;
+    s.aiNoteLoading = true;
+    s.aiNote = "";
+    refreshStepList(p);
+    try{
+      var contextMsg = "Document (context):\n" + p.docText.slice(0, 6000) +
+        "\n\nCurrent step: " + s.title + (s.detail ? (" — " + s.detail) : "") +
+        "\n\nWhat the user has written so far for this step (may be empty):\n" + (s.notes || "(nothing yet)");
+      var system = "You are a patient, encouraging assistant inside Anchor, an ADHD-focused productivity app, helping someone work through one specific step of a document or assignment. " + STEP_HELP_PROMPTS[kind];
+      var reply = await callClaude([{ role: "user", content: contextMsg }], system, 350);
+      s.aiNote = reply || "Could not come up with a reply — try again.";
+    } catch(err){
+      s.aiNote = "Could not reach the AI: " + (err.message || "unknown error");
+    }
+    s.aiNoteLoading = false;
+    saveState();
+    refreshStepList(p);
+  }
+
+  function markProjectDone(id){
+    var p = state.projects.find(function(x){ return x.id === id; });
+    if(!p) return;
+    p.done = true;
+    saveState();
+    closeModal();
+    renderProjects();
+  }
+
+  $("project-add").addEventListener("click", function(){
+    var title = $("project-title").value.trim();
+    if(!title) return;
+    var estRaw = $("project-est").value.trim();
+    var num = parseInt(estRaw, 10);
+    var est = (!isNaN(num) && num > 0) ? num : null;
+    state.projects.push({
+      id: state.nextProjectId++, title: title, totalEstMin: est, loggedMin: 0, sessions: 0, done: false,
+      docText: "", aiSteps: [], aiSummary: "", requiredDocs: [], deadlineNote: "", chat: [], aiStatus: "idle", aiError: ""
+    });
+    $("project-title").value = ""; $("project-est").value = "";
+    renderProjects();
+    saveState();
+  });
+
+  /* ---------------- account & cloud sync (optional) ---------------- */
+  $("sync-toggle").addEventListener("click", function(){
+    var body = $("sync-body");
+    var open = body.style.display === "block";
+    body.style.display = open ? "none" : "block";
+    $("sync-chevron").textContent = open ? "▾" : "▴";
+  });
+
+  function updateSyncUi(){
+    var signedIn = !!cloudUser;
+    $("sync-dot").classList.toggle("set", signedIn);
+    $("sync-status").textContent = signedIn ? "— syncing" : (sb ? "— off" : "— unavailable");
+    $("sync-signed-out").style.display = signedIn ? "none" : "block";
+    $("sync-signed-in").style.display = signedIn ? "block" : "none";
+    if(signedIn){ $("sync-email-label").textContent = cloudUser.email || ""; }
+  }
+
+  function buildCloudPayload(){
+    /* Same shape as local save, minus the AI key — that always stays device-only. */
+    return {
+      tasks: state.tasks,
+      reminders: (state.reminders||[]).map(function(r){ return { id:r.id, title:r.title, due: r.due instanceof Date ? r.due.toISOString() : r.due }; }),
+      nextTaskId: state.nextTaskId,
+      nextRemId: state.nextRemId,
+      completedToday: state.completedToday,
+      focusedTodaySec: state.focusedTodaySec,
+      intensity: state.intensity,
+      textRemindersEnabled: state.textRemindersEnabled,
+      phoneNumber: state.phoneNumber,
+      capturedLog: (typeof capturedLog !== "undefined") ? capturedLog : [],
+      projects: state.projects,
+      nextProjectId: state.nextProjectId,
+      recurringTemplates: state.recurringTemplates,
+      nextRecurringId: state.nextRecurringId
+    };
+  }
+
+  function applyCloudPayload(payload){
+    if(!payload) return;
+    if(Array.isArray(payload.tasks)) state.tasks = payload.tasks;
+    if(Array.isArray(payload.reminders)) state.reminders = payload.reminders.map(function(r){ return { id:r.id, title:r.title, due:new Date(r.due) }; });
+    if(payload.nextTaskId) state.nextTaskId = payload.nextTaskId;
+    if(payload.nextRemId) state.nextRemId = payload.nextRemId;
+    if(typeof payload.completedToday === "number") state.completedToday = payload.completedToday;
+    if(typeof payload.focusedTodaySec === "number") state.focusedTodaySec = payload.focusedTodaySec;
+    if(payload.intensity) state.intensity = payload.intensity;
+    if(payload.textRemindersEnabled !== undefined) state.textRemindersEnabled = payload.textRemindersEnabled;
+    if(payload.phoneNumber !== undefined) state.phoneNumber = payload.phoneNumber;
+    if(Array.isArray(payload.capturedLog) && typeof capturedLog !== "undefined") capturedLog = payload.capturedLog;
+    if(Array.isArray(payload.projects)) state.projects = payload.projects;
+    if(payload.nextProjectId) state.nextProjectId = payload.nextProjectId;
+    if(Array.isArray(payload.recurringTemplates)) state.recurringTemplates = payload.recurringTemplates;
+    if(payload.nextRecurringId) state.nextRecurringId = payload.nextRecurringId;
+  }
+
+  function scheduleCloudPush(){
+    if(!sb || !cloudUser) return;
+    if(cloudPushTimer) clearTimeout(cloudPushTimer);
+    cloudPushTimer = setTimeout(cloudPush, 1200);
+  }
+
+  function cloudPush(){
+    if(!sb || !cloudUser || cloudSyncing) return;
+    cloudSyncing = true;
+    sb.from("anchor_app_state").upsert({
+      user_id: cloudUser.id,
+      state: buildCloudPayload(),
+      updated_at: new Date().toISOString()
+    }, { onConflict: "user_id" }).then(function(res){
+      cloudSyncing = false;
+      if(!res.error){
+        var d = $("sync-last");
+        if(d) d.textContent = "Last synced just now.";
+      }
+    }).catch(function(){ cloudSyncing = false; });
+  }
+
+  function cloudPull(){
+    if(!sb || !cloudUser) return Promise.resolve(false);
+    return sb.from("anchor_app_state").select("state,updated_at").eq("user_id", cloudUser.id).maybeSingle()
+      .then(function(res){
+        if(res.error || !res.data) return false;
+        applyCloudPayload(res.data.state);
+        saveState();
+        render();
+        return true;
+      }).catch(function(){ return false; });
+  }
+
+  $("sync-signup-btn").addEventListener("click", function(){
+    if(!sb){ $("sync-auth-msg").textContent = "Sync isn't available right now (couldn't load the sync library)."; return; }
+    var email = $("sync-email").value.trim(), pw = $("sync-password").value;
+    if(!email || pw.length<6){ $("sync-auth-msg").textContent = "Enter an email and a password of 6+ characters."; return; }
+    $("sync-auth-msg").textContent = "Creating account...";
+    sb.auth.signUp({ email:email, password:pw }).then(function(res){
+      if(res.error){ $("sync-auth-msg").textContent = res.error.message; return; }
+      if(res.data && res.data.user && !res.data.session){
+        $("sync-auth-msg").textContent = "Check your email to confirm your account, then log in here.";
+        return;
+      }
+      onSignedIn(res.data.user);
+    });
+  });
+  $("sync-signin-btn").addEventListener("click", function(){
+    if(!sb){ $("sync-auth-msg").textContent = "Sync isn't available right now (couldn't load the sync library)."; return; }
+    var email = $("sync-email").value.trim(), pw = $("sync-password").value;
+    if(!email || !pw){ $("sync-auth-msg").textContent = "Enter your email and password."; return; }
+    $("sync-auth-msg").textContent = "Logging in...";
+    sb.auth.signInWithPassword({ email:email, password:pw }).then(function(res){
+      if(res.error){ $("sync-auth-msg").textContent = res.error.message; return; }
+      onSignedIn(res.data.user);
+    });
+  });
+  $("sync-signout-btn").addEventListener("click", function(){
+    if(!sb) return;
+    sb.auth.signOut().then(function(){
+      cloudUser = null;
+      updateSyncUi();
+      showToast("now", "Signed out", "This device is back to local-only.");
+    });
+  });
+  $("sync-now-btn").addEventListener("click", function(){
+    cloudPush();
+    showToast("now", "Syncing", "Pushing your latest data up.");
+  });
+
+  function onSignedIn(user){
+    if(!user) return;
+    cloudUser = { id:user.id, email:user.email };
+    updateSyncUi();
+    $("sync-email").value = ""; $("sync-password").value = "";
+    /* First device to sign in with data pushes; a second device pulls and takes the cloud copy. */
+    cloudPull().then(function(pulled){
+      if(!pulled) cloudPush();
+    });
+    showToast("now", "Signed in", "Syncing this device with your account.");
+  }
+
+  /* ---------------- AI settings ---------------- */
+  $("ai-settings-toggle").addEventListener("click", function(){
+    var body = $("ai-settings-body");
+    var open = body.style.display === "block";
+    body.style.display = open ? "none" : "block";
+    $("ai-settings-chevron").textContent = open ? "▾" : "▴";
+  });
+  $("ai-key-save").addEventListener("click", function(){
+    state.apiKey = $("ai-api-key").value.trim();
+    state.aiModel = $("ai-model").value.trim();
+    saveState();
+    updateAiKeyStatus();
+    showToast("now", "AI settings saved", state.apiKey ? "Your key is stored on this device only." : "Key cleared.");
+  });
+  $("ai-key-clear").addEventListener("click", function(){
+    state.apiKey = ""; state.aiModel = "";
+    $("ai-api-key").value = ""; $("ai-model").value = "";
+    saveState();
+    updateAiKeyStatus();
+  });
+  function updateAiKeyStatus(){
+    var has = !!state.apiKey;
+    $("ai-key-dot").classList.toggle("set", has);
+    $("ai-key-status").textContent = has ? "— key set" : "— no key set yet";
+  }
+
+  /* ---------------- document capture (paste or upload) ---------------- */
+  var pdfJsLoadPromise = null;
+  function loadPdfJs(){
+    if(pdfJsLoadPromise) return pdfJsLoadPromise;
+    pdfJsLoadPromise = new Promise(function(resolve, reject){
+      if(window.pdfjsLib) { resolve(window.pdfjsLib); return; }
+      var script = document.createElement("script");
+      script.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.min.js";
+      script.onload = function(){
+        try{
+          window.pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.worker.min.js";
+          resolve(window.pdfjsLib);
+        } catch(e){ reject(e); }
+      };
+      script.onerror = function(){ reject(new Error("Could not load the PDF reader (no internet connection?).")); };
+      document.head.appendChild(script);
+    });
+    return pdfJsLoadPromise;
+  }
+
+  async function extractPdfText(file){
+    var pdfjsLib = await loadPdfJs();
+    var buf = await file.arrayBuffer();
+    var doc = await pdfjsLib.getDocument({ data: buf }).promise;
+    var text = "";
+    var pageCount = Math.min(doc.numPages, 30);
+    for(var i = 1; i <= pageCount; i++){
+      var page = await doc.getPage(i);
+      var content = await page.getTextContent();
+      text += content.items.map(function(it){ return it.str; }).join(" ") + "\n";
+    }
+    return text.trim();
+  }
+
+  $("doc-file").addEventListener("change", async function(){
+    var file = $("doc-file").files[0];
+    if(!file) return;
+    var statusEl = $("doc-file-status");
+    statusEl.textContent = "Reading " + file.name + "...";
+    try{
+      var text;
+      if(file.type === "application/pdf" || /\.pdf$/i.test(file.name)){
+        text = await extractPdfText(file);
+      } else {
+        text = await file.text();
+      }
+      if(!text || !text.trim()){
+        statusEl.textContent = "Could not find readable text in that file — try pasting the text instead.";
+        return;
+      }
+      $("doc-paste").value = text.slice(0, 20000);
+      statusEl.textContent = "Loaded " + file.name + " (" + Math.round(text.length/1000) + "k characters).";
+    } catch(err){
+      statusEl.textContent = "Could not read that file: " + err.message;
+    }
+  });
+
+  $("doc-breakdown").addEventListener("click", function(){
+    var text = $("doc-paste").value.trim();
+    if(!text){ showToast("now", "Paste or upload something first", "Add document text above, then try again."); return; }
+    var p = {
+      id: state.nextProjectId++, title: "New document", totalEstMin: null, loggedMin: 0, sessions: 0, done: false,
+      docText: text, aiSteps: [], aiSummary: "", requiredDocs: [], deadlineNote: "", chat: [], aiStatus: "idle", aiError: ""
+    };
+    state.projects.push(p);
+    $("doc-paste").value = ""; $("doc-file").value = ""; $("doc-file-status").textContent = "";
+    renderProjects();
+    saveState();
+    runBreakdown(p.id);
+    openProjectModal(p.id);
+  });
+
+  /* ---------------- Claude API (bring-your-own-key, called directly from the browser) ---------------- */
+  async function callClaude(messages, system, maxTokens){
+    if(!state.apiKey){
+      var err = new Error("No API key set yet. Open AI settings on the Projects tab and add your Anthropic API key.");
+      err.code = "no-key";
+      throw err;
+    }
+    var model = state.aiModel || "claude-sonnet-4-5";
+    var res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "x-api-key": state.apiKey,
+        "anthropic-version": "2023-06-01",
+        "anthropic-dangerous-direct-browser-access": "true"
+      },
+      body: JSON.stringify({
+        model: model,
+        max_tokens: maxTokens || 1200,
+        system: system,
+        messages: messages
+      })
+    });
+    if(!res.ok){
+      var bodyText = "";
+      try{ bodyText = await res.text(); } catch(e){}
+      var message = "API error (" + res.status + ").";
+      try{
+        var parsed = JSON.parse(bodyText);
+        if(parsed && parsed.error && parsed.error.message){ message = parsed.error.message; }
+      } catch(e){ if(bodyText) message += " " + bodyText.slice(0, 200); }
+      if(res.status === 401){ message = "That API key was rejected. Double-check it in AI settings."; }
+      throw new Error(message);
+    }
+    var data = await res.json();
+    return (data.content && data.content[0] && data.content[0].text) || "";
+  }
+
+  var BREAKDOWN_SYSTEM_PROMPT = "You are an assistant inside Anchor, an ADHD-focused productivity app. You help break paperwork, forms, letters, and study material into small, concrete, non-overwhelming steps. Given the document text the user provides, respond with ONLY valid JSON, no markdown fences, no commentary, in exactly this shape: {\"title\": short project title (5-8 words), \"summary\": one or two plain-language sentences on what this document is and what needs to happen, \"requiredDocs\": [short list of things the person will likely need to gather or know, empty array if none], \"steps\": [{\"title\": short imperative step name, \"detail\": one concrete sentence of guidance, \"estMin\": integer minutes for that step}], \"deadlineNote\": short note about any deadline or time-sensitivity mentioned, empty string if none}. Keep steps to 4-8 items, each small enough to finish in one sitting. Use plain, warm, non-judgmental language — never imply the person is behind or should have done this already.";
+
+  function stripJsonFences(text){
+    var t = text.trim();
+    t = t.replace(/^```json\s*/i, "").replace(/^```\s*/, "").replace(/```\s*$/, "");
+    return t.trim();
+  }
+
+  async function runBreakdown(projectId){
+    var p = state.projects.find(function(x){ return x.id === projectId; });
+    if(!p) return;
+    ensureProjectAiFields(p);
+    p.aiStatus = "loading";
+    p.aiError = "";
+    if(state.screen === "projects") renderProjects();
+    if($("modal-backdrop").classList.contains("open")) openProjectModal(projectId);
+    try{
+      var raw = await callClaude(
+        [{ role: "user", content: p.docText.slice(0, 16000) }],
+        BREAKDOWN_SYSTEM_PROMPT,
+        1400
+      );
+      var parsed;
+      try{
+        parsed = JSON.parse(stripJsonFences(raw));
+      } catch(parseErr){
+        throw new Error("The AI's response was not in the expected format. This sometimes happens with unusual documents — try again, or try with a shorter excerpt.");
+      }
+      if(!parsed || !Array.isArray(parsed.steps)){ throw new Error("The AI could not find clear steps in this document — try again, or paste a more specific excerpt."); }
+      p.title = parsed.title || p.title;
+      p.aiSummary = parsed.summary || "";
+      p.requiredDocs = Array.isArray(parsed.requiredDocs) ? parsed.requiredDocs : [];
+      p.deadlineNote = parsed.deadlineNote || "";
+      p.aiSteps = parsed.steps.map(function(s){ return { title: s.title || "Step", detail: s.detail || "", estMin: s.estMin || null, done: false, notes: "", aiNote: "", aiNoteLoading: false }; });
+      var sumEst = p.aiSteps.reduce(function(sum, s){ return sum + (s.estMin || 0); }, 0);
+      if(sumEst > 0) p.totalEstMin = sumEst;
+      p.aiStatus = "ready";
+    } catch(err){
+      p.aiStatus = "error";
+      p.aiError = err.message || "Something went wrong talking to the AI.";
+    }
+    saveState();
+    if(state.screen === "projects") renderProjects();
+    if($("modal-backdrop").classList.contains("open")) openProjectModal(projectId);
+  }
+
+  async function sendProjectChat(projectId){
+    var p = state.projects.find(function(x){ return x.id === projectId; });
+    if(!p) return;
+    var input = $("chat-input");
+    var text = input.value.trim();
+    if(!text) return;
+    p.chat.push({ role: "user", text: text });
+    input.value = "";
+    var log = $("chat-log");
+    log.innerHTML = renderChatBubbles(p.chat);
+    log.scrollTop = log.scrollHeight;
+    $("chat-loading").style.display = "flex";
+    saveState();
+    try{
+      var contextMsg = "Document:\n" + p.docText.slice(0, 8000) + "\n\nSteps so far:\n" +
+        p.aiSteps.map(function(s, i){ return (i+1) + ". " + s.title + (s.done ? " (done)" : ""); }).join("\n");
+      var messages = [{ role: "user", content: contextMsg }];
+      p.chat.forEach(function(m){ messages.push({ role: m.role === "user" ? "user" : "assistant", content: m.text }); });
+      var system = "You are a patient, encouraging assistant inside Anchor, an ADHD-focused productivity app, helping someone work through the specific document and steps given as context. Keep answers short — 2 to 4 sentences. Be concrete. If asked what to do next, give exactly one next action, not a list. Never sound impatient or judgmental about delays.";
+      var reply = await callClaude(messages, system, 500);
+      p.chat.push({ role: "assistant", text: reply || "I could not come up with a reply — try asking again." });
+    } catch(err){
+      p.chat.push({ role: "assistant", text: "Could not reach the AI: " + (err.message || "unknown error") + "" });
+    }
+    $("chat-loading").style.display = "none";
+    saveState();
+    if($("modal-backdrop").classList.contains("open")){
+      var log2 = $("chat-log");
+      if(log2){ log2.innerHTML = renderChatBubbles(p.chat); log2.scrollTop = log2.scrollHeight; }
+    }
+  }
+
+  function openTaskModal(id){
+    state.modalTaskId = id;
+    var t = state.tasks.find(function(x){ return x.id===id; });
+    if(!t) return;
+    var firstUndone = t.stepDone.indexOf(false);
+    var stepsHtml = t.steps.map(function(s, i){
+      var doneCls = t.stepDone[i] ? " done" : "";
+      var firstCls = (i===firstUndone) ? " first" : "";
+      return '<div class="step-row'+doneCls+firstCls+'" data-step="'+i+'">' +
+        '<span class="chk'+(t.stepDone[i]?' on':'')+'">'+(t.stepDone[i]?'✓':'')+'</span>' +
+        '<span class="label">'+esc(s)+'</span>' +
+      '</div>';
+    }).join("");
+    var tpl = t.recurringId ? state.recurringTemplates.find(function(x){ return x.id===t.recurringId; }) : null;
+    var repeatHtml = tpl ?
+      '<div style="font-size:11.5px;color:var(--now-color);font-weight:600;margin:0 0 10px 0;">↻ '+formatRepeatSchedule(tpl)+
+        ' · <button id="modal-stop-repeat" style="background:none;border:none;color:var(--text-muted);text-decoration:underline;font-size:11.5px;cursor:pointer;padding:0;">stop repeating</button></div>'
+      : '';
+    var dueHtml = '<div style="display:flex;align-items:center;gap:8px;margin:0 0 10px 0;">' +
+        '<label for="modal-due" style="font-size:11px;color:var(--text-muted);">Due date</label>' +
+        '<input type="date" id="modal-due" class="text-field" style="width:auto;flex:1;padding:6px 10px;font-size:12.5px;" value="'+(t.dueDate||'')+'" />' +
+        (t.dueDate ? '<button id="modal-due-clear" style="background:none;border:none;color:var(--text-muted);text-decoration:underline;font-size:11px;cursor:pointer;padding:0;white-space:nowrap;">clear</button>' : '') +
+      '</div>';
+    var attachHtml = t.attachment ?
+      '<div class="card" style="margin:0 0 12px 0;padding:10px 12px;">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;">' +
+          '<span style="font-size:12.5px;">📎 '+esc(t.attachment.name)+'</span>' +
+          '<button id="modal-attach-toggle" class="btn btn-ghost btn-sm" style="padding:2px 8px;">View</button>' +
+        '</div>' +
+        '<div id="modal-attach-preview" class="attach-preview" style="display:none;"></div>' +
+      '</div>'
+      : '';
+    $("modal-content").innerHTML =
+      '<div style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);">'+bucketLabel(t.bucket)+' · ~'+t.est+' min</div>' +
+      '<div style="font-size:17px;font-weight:700;margin:6px 0 6px 0;">'+esc(t.title)+'</div>' +
+      repeatHtml +
+      dueHtml +
+      attachHtml +
+      '<div id="modal-steps">'+stepsHtml+'</div>' +
+      '<div class="bucket-picker">' +
+        '<button class="bucket-btn'+(t.bucket==='now'?' active-now':'')+'" data-move="now">Now</button>' +
+        '<button class="bucket-btn'+(t.bucket==='next'?' active-next':'')+'" data-move="next">Next</button>' +
+        '<button class="bucket-btn'+(t.bucket==='later'?' active-later':'')+'" data-move="later">Later</button>' +
+      '</div>' +
+      '<div style="display:flex;gap:8px;margin-top:16px;">' +
+        '<button class="btn btn-primary" style="flex:1;" id="modal-start-full">Start focus ('+t.est+'m)</button>' +
+      '</div>' +
+      '<button class="btn btn-ghost btn-block" id="modal-start-starter" style="margin-top:6px;">Not ready — just start for 2 min</button>';
+
+    if(tpl){
+      $("modal-stop-repeat").addEventListener("click", function(){
+        state.recurringTemplates = state.recurringTemplates.filter(function(x){ return x.id!==tpl.id; });
+        showToast(t.bucket, "Repeat turned off", "This won't be recreated on future days. Today's task is untouched.");
+        openTaskModal(id);
+        renderBoard();
+        saveState();
+      });
+    }
+    $("modal-due").addEventListener("change", function(){
+      t.dueDate = $("modal-due").value || null;
+      openTaskModal(id);
+      renderBoard();
+      saveState();
+    });
+    if(t.dueDate){
+      $("modal-due-clear").addEventListener("click", function(){
+        t.dueDate = null;
+        openTaskModal(id);
+        renderBoard();
+        saveState();
+      });
+    }
+    if(t.attachment){
+      $("modal-attach-toggle").addEventListener("click", function(){
+        var preview = $("modal-attach-preview");
+        var open = preview.style.display === "block";
+        if(!open && !preview.innerHTML){
+          preview.innerHTML = t.attachment.kind === "image"
+            ? '<img src="'+t.attachment.content+'" alt="attached image" />'
+            : '<div class="txt">'+esc(t.attachment.content)+'</div>';
+        }
+        preview.style.display = open ? "none" : "block";
+        $("modal-attach-toggle").textContent = open ? "View" : "Hide";
+      });
+    }
+
+    $("modal-content").querySelectorAll(".step-row").forEach(function(row){
+      row.addEventListener("click", function(){
+        var i = parseInt(row.getAttribute("data-step"),10);
+        t.stepDone[i] = !t.stepDone[i];
+        if(t.stepDone.every(Boolean)){ t.done = true; state.completedToday++; }
+        else { t.done = false; }
+        openTaskModal(id);
+        renderBoard(); renderNow();
+        saveState();
+      });
+    });
+    $("modal-content").querySelectorAll(".bucket-btn").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        t.bucket = btn.getAttribute("data-move");
+        openTaskModal(id);
+        renderBoard(); renderNow(); renderTimeline();
+        saveState();
+      });
+    });
+    $("modal-start-full").onclick = function(){ closeModal(); startFocus(t.id, "full"); };
+    $("modal-start-starter").onclick = function(){ closeModal(); startFocus(t.id, "starter"); };
+
+    $("modal-backdrop").classList.add("open");
+  }
+  function closeModal(){ $("modal-backdrop").classList.remove("open"); state.modalTaskId=null; }
+  $("modal-close").addEventListener("click", closeModal);
+  $("modal-backdrop").addEventListener("click", function(e){ if(e.target===$("modal-backdrop")) closeModal(); });
+
+  /* ---------------- Timeline ---------------- */
+  $("tl-visual-btn").addEventListener("click", function(){ toggleTlView(true); });
+  $("tl-list-btn").addEventListener("click", function(){ toggleTlView(false); });
+  function toggleTlView(visual){
+    $("tl-visual-btn").classList.toggle("on", visual);
+    $("tl-list-btn").classList.toggle("on", !visual);
+    $("tl-visual").style.display = visual ? "" : "none";
+    $("tl-list").style.display = visual ? "none" : "";
+  }
+
+  function renderTimeline(){
+    var startHour = 7, endHour = 21;
+    var blocks = scheduledBlocks();
+    var visual = $("tl-visual");
+    var rows = "";
+    for(var h=startHour; h<endHour; h++){
+      rows += '<div class="tl-row"><div class="tl-hourlabel">'+fmtHourLabel(h)+'</div><div class="tl-track" data-hour="'+h+'"></div></div>';
+    }
+    visual.innerHTML = '<div class="tl-body" id="tl-track-wrap" style="position:relative;">' + rows + '</div>';
+
+    // place blocks absolutely relative to whole body using pixel math after render
+    requestAnimationFrame(function(){
+      var wrap = $("tl-track-wrap");
+      var trackEls = wrap.querySelectorAll(".tl-track");
+      var rowHeight = trackEls[0] ? trackEls[0].getBoundingClientRect().height : 64;
+      var wrapTop = wrap.getBoundingClientRect().top;
+
+      blocks.forEach(function(b){
+        var hourIndex = Math.floor(b.startMin/60) - startHour;
+        if(hourIndex < 0 || hourIndex >= trackEls.length) return;
+        var trackEl = trackEls[hourIndex];
+        var minuteOffset = b.startMin % 60;
+        var top = (trackEl.getBoundingClientRect().top - wrapTop) + (minuteOffset/60)*rowHeight;
+        var height = Math.max(18, (b.dur/60)*rowHeight - 4);
+        var el = document.createElement("div");
+        el.className = "tl-block";
+        el.style.top = top + "px";
+        el.style.height = height + "px";
+        el.style.background = bucketColor(b.bucket);
+        el.textContent = b.title;
+        wrap.appendChild(el);
+      });
+
+      var now = new Date();
+      var nowMin = now.getHours()*60 + now.getMinutes();
+      if(nowMin >= startHour*60 && nowMin < endHour*60){
+        var hourIndex2 = Math.floor(nowMin/60) - startHour;
+        var trackEl2 = trackEls[hourIndex2];
+        if(trackEl2){
+          var minuteOffset2 = nowMin % 60;
+          var top2 = (trackEl2.getBoundingClientRect().top - wrapTop) + (minuteOffset2/60)*rowHeight;
+          var line = document.createElement("div");
+          line.className = "tl-now-line";
+          line.style.top = top2 + "px";
+          wrap.appendChild(line);
+        }
+      }
+    });
+
+    var list = $("tl-list");
+    list.innerHTML = '<table class="tl-table"><thead><tr><th>Task</th><th>Start</th><th>Duration</th><th>Bucket</th></tr></thead><tbody>' +
+      blocks.map(function(b){
+        var sh = Math.floor(b.startMin/60), sm = b.startMin%60;
+        var d = new Date(); d.setHours(sh, sm, 0, 0);
+        return '<tr><td>'+esc(b.title)+'</td><td>'+fmtClock(d)+'</td><td>'+b.dur+' min</td>' +
+          '<td><span class="tag"><span class="dot '+b.bucket+'"></span>'+bucketLabel(b.bucket)+'</span></td></tr>';
+      }).join("") + '</tbody></table>';
+  }
+  function fmtHourLabel(h){
+    var ampm = h>=12?"PM":"AM"; var h12=h%12; if(h12===0)h12=12;
+    return h12+ampm;
+  }
+
+  /* ---------------- Reminders ---------------- */
+  document.querySelectorAll("#intensity-row button").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      state.intensity = btn.getAttribute("data-int");
+      document.querySelectorAll("#intensity-row button").forEach(function(b){ b.classList.toggle("on", b===btn); });
+      $("intensity-desc").textContent = intensityCopy[state.intensity];
+      saveState();
+    });
+  });
+
+  $("sms-switch").addEventListener("click", function(){
+    state.textRemindersEnabled = !state.textRemindersEnabled;
+    $("sms-switch").classList.toggle("on", state.textRemindersEnabled);
+    saveState();
+  });
+  $("sms-phone").addEventListener("input", function(){ state.phoneNumber = $("sms-phone").value; saveState(); });
+
+  $("rem-add").addEventListener("click", function(){
+    var title = $("rem-title").value.trim();
+    var when = $("rem-when").value.trim();
+    if(!title) return;
+    var due = parseRoughWhen(when);
+    state.reminders.push(mkReminder(title, due));
+    $("rem-title").value = ""; $("rem-when").value = "";
+    renderReminders(); renderNow();
+    saveState();
+  });
+  function parseRoughWhen(text){
+    var now = new Date();
+    var lower = text.toLowerCase();
+    var m = lower.match(/in (\d+)\s*day/); if(m) return addHours(now, parseInt(m[1],10)*24);
+    var h = lower.match(/in (\d+)\s*hour/); if(h) return addHours(now, parseInt(h[1],10));
+    if(/tomorrow/.test(lower)) return addHours(now, 22);
+    if(/next week/.test(lower)) return addHours(now, 24*6);
+    if(/today|tonight/.test(lower)) return addHours(now, 3);
+    return addHours(now, 24); // default: a day out
+  }
+
+  function renderReminders(){
+    $("intensity-desc").textContent = intensityCopy[state.intensity];
+    var wrap = $("reminders-list");
+    var sorted = state.reminders.slice().sort(function(a,b){ return a.due-b.due; });
+    if(sorted.length===0){ wrap.innerHTML = '<p class="empty-note">No commitments yet.</p>'; return; }
+    wrap.innerHTML = sorted.map(function(r){
+      var stage = escalationStage(r.due);
+      return '<div class="rem-card">' +
+        '<div class="rem-top">' +
+          '<div><div class="rem-title">'+esc(r.title)+'</div><div class="rem-when">'+fmtDueShort(r.due)+'</div></div>' +
+          '<span class="status-chip '+stage+'"><span class="sdot"></span>'+statusLabel(stage)+'</span>' +
+        '</div>' +
+        '<div class="escalation">' +
+          '<div class="seg on-good"></div>' +
+          '<div class="seg '+(stage==="warning"||stage==="critical"?"on-warning":"")+'"></div>' +
+          '<div class="seg '+(stage==="critical"?"on-critical":"")+'"></div>' +
+        '</div>' +
+      '</div>';
+    }).join("");
+  }
+
+  /* ---------------- Focus session ---------------- */
+  function startFocus(taskId, mode){
+    var t = state.tasks.find(function(x){ return x.id===taskId; });
+    if(!t) return;
+    var firstUndone = t.stepDone.indexOf(false);
+    state.focus.kind = "quick";
+    state.focus.projectId = null;
+    state.focus.taskId = taskId;
+    state.focus.mode = mode;
+    state.focus.stepIndex = firstUndone===-1?0:firstUndone;
+    state.focus.totalSec = mode==="starter" ? 120 : t.est*60;
+    state.focus.remainingSec = state.focus.totalSec;
+    state.focus.running = true;
+    state.focus.remindersSent = [];
+    state.focus.textLog = [];
+    switchScreen("focus");
+    renderFocus();
+    tickFocus();
+    if(state.focus.timer) clearInterval(state.focus.timer);
+    state.focus.timer = setInterval(tickFocus, 1000);
+  }
+
+  function startDeepSession(projectId){
+    var p = state.projects.find(function(x){ return x.id === projectId; });
+    if(!p) return;
+    state.focus.kind = "deep";
+    state.focus.projectId = projectId;
+    state.focus.taskId = null;
+    state.focus.deepPhase = "work";
+    state.focus.round = 1;
+    state.focus.totalSec = DEEP_WORK_ROUND_SEC;
+    state.focus.remainingSec = DEEP_WORK_ROUND_SEC;
+    state.focus.running = true;
+    switchScreen("focus");
+    renderFocus();
+    tickFocus();
+    if(state.focus.timer) clearInterval(state.focus.timer);
+    state.focus.timer = setInterval(tickFocus, 1000);
+  }
+
+  function beginDeepRound(roundNum){
+    state.focus.round = roundNum;
+    state.focus.deepPhase = "work";
+    state.focus.totalSec = DEEP_WORK_ROUND_SEC;
+    state.focus.remainingSec = DEEP_WORK_ROUND_SEC;
+    state.focus.running = true;
+    renderFocus();
+    if(state.focus.timer) clearInterval(state.focus.timer);
+    state.focus.timer = setInterval(tickFocus, 1000);
+  }
+
+  function beginDeepBreak(){
+    state.focus.deepPhase = "break";
+    state.focus.totalSec = DEEP_BREAK_SEC;
+    state.focus.remainingSec = DEEP_BREAK_SEC;
+    state.focus.running = true;
+    renderFocus();
+    if(state.focus.timer) clearInterval(state.focus.timer);
+    state.focus.timer = setInterval(tickFocus, 1000);
+  }
+
+  /* logs partial credit only if a work round is still mid-flight (not already logged by tickFocus) */
+  function exitDeepSession(){
+    if(state.focus.deepPhase === "work" && state.focus.remainingSec > 0){
+      var elapsedSec = state.focus.totalSec - Math.max(0, state.focus.remainingSec);
+      var mins = Math.round(elapsedSec / 60);
+      if(mins > 0){
+        var p = state.projects.find(function(x){ return x.id === state.focus.projectId; });
+        if(p){ p.loggedMin += mins; p.sessions = (p.sessions || 0) + 1; }
+      }
+    }
+    stopFocusTimer();
+    saveState();
+    switchScreen("projects");
+  }
+
+  function tickFocus(){
+    if(!state.focus.running) { renderFocus(); return; }
+    state.focus.remainingSec -= 1;
+
+    if(state.focus.kind === "deep"){
+      if(state.focus.deepPhase === "work"){ state.focusedTodaySec += 1; }
+      if(state.focus.remainingSec <= 0){
+        state.focus.running = false;
+        stopFocusTimer();
+        if(state.focus.deepPhase === "work"){
+          var p = state.projects.find(function(x){ return x.id === state.focus.projectId; });
+          if(p){
+            var mins = Math.round(state.focus.totalSec / 60);
+            p.loggedMin += mins;
+            p.sessions = (p.sessions || 0) + 1;
+            saveState();
+          }
+        }
+      }
+    } else {
+      state.focusedTodaySec += 1;
+      if(state.focus.remainingSec < 0 && state.textRemindersEnabled){
+        var overSec = Math.abs(state.focus.remainingSec);
+        if(overSec > 0 && overSec % DEMO_TEXT_INTERVAL_SEC === 0 && state.focus.remindersSent.indexOf(overSec) === -1){
+          state.focus.remindersSent.push(overSec);
+          sendOvertimeText();
+        }
+      }
+    }
+    renderFocus();
+  }
+
+  function sendOvertimeText(){
+    var t = state.tasks.find(function(x){ return x.id === state.focus.taskId; });
+    if(!t) return;
+    state.focus.textLog.push({ n: state.focus.textLog.length + 1, at: new Date() });
+    var minutesOver = state.focus.textLog.length * 5;
+    showSmsBanner('Still on "' + t.title + '"?', "You're about " + minutesOver + " min over on this one. Reply DONE or open Anchor to check in.");
+  }
+
+  var smsBannerTimer = null;
+  function showSmsBanner(title, body){
+    var el = $("sms-banner");
+    el.querySelector(".msg-title").textContent = title;
+    el.querySelector(".msg-body").textContent = body;
+    el.querySelector(".msg-time").textContent = "now";
+    el.classList.add("show");
+    clearTimeout(smsBannerTimer);
+    smsBannerTimer = setTimeout(function(){ el.classList.remove("show"); }, 3600);
+  }
+
+  function stopFocusTimer(){
+    if(state.focus.timer){ clearInterval(state.focus.timer); state.focus.timer=null; }
+  }
+
+  $("focus-back").addEventListener("click", function(){
+    if(state.focus.kind === "deep"){
+      exitDeepSession();
+    } else {
+      stopFocusTimer();
+      saveState();
+      switchScreen("board");
+    }
+  });
+
+  function focusPhase(){
+    var frac = state.focus.remainingSec / state.focus.totalSec;
+    if(state.focus.remainingSec <= 0) return "critical";
+    if(frac <= 0.25) return "warning";
+    return "good";
+  }
+  function phaseLabel(p){ return p==="critical" ? "Overtime" : p==="warning" ? "Wrapping up" : "On track"; }
+  function phaseColorVar(p){ return p==="critical" ? "--status-critical" : p==="warning" ? "--status-warning" : "--now-color"; }
+
+  function renderFocus(){
+    if(state.focus.kind === "deep"){ renderDeepFocus(); }
+    else { renderQuickFocus(); }
+  }
+
+  function renderDeepFocus(){
+    var p = state.projects.find(function(x){ return x.id === state.focus.projectId; });
+    var body = $("focus-body");
+    if(!p){ body.innerHTML = ""; return; }
+
+    var isBreak = state.focus.deepPhase === "break";
+    var phaseDone = state.focus.remainingSec <= 0 && !state.focus.running;
+    var ringColorVar = isBreak ? "--later-color" : "--now-color";
+    var ringColor = getComputedStyle(document.documentElement).getPropertyValue(ringColorVar).trim();
+    var total = state.focus.totalSec, remaining = Math.max(0, state.focus.remainingSec);
+    var frac = Math.max(0, Math.min(1, remaining / total));
+    var r = 92, circumference = 2 * Math.PI * r;
+    var dashoffset = circumference * (1 - frac);
+    var pct = p.totalEstMin ? Math.min(100, Math.round((p.loggedMin / p.totalEstMin) * 100)) : Math.min(100, Math.round((p.loggedMin / Math.max(60, p.loggedMin || 60)) * 100));
+    var currentAiStep = (p.aiSteps && p.aiSteps.length) ? p.aiSteps.find(function(s){ return !s.done; }) : null;
+    var stepLine = isBreak ? ("Break — round " + state.focus.round + " done")
+      : (currentAiStep ? ("Round " + state.focus.round + " · " + currentAiStep.title) : ("Round " + state.focus.round + " · deep work"));
+
+    body.innerHTML =
+      '<div class="focus-task">' + esc(p.title) + '</div>' +
+      '<div class="focus-step">' + esc(stepLine) + '</div>' +
+      '<div class="ring-wrap">' +
+        '<svg width="220" height="220" viewBox="0 0 220 220">' +
+          '<circle cx="110" cy="110" r="' + r + '" fill="none" stroke="var(--gridline)" stroke-width="12"/>' +
+          '<circle cx="110" cy="110" r="' + r + '" fill="none" stroke="' + ringColor + '" stroke-width="12" stroke-linecap="round" ' +
+            'stroke-dasharray="' + circumference + '" stroke-dashoffset="' + dashoffset + '" transform="rotate(-90 110 110)" style="transition:stroke-dashoffset .3s linear, stroke .3s ease;"/>' +
+        '</svg>' +
+        '<div class="ring-time">' +
+          '<div class="mm">' + mmss(remaining) + '</div>' +
+          '<div class="state" style="color:' + ringColor + ';"><span class="sdot" style="background:' + ringColor + ';"></span>' + (isBreak ? "On a break" : "Deep work") + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="card" style="width:100%;margin-top:2px;">' +
+        '<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-bottom:6px;"><span>Progress</span><span>' + p.loggedMin + (p.totalEstMin ? (' / ' + p.totalEstMin + ' min') : ' min logged') + '</span></div>' +
+        '<div class="pc-track"><div class="pc-fill" style="width:' + pct + '%;"></div></div>' +
+      '</div>';
+
+    if(phaseDone){
+      if(isBreak){
+        body.innerHTML += '<div class="card" style="width:100%;text-align:center;">' +
+          '<div style="font-weight:700;font-size:14px;margin-bottom:4px;">Break is over. Ready for round ' + (state.focus.round + 1) + '?</div>' +
+          '<div style="font-size:12px;color:var(--text-secondary);margin-bottom:12px;">' + p.loggedMin + ' min logged on this project so far.</div>' +
+          '<div style="display:flex;gap:8px;">' +
+            '<button class="btn btn-primary" style="flex:1;" id="deep-next-round">Start round ' + (state.focus.round + 1) + '</button>' +
+            '<button class="btn btn-secondary" style="flex:1;" id="deep-stop">Stop here</button>' +
+          '</div>' +
+        '</div>';
+      } else {
+        body.innerHTML += '<div class="card" style="width:100%;text-align:center;">' +
+          '<div style="font-weight:700;font-size:14px;margin-bottom:4px;">Round ' + state.focus.round + ' done — nice work.</div>' +
+          '<div style="font-size:12px;color:var(--text-secondary);margin-bottom:12px;">That is ' + p.loggedMin + ' min logged on this project.</div>' +
+          '<div style="display:flex;gap:8px;">' +
+            '<button class="btn btn-secondary" style="flex:1;" id="deep-start-break">Take a 5 min break</button>' +
+            '<button class="btn btn-primary" style="flex:1;" id="deep-skip-break">Round ' + (state.focus.round + 1) + ' now</button>' +
+          '</div>' +
+          '<button class="btn btn-ghost btn-block" id="deep-stop" style="margin-top:6px;">Stop for now</button>' +
+        '</div>';
+      }
+      setTimeout(function(){
+        var nr = $("deep-next-round"), sb = $("deep-start-break"), skb = $("deep-skip-break"), stop = $("deep-stop");
+        if(nr) nr.onclick = function(){ beginDeepRound(state.focus.round + 1); };
+        if(sb) sb.onclick = function(){ beginDeepBreak(); };
+        if(skb) skb.onclick = function(){ beginDeepRound(state.focus.round + 1); };
+        if(stop) stop.onclick = function(){ exitDeepSession(); };
+      }, 0);
+    } else if(isBreak){
+      body.innerHTML +=
+        '<div class="focus-controls"><button class="btn btn-primary btn-block" id="deep-skip-break-mid">Skip break, start round ' + (state.focus.round + 1) + '</button></div>' +
+        '<div class="starter-note">Stretch, get water, look away from the screen. Back to it in a few minutes.</div>';
+      setTimeout(function(){
+        var skb = $("deep-skip-break-mid");
+        if(skb) skb.onclick = function(){ beginDeepRound(state.focus.round + 1); };
+      }, 0);
+    } else {
+      body.innerHTML +=
+        '<div class="focus-controls">' +
+          '<button class="btn btn-secondary" style="flex:1;" id="focus-pause">' + (state.focus.running ? "Pause" : "Resume") + '</button>' +
+          '<button class="btn btn-primary" style="flex:1;" id="deep-stop-mid">Log &amp; stop</button>' +
+        '</div>' +
+        '<div class="companion-row">' +
+          '<span class="cl">Focus with a companion (ambient co-working)</span>' +
+          '<div class="switch' + (state.focus.companion ? ' on' : '') + '" id="companion-switch"><div class="knob"></div></div>' +
+        '</div>';
+      if(state.focus.companion){
+        body.innerHTML += '<div class="starter-note"><span class="companion-pulse animating" style="display:inline-block;vertical-align:middle;margin-right:6px;"></span>Someone else is quietly working alongside you right now.</div>';
+      }
+      body.innerHTML += '<button class="btn btn-ghost btn-sm focus-skip" id="focus-skip">Skip ahead (demo)</button>';
+      setTimeout(function(){
+        var pa = $("focus-pause"), stopMid = $("deep-stop-mid"), cs = $("companion-switch"), sk = $("focus-skip");
+        if(pa) pa.onclick = function(){ state.focus.running = !state.focus.running; if(state.focus.running && !state.focus.timer){ state.focus.timer = setInterval(tickFocus, 1000); } renderFocus(); };
+        if(stopMid) stopMid.onclick = function(){ exitDeepSession(); };
+        if(cs) cs.onclick = function(){ state.focus.companion = !state.focus.companion; renderFocus(); };
+        if(sk) sk.onclick = function(){ state.focus.remainingSec = 4; renderFocus(); };
+      }, 0);
+    }
+  }
+
+  function renderQuickFocus(){
+    var t = state.tasks.find(function(x){ return x.id===state.focus.taskId; });
+    var body = $("focus-body");
+    if(!t){ body.innerHTML = ""; return; }
+
+    if(state.focus.remainingSec <= 0 && state.focus.mode==="starter" && state.focus.running){
+      // starter session complete -> ask keep going or stop, only once (pause it)
+      state.focus.running = false;
+      stopFocusTimer();
+    }
+
+    var phase = focusPhase();
+    var phaseColor = getComputedStyle(document.documentElement).getPropertyValue(phaseColorVar(phase)).trim();
+    var total = state.focus.totalSec;
+    var remaining = state.focus.remainingSec;
+    var frac = Math.max(0, Math.min(1, remaining/total));
+    var r = 92, circumference = 2*Math.PI*r;
+    var dashoffset = circumference * (1 - frac);
+    var overtime = remaining < 0;
+    var displaySec = overtime ? Math.abs(remaining) : remaining;
+    var stepText = t.steps[state.focus.stepIndex] || t.steps[0];
+
+    var showPrompt = (!state.focus.running && state.focus.mode==="starter" && remaining<=0);
+
+    body.innerHTML =
+      '<div class="focus-task">'+esc(t.title)+'</div>' +
+      '<div class="focus-step">First step: '+esc(stepText)+'</div>' +
+      '<div class="ring-wrap">' +
+        '<svg width="220" height="220" viewBox="0 0 220 220">' +
+          '<circle cx="110" cy="110" r="'+r+'" fill="none" stroke="var(--gridline)" stroke-width="12"/>' +
+          '<circle cx="110" cy="110" r="'+r+'" fill="none" stroke="'+phaseColor+'" stroke-width="12" stroke-linecap="round" ' +
+            'stroke-dasharray="'+circumference+'" stroke-dashoffset="'+dashoffset+'" transform="rotate(-90 110 110)" style="transition:stroke-dashoffset .3s linear, stroke .3s ease;"/>' +
+        '</svg>' +
+        '<div class="ring-time">' +
+          '<div class="mm">'+(overtime?'+':'')+mmss(displaySec)+'</div>' +
+          '<div class="state" style="color:'+phaseColor+';"><span class="sdot" style="background:'+phaseColor+';"></span>'+phaseLabel(phase)+'</div>' +
+        '</div>' +
+      '</div>';
+
+    if(showPrompt){
+      body.innerHTML +=
+        '<div class="card" style="width:100%;text-align:center;">' +
+          '<div style="font-weight:700;font-size:14px;margin-bottom:4px;">2 minutes done. Keep going?</div>' +
+          '<div style="font-size:12px;color:var(--text-secondary);margin-bottom:12px;">Starting is usually the hardest part — you already did it.</div>' +
+          '<div style="display:flex;gap:8px;">' +
+            '<button class="btn btn-primary" style="flex:1;" id="starter-continue">Keep going ('+t.est+'m)</button>' +
+            '<button class="btn btn-secondary" style="flex:1;" id="starter-stop">Stop for now</button>' +
+          '</div>' +
+        '</div>';
+      setTimeout(function(){
+        var c = $("starter-continue"), s = $("starter-stop");
+        if(c) c.onclick = function(){ startFocus(t.id, "full"); };
+        if(s) s.onclick = function(){ stopFocusTimer(); switchScreen("board"); };
+      },0);
+    } else {
+      body.innerHTML +=
+        '<div class="focus-controls">' +
+          '<button class="btn btn-secondary" style="flex:1;" id="focus-pause">'+(state.focus.running?'Pause':'Resume')+'</button>' +
+          '<button class="btn btn-secondary" style="flex:1;" id="focus-extend">+5 min</button>' +
+          '<button class="btn btn-primary" style="flex:1;" id="focus-done">Mark done</button>' +
+        '</div>' +
+        '<div class="companion-row">' +
+          '<span class="cl">Focus with a companion (ambient co-working)</span>' +
+          '<div class="switch'+(state.focus.companion?' on':'')+'" id="companion-switch"><div class="knob"></div></div>' +
+        '</div>';
+      if(overtime && state.textRemindersEnabled){
+        var n = state.focus.textLog.length;
+        body.innerHTML += '<div class="starter-note text-log-note"><span class="status-chip critical" style="flex-shrink:0;"><span class="sdot"></span>Overtime</span>' +
+          (n>0 ? ('📩 '+n+' check-in text'+(n>1?'s':'')+' sent so far — next one in a few.') : 'A text check-in is on its way if this keeps running.') +
+          '</div>';
+      } else if(state.focus.companion){
+        body.innerHTML += '<div class="starter-note"><span class="companion-pulse animating" style="display:inline-block;vertical-align:middle;margin-right:6px;"></span>Someone else is quietly working alongside you right now.</div>';
+      } else if(state.focus.mode==="starter"){
+        body.innerHTML += '<div class="starter-note">Just two minutes to get moving. You can stop or keep going once the ring finishes.</div>';
+      }
+      if(!overtime){
+        body.innerHTML += '<button class="btn btn-ghost btn-sm focus-skip" id="focus-skip">Skip ahead (demo)</button>';
+      }
+      setTimeout(function(){
+        var p=$("focus-pause"), e=$("focus-extend"), d=$("focus-done"), cs=$("companion-switch"), sk=$("focus-skip");
+        if(p) p.onclick = function(){ state.focus.running=!state.focus.running; if(state.focus.running && !state.focus.timer){ state.focus.timer=setInterval(tickFocus,1000);} renderFocus(); };
+        if(e) e.onclick = function(){ state.focus.remainingSec += 300; state.focus.totalSec += 300; renderFocus(); };
+        if(d) d.onclick = function(){ completeFocus(); };
+        if(cs) cs.onclick = function(){ state.focus.companion = !state.focus.companion; renderFocus(); };
+        if(sk) sk.onclick = function(){ state.focus.remainingSec = 4; renderFocus(); };
+      },0);
+    }
+  }
+
+  function completeFocus(){
+    stopFocusTimer();
+    var t = state.tasks.find(function(x){ return x.id===state.focus.taskId; });
+    if(t && !t.done){ t.done = true; t.stepDone = t.stepDone.map(function(){return true;}); state.completedToday++; }
+    saveState();
+    var body = $("focus-body");
+    body.innerHTML =
+      '<div class="done-panel">' +
+        '<div class="big" style="color:var(--status-good);">✓</div>' +
+        '<h4>Nice work</h4>' +
+        '<p>"'+esc(t?t.title:"Task")+'" is marked done. That is one less thing carrying weight in your head.</p>' +
+        '<div class="done-actions">' +
+          '<button class="btn btn-primary" id="done-back-now">Back to Right now</button>' +
+          '<button class="btn btn-secondary" id="done-back-board">Back to Board</button>' +
+        '</div>' +
+      '</div>';
+    $("done-back-now").onclick = function(){ switchScreen("now"); };
+    $("done-back-board").onclick = function(){ switchScreen("board"); };
+  }
+
+  /* ---------------- theme toggle ---------------- */
+  $("theme-toggle").addEventListener("click", function(){
+    var root = document.documentElement;
+    var cur = root.getAttribute("data-theme");
+    if(cur === "dark"){ root.setAttribute("data-theme","light"); }
+    else if(cur === "light"){ root.removeAttribute("data-theme"); }
+    else { root.setAttribute("data-theme","dark"); }
+    renderTimeline();
+  });
+
+  /* ---------------- clock ---------------- */
+  function tickClock(){
+    $("clock-readout").textContent = fmtClock(new Date());
+  }
+
+  /* ---------------- master render ---------------- */
+  function render(){
+    if(state.screen==="now") renderNow();
+    if(state.screen==="capture") renderCaptureLog();
+    if(state.screen==="board") renderBoard();
+    if(state.screen==="projects") renderProjects();
+    if(state.screen==="timeline") renderTimeline();
+    if(state.screen==="reminders") renderReminders();
+  }
+
+  function esc(s){
+    return String(s).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+
+  /* ---------------- local persistence (saves on this device only, no server) ---------------- */
+  var STORAGE_KEY = "anchor_app_state_v1";
+  var storageAvailable = true;
+
+  function testStorage(){
+    try{
+      var k = "__anchor_test__";
+      localStorage.setItem(k, "1");
+      localStorage.removeItem(k);
+      return true;
+    } catch(e){ return false; }
+  }
+
+  function saveState(){
+    if(!storageAvailable) return;
+    try{
+      var payload = {
+        tasks: state.tasks,
+        reminders: state.reminders,
+        nextTaskId: state.nextTaskId,
+        nextRemId: state.nextRemId,
+        completedToday: state.completedToday,
+        focusedTodaySec: state.focusedTodaySec,
+        intensity: state.intensity,
+        textRemindersEnabled: state.textRemindersEnabled,
+        phoneNumber: state.phoneNumber,
+        capturedLog: capturedLog,
+        projects: state.projects,
+        nextProjectId: state.nextProjectId,
+        apiKey: state.apiKey,
+        aiModel: state.aiModel,
+        recurringTemplates: state.recurringTemplates,
+        nextRecurringId: state.nextRecurringId
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    } catch(e){ storageAvailable = false; }
+    scheduleCloudPush();
+  }
+
+  function loadState(){
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return false;
+      var payload = JSON.parse(raw);
+      if(!payload || !Array.isArray(payload.tasks) || payload.tasks.length===0) return false;
+      state.tasks = payload.tasks;
+      state.reminders = (payload.reminders||[]).map(function(r){ return { id:r.id, title:r.title, due:new Date(r.due) }; });
+      state.nextTaskId = payload.nextTaskId || state.nextTaskId;
+      state.nextRemId = payload.nextRemId || state.nextRemId;
+      state.completedToday = payload.completedToday || 0;
+      state.focusedTodaySec = payload.focusedTodaySec || 0;
+      state.intensity = payload.intensity || "standard";
+      state.textRemindersEnabled = payload.textRemindersEnabled !== undefined ? payload.textRemindersEnabled : true;
+      state.phoneNumber = payload.phoneNumber || "";
+      capturedLog = payload.capturedLog || [];
+      state.projects = Array.isArray(payload.projects) ? payload.projects : state.projects;
+      state.nextProjectId = payload.nextProjectId || state.nextProjectId;
+      state.apiKey = payload.apiKey || "";
+      state.aiModel = payload.aiModel || "";
+      state.recurringTemplates = Array.isArray(payload.recurringTemplates) ? payload.recurringTemplates : [];
+      state.nextRecurringId = payload.nextRecurringId || state.nextRecurringId;
+      return true;
+    } catch(e){ return false; }
+  }
+
+  $("storage-warning-dismiss").addEventListener("click", function(){ $("storage-warning").style.display = "none"; });
+
+  /* ---------------- init ---------------- */
+  storageAvailable = testStorage();
+  var restored = storageAvailable && loadState();
+  if(!restored){ seedReminders(); }
+  if(state.reminders.length===0){ seedReminders(); }
+  if(!storageAvailable){ $("storage-warning").style.display = "flex"; }
+  else if(!restored){ saveState(); } /* first run on this device: persist the starting seed data */
+  if(restored){
+    document.querySelectorAll("#intensity-row button").forEach(function(b){ b.classList.toggle("on", b.getAttribute("data-int")===state.intensity); });
+    $("intensity-desc").textContent = intensityCopy[state.intensity];
+    $("sms-switch").classList.toggle("on", state.textRemindersEnabled);
+    $("sms-phone").value = state.phoneNumber || "";
+    $("ai-api-key").value = state.apiKey || "";
+    $("ai-model").value = state.aiModel || "";
+  }
+  updateAiKeyStatus();
+  updateSyncUi();
+  if(sb){
+    sb.auth.getSession().then(function(res){
+      var session = res && res.data && res.data.session;
+      if(session && session.user){ onSignedIn(session.user); }
+    });
+    sb.auth.onAuthStateChange(function(event, session){
+      if(event === "SIGNED_OUT"){ cloudUser = null; updateSyncUi(); }
+    });
+  }
+  if(generateDueRecurringTasks()) saveState(); /* pull in any repeating tasks due today */
+  var lastCheckedDay = todayStr();
+  tickClock();
+  setInterval(tickClock, 15000);
+  setInterval(function(){ if(state.screen==="now") renderMiniStrip(); if(state.screen==="timeline") renderTimeline(); }, 30000);
+  setInterval(function(){
+    var today = todayStr();
+    if(today !== lastCheckedDay){
+      lastCheckedDay = today;
+      if(generateDueRecurringTasks()){ saveState(); render(); }
+    }
+  }, 60000);
+  render();
+})();
+</script>
+</body>
+</html>
