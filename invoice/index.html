@@ -234,6 +234,27 @@ textarea.inp{min-height:84px;resize:vertical}
 .swatches button i{width:16px;height:16px;border-radius:50%;box-shadow:0 0 10px currentColor}
 .swatches button.on{border-color:var(--hv);color:var(--ink);box-shadow:0 0 0 1px var(--hv)}
 
+/* ---------- swipeable paperwork pages ---------- */
+.ptabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--line);margin-bottom:16px;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg)}
+.ptabs::-webkit-scrollbar{display:none}
+.ptab{flex:0 0 auto;display:flex;align-items:center;gap:8px;padding:12px 14px 10px;border:0;background:none;cursor:pointer;font:600 14px var(--f-display);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);border-bottom:3px solid transparent;margin-bottom:-1px}
+.ptab b{font:700 12px var(--f-display);min-width:22px;height:22px;padding:0 6px;display:inline-grid;place-items:center;border-radius:3px;background:var(--muted-soft);color:var(--ink-2)}
+.ptab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--tone,var(--cy))}
+.ptab.t-bad{--tone:var(--bad)}.ptab.t-warn{--tone:var(--warn)}.ptab.t-cy{--tone:var(--cy)}.ptab.t-ok{--tone:var(--ok)}.ptab.t-q{--tone:var(--hv)}
+.ptab.has b{background:color-mix(in srgb,var(--tone,var(--cy)) 18%,transparent);color:var(--tone,var(--cy))}
+.ptab.t-q.has b{color:var(--hv-text)}
+.pager{display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;align-items:flex-start;transition:height .25s ease;overscroll-behavior-x:contain}
+.pager::-webkit-scrollbar{display:none}
+.ppage{flex:0 0 100%;min-width:0;scroll-snap-align:start;scroll-snap-stop:always;padding:0 1px}
+.phead{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:2px 0 14px}
+.phead .big{font:600 clamp(26px,5vw,32px) var(--f-display);font-variant-numeric:tabular-nums}
+.phead .big.bad{color:var(--bad)} .phead .big.ok{color:var(--ok)}
+.swipehint{display:none;font-size:12px;color:var(--ink-3);margin-left:auto}
+@media (hover:none){.swipehint{display:inline}}
+.pdots{display:flex;justify-content:center;gap:6px;margin-top:14px}
+.pdots i{width:6px;height:6px;border-radius:50%;background:var(--line-2)}
+.pdots i.on{background:var(--cy);width:18px;border-radius:3px}
+
 /* ---------- lists ---------- */
 .list{display:flex;flex-direction:column}
 .li{display:grid;grid-template-columns:104px minmax(0,1fr) auto 130px;gap:14px;align-items:center;padding:13px 8px;border-top:1px solid var(--line);text-decoration:none;cursor:pointer;position:relative}
@@ -621,13 +642,14 @@ function route() {
   current = { view, id };
   renderNav();
   const v = document.getElementById('view');
-  const r = { home: viewHome, invoices: () => viewList('invoice'), quotes: () => viewList('quote'), clients: viewClients, client: viewClient, settings: viewSettings, edit: viewEdit, view: viewDoc }[view] || viewHome;
+  const r = { home: viewHome, invoices: () => viewWork(id || null), quotes: () => viewWork('quotes'), clients: viewClients, client: viewClient, settings: viewSettings, edit: viewEdit, view: viewDoc }[view] || viewHome;
   v.innerHTML = r(id);
   if (view !== 'edit') window.scrollTo(0, 0);
   afterRender();
 }
 
 function afterRender() {
+  setupPager();
   const abnInput = document.querySelector('[data-abn-hint]');
   if (abnInput) updateAbnHint(abnInput);
 }
@@ -766,43 +788,101 @@ function rowHtml(d) {
 }
 
 /* ---------- views: list ---------- */
-function viewList(type) {
-  const key = type === 'quote' ? 'quotes' : 'invoices';
-  const f = listFilter[key];
-  const filters = type === 'quote'
-    ? [['all', 'All'], ['draft', 'Draft'], ['sent', 'Sent'], ['accepted', 'Accepted'], ['declined', 'Declined']]
-    : [['all', 'All'], ['unpaid', 'Unpaid'], ['overdue', 'Overdue'], ['paid', 'Paid'], ['draft', 'Draft']];
+// Paperwork pages, ordered by urgency. Swipe (phone) or tap/arrow keys (desktop).
+const PAGES = [
+  { key: 'overdue', label: 'Overdue', tone: 'bad', kind: 'balance', word: 'overdue',
+    match: d => d.type === 'invoice' && status(d) === 'overdue', sort: (a, b) => a.dueDate.localeCompare(b.dueDate),
+    empty: ['Nothing overdue', 'Everyone’s paid up or still within terms. Nice.'] },
+  { key: 'tosend', label: 'To send', tone: 'warn', kind: 'total', word: 'ready to send',
+    match: d => d.type === 'invoice' && status(d) === 'draft', sort: (a, b) => (a.createdAt || 0) - (b.createdAt || 0),
+    empty: ['Nothing to send', 'Finished a job? Tap + and log it while it’s fresh.'] },
+  { key: 'waiting', label: 'Waiting', tone: 'cy', kind: 'balance', word: 'on its way',
+    match: d => d.type === 'invoice' && (status(d) === 'sent' || status(d) === 'part paid'), sort: (a, b) => a.dueDate.localeCompare(b.dueDate),
+    empty: ['Nothing waiting', 'Invoices you’ve sent that aren’t due yet show up here.'] },
+  { key: 'paid', label: 'Paid', tone: 'ok', kind: 'total', word: 'paid',
+    match: d => d.type === 'invoice' && status(d) === 'paid', sort: (a, b) => lastPaid(b).localeCompare(lastPaid(a)),
+    empty: ['Nothing paid yet', 'When money lands, record it and it moves here.'] },
+  { key: 'quotes', label: 'Quotes', tone: 'q', kind: 'open', word: 'waiting on an answer',
+    match: d => d.type === 'quote', sort: (a, b) => qRank(a) - qRank(b) || (b.issueDate || '').localeCompare(a.issueDate || ''),
+    empty: ['No quotes yet', 'Tap “New quote” to price up a job.'] }
+];
+const lastPaid = d => d.payments.map(p => p.date).sort().pop() || '';
+const qRank = d => ({ sent: 0, draft: 1, accepted: 2, declined: 3 }[d.status] ?? 4);
+let workPage = null;
+
+function pageDocs(pg) {
+  const q = listFilter.q.trim().toLowerCase();
+  let docs = S.docs.filter(pg.match);
+  if (q) docs = docs.filter(d => { const c = getClient(d.clientId); return [d.number, d.site, d.reference, c && c.name, c && c.contact].some(x => String(x || '').toLowerCase().includes(q)); });
+  return docs.sort(pg.sort);
+}
+function pageBody(pg) {
+  const docs = pageDocs(pg);
+  if (!docs.length) return `<div class="card"><div class="empty"><b>${listFilter.q ? 'No matches' : pg.empty[0]}</b>${listFilter.q ? 'Try a different search.' : pg.empty[1]}</div></div>`;
+  const counted = pg.kind === 'open' ? docs.filter(d => d.status === 'sent') : docs;
+  const sum = counted.reduce((a, d) => a + (pg.kind === 'balance' ? totals(d).balance : totals(d).total), 0);
+  return `<div class="phead"><span class="big ${pg.tone === 'bad' ? 'bad' : pg.tone === 'ok' ? 'ok' : ''}">${money(sum)}</span><span class="muted">${pg.word} · ${plural(counted.length, pg.key === 'quotes' ? 'quote' : 'invoice')}${counted.length !== docs.length ? ` (${docs.length} in total)` : ''}</span></div>
+    <div class="card"><div class="list">${docs.map(rowHtml).join('')}</div></div>`;
+}
+function startPage(key) {
+  if (key) return Math.max(0, PAGES.findIndex(p => p.key === key));
+  if (workPage) return PAGES.findIndex(p => p.key === workPage);
+  const i = PAGES.slice(0, 3).findIndex(p => S.docs.some(p.match));
+  return i >= 0 ? i : 3;
+}
+function viewWork(key) {
+  const start = startPage(key);
+  workPage = PAGES[start].key;
   return `
   <div class="page-head">
-    <div><div class="eyebrow">Paperwork</div><h1>${type === 'quote' ? 'Quotes' : 'Invoices'}</h1></div>
-    <button class="btn primary" data-act="new" data-type="${type}">${I.plus}New ${type}</button>
+    <div><div class="eyebrow">Paperwork</div><h1>Invoices & quotes</h1></div>
+    <div class="row"><button class="btn" data-act="new" data-type="quote">${I.plus}New quote</button><button class="btn primary" data-act="new" data-type="invoice">${I.plus}New invoice</button></div>
   </div>
-  <div class="seg" style="margin-bottom:14px"><a href="#/invoices" class="${type === 'invoice' ? 'on' : ''}">Invoices</a><a href="#/quotes" class="${type === 'quote' ? 'on' : ''}">Quotes</a></div>
-  <div class="row" style="margin-bottom:14px">
-    <div class="filters">${filters.map(([k, l]) => `<button class="${f === k ? 'on' : ''}" data-act="filter" data-key="${key}" data-val="${k}">${l}</button>`).join('')}</div>
-    <input class="inp right" style="max-width:260px" type="search" placeholder="Search client, number, site…" value="${esc(listFilter.q)}" data-bind="search" data-type="${type}">
-  </div>
-  <div class="card" id="listbox">${listBody(type)}</div>`;
+  <div class="row" style="margin-bottom:6px"><input class="inp" style="max-width:340px" type="search" id="f-search" placeholder="Search client, number, site…" value="${esc(listFilter.q)}" data-bind="search"><span class="swipehint">Swipe for more →</span></div>
+  <div class="ptabs" role="tablist" id="ptabs">${PAGES.map((pg, i) => { const n = pageDocs(pg).length; return `<button type="button" role="tab" id="tab-${pg.key}" aria-controls="pg-${pg.key}" aria-selected="${i === start}" tabindex="${i === start ? 0 : -1}" class="ptab t-${pg.tone} ${n ? 'has' : ''}" data-act="page" data-i="${i}">${pg.label}<b>${n}</b></button>`; }).join('')}</div>
+  <div class="pager" id="pager" data-start="${start}">${PAGES.map(pg => `<section class="ppage" id="pg-${pg.key}" role="tabpanel" aria-labelledby="tab-${pg.key}">${pageBody(pg)}</section>`).join('')}</div>
+  <div class="pdots" aria-hidden="true">${PAGES.map((_, i) => `<i class="${i === start ? 'on' : ''}"></i>`).join('')}</div>`;
 }
-function listBody(type) {
-  const key = type === 'quote' ? 'quotes' : 'invoices';
-  const f = listFilter[key], q = listFilter.q.trim().toLowerCase();
-  let docs = S.docs.filter(d => d.type === type);
-  docs = docs.filter(d => {
-    const s = status(d);
-    if (f === 'all') return true;
-    if (f === 'unpaid') return s === 'sent' || s === 'part paid' || s === 'overdue';
-    return s === f;
-  });
-  if (q) docs = docs.filter(d => {
-    const c = getClient(d.clientId);
-    return [d.number, d.site, d.reference, c && c.name, c && c.contact].some(x => String(x || '').toLowerCase().includes(q));
-  });
-  docs.sort((a, b) => (b.issueDate || '').localeCompare(a.issueDate || '') || (b.createdAt || 0) - (a.createdAt || 0));
-  if (!docs.length) return `<div class="empty"><b>No ${type}s ${f !== 'all' || q ? 'match' : 'yet'}</b>${f === 'all' && !q ? `Tap “New ${type}” to make one.` : 'Try a different filter.'}</div>`;
-  const sum = docs.reduce((a, d) => a + totals(d).total, 0);
-  return `<div class="list">${docs.map(rowHtml).join('')}</div><div class="row muted small" style="padding-top:10px;border-top:1px solid var(--line)"><span>${docs.length} shown</span><span class="right">Total ${money(sum)}</span></div>`;
+function pagerIndex() { const pg = document.getElementById('pager'); return pg ? Math.round(pg.scrollLeft / Math.max(1, pg.clientWidth)) : 0; }
+function setPage(i, focusTab) {
+  const pager = document.getElementById('pager'); if (!pager) return;
+  i = Math.max(0, Math.min(PAGES.length - 1, i));
+  workPage = PAGES[i].key;
+  document.querySelectorAll('.ptab').forEach((t, k) => { t.setAttribute('aria-selected', k === i); t.tabIndex = k === i ? 0 : -1; });
+  document.querySelectorAll('.pdots i').forEach((d, k) => d.classList.toggle('on', k === i));
+  const tab = document.getElementById('tab-' + PAGES[i].key);
+  tab.scrollIntoView({ block: 'nearest', inline: 'nearest' }); if (focusTab) tab.focus({ preventScroll: true });
+  pager.style.height = pager.children[i].offsetHeight + 'px';
+  const view = PAGES[i].key === 'quotes' ? 'quotes' : 'invoices';
+  if (current.view !== view) { current.view = view; renderNav(); }
 }
+function goPage(i, focusTab) {
+  const pager = document.getElementById('pager'); if (!pager) return;
+  pager.scrollTo({ left: i * pager.clientWidth, behavior: S.settings.calm || matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  setPage(i, focusTab);
+}
+function setupPager() {
+  const pager = document.getElementById('pager'); if (!pager) return;
+  const start = Number(pager.dataset.start);
+  pager.scrollLeft = start * pager.clientWidth;
+  setPage(start);
+  let raf;
+  pager.addEventListener('scroll', () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => { const i = pagerIndex(); if (PAGES[i].key !== workPage) setPage(i); }); }, { passive: true });
+  document.getElementById('ptabs').addEventListener('keydown', e => {
+    const i = PAGES.findIndex(p => p.key === workPage);
+    if (e.key === 'ArrowRight') { e.preventDefault(); goPage(i + 1, true); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); goPage(i - 1, true); }
+  });
+}
+function refreshPages() {
+  PAGES.forEach(pg => {
+    const n = pageDocs(pg).length, tab = document.getElementById('tab-' + pg.key);
+    tab.querySelector('b').textContent = n; tab.classList.toggle('has', !!n);
+    document.getElementById('pg-' + pg.key).innerHTML = pageBody(pg);
+  });
+  setPage(PAGES.findIndex(p => p.key === workPage));
+}
+window.addEventListener('resize', () => { const pg = document.getElementById('pager'); if (pg) { const i = PAGES.findIndex(p => p.key === workPage); pg.scrollLeft = i * pg.clientWidth; setPage(i); } });
 
 /* ---------- views: clients ---------- */
 function viewClients() {
@@ -1202,7 +1282,7 @@ const ACT = {
     const d = newDoc(ds.type, ds.client ? { clientId: ds.client } : {});
     go('/edit/' + d.id);
   },
-  filter(ds) { listFilter[ds.key] = ds.val; route(); },
+  page(ds) { goPage(Number(ds.i)); },
   'client-new'() { clientModal(c => go('/client/' + c.id)); },
   'client-del'(ds) {
     const n = S.docs.filter(d => d.clientId === ds.id).length;
@@ -1480,7 +1560,7 @@ document.addEventListener('input', e => {
     if (k === 'monthlyGoal') S.settings.monthlyGoal = String(num(val));
     return;
   }
-  if (b === 'search') { listFilter.q = val; document.getElementById('listbox').innerHTML = listBody(t.dataset.type); return; }
+  if (b === 'search') { listFilter.q = val; refreshPages(); return; }
 
   const d = getDoc(current.id);
   if (!d) return;
