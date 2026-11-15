@@ -438,7 +438,7 @@ const DEFAULT = {
     accountName: '', bsb: '', accountNumber: '', payId: '',
     paymentTermsDays: 14, quoteValidDays: 30, defaultRate: '95', chargeBy: 'hour',
     invoicePrefix: 'INV-', nextInvoice: 1, quotePrefix: 'Q-', nextQuote: 1,
-    footerNote: 'Thanks for your business!', logo: '',
+    footerNote: 'Thanks for your business!', logo: '', cardLink: '', clientBase: '',
     monthlyGoal: '15000', bigText: false, calm: false, celebrate: true, accent: 'gold', display: 'auto', focusHome: false, reminderTone: 'friendly'
   },
   clients: [],
@@ -627,6 +627,7 @@ const I = {
   plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
   x: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>',
   print: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>',
+  chat: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.9A8 8 0 1 1 21 12z"/></svg>',
   mail: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 6-10 7L2 6"/></svg>',
   back: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>',
   cash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/></svg>'
@@ -980,6 +981,15 @@ function viewSettings() {
     </div>
   </div>
 
+  <div class="card"><h2>Sending to clients</h2>
+    <div class="muted small" style="margin-bottom:12px">When you text or email an invoice, your client gets a link to a page where they can see it and pay. The invoice details travel inside the link, so nothing is stored online.</div>
+    <div class="grid g2">
+      <label class="f">Card payment link (optional)<input class="inp" type="url" data-bind="set" data-key="cardLink" id="f-cardlink" value="${esc(s.cardLink)}" placeholder="https://buy.stripe.com/…"></label>
+      <label class="f">Client page address<input class="inp" type="url" data-bind="set" data-key="clientBase" id="f-clientbase" value="${esc(s.clientBase)}" placeholder="${esc(defaultClientBase())}"></label>
+    </div>
+    <div class="muted small mt">Card link: create a payment link in Stripe or Square where the customer types the amount, and paste it here. Client page: leave blank unless you host Docket somewhere else.</div>
+  </div>
+
   <div class="card"><h2>How you get paid</h2>
     <div class="grid g2">
       ${field('accountName', 'Account name')}
@@ -1165,9 +1175,10 @@ function viewDoc(id) {
   actions.push(`<a class="btn ghost" href="#/${isQ ? 'quotes' : 'invoices'}">${I.back}Back</a>`);
   actions.push(`<a class="btn" href="#/edit/${d.id}">Edit</a>`);
   actions.push(`<button class="btn" data-act="print">${I.print}Print / PDF</button>`);
-  actions.push(`<button class="btn ${s === 'draft' ? 'primary' : ''}" data-act="email">${I.mail}${s === 'overdue' ? 'Send reminder' : 'Email'}</button>`);
+  actions.push(`<button class="btn ${s === 'draft' || s === 'overdue' ? 'primary' : ''}" data-act="text">${I.chat}${s === 'overdue' ? 'Text a reminder' : 'Text it'}</button>`);
+  actions.push(`<button class="btn" data-act="email">${I.mail}${s === 'overdue' ? 'Email reminder' : 'Email'}</button>`);
   if (s === 'draft') actions.push(`<button class="btn" data-act="mark-sent">Mark as sent</button>`);
-  if (!isQ && s !== 'paid' && s !== 'draft') actions.push(`<button class="btn primary" data-act="pay">${I.cash}Record payment</button>`);
+  if (!isQ && s !== 'paid' && s !== 'draft') actions.push(`<button class="btn ${s === 'overdue' ? '' : 'primary'}" data-act="pay">${I.cash}Record payment</button>`);
   if (isQ && d.status !== 'accepted') actions.push(`<button class="btn" data-act="quote-status" data-val="accepted">Mark accepted</button>`);
   if (isQ && d.status !== 'declined' && d.status !== 'accepted') actions.push(`<button class="btn" data-act="quote-status" data-val="declined">Declined</button>`);
   if (isQ) actions.push(`<button class="btn ${s !== 'draft' ? 'primary' : ''}" data-act="convert">Turn into invoice →</button>`);
@@ -1418,9 +1429,39 @@ const ACT = {
     }));
     f.addEventListener('input', calc);
   },
+  async text() {
+    const d = getDoc(current.id), c = getClient(d.clientId), st = S.settings, t = totals(d), s = status(d), isQ = d.type === 'quote';
+    const link = await clientLink(d);
+    const first = c ? (c.contact || c.name || '').split(' ')[0] : '';
+    const hi = first ? `Hi ${first}` : 'Hi', from = st.tradingName || st.businessName || '';
+    const msg = isQ ? `${hi}, here’s your quote ${d.number} from ${from} for ${money(t.total)}. You can view it here: ${link}`
+      : s === 'overdue' ? `${hi}, just a friendly reminder that invoice ${d.number} for ${money(t.balance)} was due ${auDate(d.dueDate)}. You can view and pay it here: ${link} Thanks, ${from}`
+      : `${hi}, here’s your invoice ${d.number} from ${from} for ${money(t.balance)}, due ${d.dueDate === d.issueDate ? 'on receipt' : auDate(d.dueDate)}. View and pay here: ${link} Thanks!`;
+    const smsHref = (ph, m) => `sms:${String(ph || '').replace(/[^\d+]/g, '')}?&body=${encodeURIComponent(m)}`;
+    const sent = () => { if (d.status === 'draft') { d.status = 'sent'; save(); toast('Marked as sent'); } };
+    const m = openModal(s === 'overdue' ? 'Text a reminder' : `Text ${docLabel(d).toLowerCase()} ${esc(d.number)}`, `
+      <p class="muted small" style="margin:0">It sends from your own phone, so it comes from a number they know. The link opens a page where they can ${isQ ? 'see the quote and say yes' : 'see the invoice and pay'}.</p>
+      <label class="f mt">Their mobile<input class="inp" type="tel" name="phone" id="t-phone" value="${esc(c ? c.phone : '')}" placeholder="04xx xxx xxx" autocomplete="off"></label>
+      <label class="f mt">Message<textarea class="inp" name="msg" id="t-msg" rows="6">${esc(msg)}</textarea></label>
+      <div class="row mt">
+        <a class="btn primary" id="t-open" href="${esc(smsHref(c && c.phone, msg))}">${I.chat}Open Messages</a>
+        <button type="button" class="btn sm" id="t-copy">Copy message</button>
+        <a class="btn sm ghost" href="${esc(link)}" target="_blank" rel="noopener">See their page ↗</a>
+      </div>
+      <div class="muted small mt" id="t-hint">${c && c.phone ? '' : 'Add their mobile so it goes straight to them.'}</div>`, 'Done', data => {
+      if (c && data.phone.trim() && data.phone.trim() !== c.phone) { c.phone = data.phone.trim(); save(); }
+      route();
+    });
+    m.querySelector('button[value=ok]').classList.remove('primary');
+    const ph = m.querySelector('#t-phone'), tx = m.querySelector('#t-msg'), open = m.querySelector('#t-open');
+    const upd = () => { open.href = smsHref(ph.value, tx.value); m.querySelector('#t-hint').textContent = ph.value.trim() ? '' : 'Add their mobile so it goes straight to them.'; };
+    ph.addEventListener('input', upd); tx.addEventListener('input', upd);
+    open.addEventListener('click', () => { if (c && ph.value.trim()) { c.phone = ph.value.trim(); } sent(); });
+    m.querySelector('#t-copy').addEventListener('click', () => { copyText(tx.value, tx); sent(); });
+  },
   skip(ds) { skipped.add(ds.id); route(); },
   unskip() { skipped.clear(); route(); },
-  remind(ds) { go('/view/' + ds.id); ACT.email(); },
+  remind(ds) { go('/view/' + ds.id); const c = getClient(getDoc(ds.id).clientId); (c && c.phone ? ACT.text : ACT.email)(); },
   preview() {
     const d = getDoc(current.id);
     d.lines = d.lines.filter(l => l.desc || num(l.price));
@@ -1442,28 +1483,30 @@ const ACT = {
     window.print();
   },
   'mark-sent'() { const d = getDoc(current.id); d.status = 'sent'; save(); route(); toast('Marked as sent'); },
-  email() {
+  async email() {
     const d = getDoc(current.id), c = getClient(d.clientId) || {}, st = S.settings, t = totals(d), s = status(d);
+    const link = await clientLink(d);
     const isQ = d.type === 'quote';
     const who = c.contact ? c.contact.split(' ')[0] : (c.name || 'there');
     const from = st.tradingName || st.businessName || '';
     let subject, body, tones = null;
     if (isQ) {
       subject = `Quote ${d.number}${d.site ? ' – ' + d.site : ''} from ${from}`;
-      body = `Hi ${who},\n\nThanks for the opportunity to quote. Please find quote ${d.number} attached for ${money(t.total)}${d.gstReg ? ' (inc GST)' : ''}.\n\nThe quote is valid until ${auDate(d.dueDate)}. Just reply to this email to go ahead.\n\nCheers,\n${from}${st.phone ? '\n' + st.phone : ''}`;
+      body = `Hi ${who},\n\nThanks for the opportunity to quote. Please find quote ${d.number} attached for ${money(t.total)}${d.gstReg ? ' (inc GST)' : ''}. You can also view it online:\n${link}\n\nThe quote is valid until ${auDate(d.dueDate)}. Just reply to this email to go ahead.\n\nCheers,\n${from}${st.phone ? '\n' + st.phone : ''}`;
     } else {
       const pay = [st.accountName && `Account name: ${st.accountName}`, st.bsb && `BSB: ${bsbFmt(st.bsb)}`, st.accountNumber && `Account: ${st.accountNumber}`, st.payId && `PayID: ${st.payId}`, `Reference: ${d.number}`].filter(Boolean).join('\n');
+      const payBlock = `View and pay online:\n${link}\n\nOr pay by bank transfer:\n${pay}`;
       if (s === 'overdue') {
         const late = daysBetween(d.dueDate, today()), sign = `${from}${st.phone ? '\n' + st.phone : ''}`;
         tones = {
-          friendly: [`Quick reminder: invoice ${d.number}`, `Hi ${who},\n\nHope all’s well. Just a quick reminder that invoice ${d.number} for ${money(t.balance)} was due on ${auDate(d.dueDate)}. It’s easy to miss, so no stress. If you’ve already paid, thanks and please ignore this.\n\n${pay}\n\nCheers,\n${sign}`],
-          firm: [`Invoice ${d.number} is ${plural(late, 'day')} overdue`, `Hi ${who},\n\nInvoice ${d.number} for ${money(t.balance)} is now ${plural(late, 'day')} overdue (due ${auDate(d.dueDate)}). Could you please arrange payment this week, or let me know when it will be paid?\n\n${pay}\n\nThanks,\n${sign}`],
-          final: [`Final notice: invoice ${d.number}`, `Hi ${who},\n\nThis is a final notice for invoice ${d.number}. ${money(t.balance)} was due on ${auDate(d.dueDate)} and is now ${plural(late, 'day')} overdue. Please pay within 7 days. If I don’t hear from you, I’ll need to take further steps to recover the amount.\n\n${pay}\n\nRegards,\n${sign}`]
+          friendly: [`Quick reminder: invoice ${d.number}`, `Hi ${who},\n\nHope all’s well. Just a quick reminder that invoice ${d.number} for ${money(t.balance)} was due on ${auDate(d.dueDate)}. It’s easy to miss, so no stress. If you’ve already paid, thanks and please ignore this.\n\n${payBlock}\n\nCheers,\n${sign}`],
+          firm: [`Invoice ${d.number} is ${plural(late, 'day')} overdue`, `Hi ${who},\n\nInvoice ${d.number} for ${money(t.balance)} is now ${plural(late, 'day')} overdue (due ${auDate(d.dueDate)}). Could you please arrange payment this week, or let me know when it will be paid?\n\n${payBlock}\n\nThanks,\n${sign}`],
+          final: [`Final notice: invoice ${d.number}`, `Hi ${who},\n\nThis is a final notice for invoice ${d.number}. ${money(t.balance)} was due on ${auDate(d.dueDate)} and is now ${plural(late, 'day')} overdue. Please pay within 7 days. If I don’t hear from you, I’ll need to take further steps to recover the amount.\n\n${payBlock}\n\nRegards,\n${sign}`]
         };
         [subject, body] = tones[st.reminderTone] || tones.friendly;
       } else {
         subject = `${d.gstReg ? 'Tax invoice' : 'Invoice'} ${d.number}${d.site ? ' – ' + d.site : ''} from ${from}`;
-        body = `Hi ${who},\n\nPlease find invoice ${d.number} attached for ${money(t.balance)}, due ${d.dueDate === d.issueDate ? 'on receipt' : auDate(d.dueDate)}.\n\n${pay}\n\nThanks for your business.\n\nCheers,\n${from}${st.phone ? '\n' + st.phone : ''}`;
+        body = `Hi ${who},\n\nPlease find invoice ${d.number} attached for ${money(t.balance)}, due ${d.dueDate === d.issueDate ? 'on receipt' : auDate(d.dueDate)}.\n\n${payBlock}\n\nThanks for your business.\n\nCheers,\n${from}${st.phone ? '\n' + st.phone : ''}`;
       }
     }
     const href = `mailto:${encodeURIComponent(c.email || '')}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
@@ -1708,16 +1751,42 @@ document.addEventListener('change', e => {
   t.value = '';
 });
 
+/* ---------- client link (invoice packed into the URL, nothing stored online) ---------- */
+function defaultClientBase() {
+  if (/\.github\.io$/.test(location.hostname)) return new URL('view.html', location.href).href.split('#')[0];
+  return 'https://ibssqld-star.github.io/ADHDtracking/invoice/view.html';
+}
+const clientBase = () => (S.settings.clientBase || '').trim() || defaultClientBase();
+function b64url(bytes) { let s = ''; for (const b of bytes) s += String.fromCharCode(b); return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
+async function clientLink(d) {
+  const st = S.settings, c = getClient(d.clientId) || {}, t = totals(d), o = v => v || undefined;
+  const D = {
+    v: 1, t: d.type === 'quote' ? 'q' : 'i', n: d.number, i: d.issueDate, d: d.dueDate, r: o(d.reference), s: o(d.site), no: o(d.notes),
+    g: d.gstReg ? 1 : 0, x: d.incGst ? 1 : 0, p: o(t.paid), f: o(st.footerNote),
+    b: { n: st.businessName, t: o(st.tradingName), a: o(st.abn), l: o(st.licence), p: o(st.phone), e: o(st.email), ad: o(st.address),
+      an: o(st.accountName), bsb: o(st.bsb), ac: o(st.accountNumber), pid: o(st.payId), card: /^https:\/\//.test(st.cardLink || '') ? st.cardLink.trim() : undefined },
+    c: { n: c.name, ct: o(c.contact), ad: o(c.address), a: o(c.abn) },
+    l: d.lines.filter(l => l.desc || num(l.price)).map(l => [l.desc, String(num(l.qty)), l.unit, String(num(l.price)), l.gst ? 1 : 0])
+  };
+  const raw = new TextEncoder().encode(JSON.stringify(D));
+  let frag;
+  try {
+    const z = new Blob([raw]).stream().pipeThrough(new CompressionStream('deflate-raw'));
+    frag = 'z.' + b64url(new Uint8Array(await new Response(z).arrayBuffer()));
+  } catch (e) { frag = 'j.' + b64url(raw); }
+  return clientBase() + '#' + frag;
+}
+
 /* ---------- example data ---------- */
 function loadExamples() {
   S = structuredClone(DEFAULT);
   S.example = true;
-  Object.assign(S.settings, { businessName: 'Smith Plumbing Pty Ltd', tradingName: 'Smithy’s Plumbing', abn: '51824753556', licence: 'QBCC 1234567', phone: '0400 123 456', email: 'jobs@smithy.example', address: '12 Wrench St\nBrisbane QLD 4000', accountName: 'Smith Plumbing Pty Ltd', bsb: '064000', accountNumber: '12345678', payId: 'jobs@smithy.example' });
+  Object.assign(S.settings, { businessName: 'Smith Plumbing Pty Ltd', tradingName: 'Smithy’s Plumbing', abn: '51824753556', licence: 'QBCC 1234567', phone: '0491 570 006', email: 'jobs@smithy.example', address: '12 Wrench St\nBrisbane QLD 4000', accountName: 'Smith Plumbing Pty Ltd', bsb: '064000', accountNumber: '12345678', payId: 'jobs@smithy.example' });
   S.items.push({ id: uid(), desc: 'Call-out fee', price: '120.00', unit: 'ea', gst: true }, { id: uid(), desc: 'Drain camera inspection', price: '180.00', unit: 'ea', gst: true });
-  const mk = (name, contact, email, address) => { const c = { id: uid(), name, contact, email, phone: '', address, abn: '' }; S.clients.push(c); return c.id; };
-  const jane = mk('Jane Citizen', '', 'jane@example.com', '5 Gum Tree Rd\nPaddington QLD 4064');
-  const bld = mk('Coastline Builders', 'Mick Rogers', 'accounts@coastline.example', '88 Esplanade\nRedcliffe QLD 4020');
-  const tom = mk('Tom Nguyen', '', 'tom@example.com', '3 Banksia Ct\nSunnybank QLD 4109');
+  const mk = (name, contact, email, address, phone) => { const c = { id: uid(), name, contact, email, phone, address, abn: '' }; S.clients.push(c); return c.id; };
+  const jane = mk('Jane Citizen', '', 'jane@example.com', '5 Gum Tree Rd\nPaddington QLD 4064', '0491 570 156');
+  const bld = mk('Coastline Builders', 'Mick Rogers', 'accounts@coastline.example', '88 Esplanade\nRedcliffe QLD 4020', '0491 570 157');
+  const tom = mk('Tom Nguyen', '', 'tom@example.com', '3 Banksia Ct\nSunnybank QLD 4109', '0491 570 158');
   const L = (desc, qty, unit, price, gst = true) => blankLine({ desc, qty, unit, price, gst });
   const add = (type, o) => { const d = newDoc(type, o); delete d.isNew; return d; };
   const t = today();

@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Your Invoice</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Chakra+Petch:wght@500;600;700&display=swap">
+<style>
+/* Client-facing invoice page: calm, trustworthy, one job (pay). Light by default, dark supported. */
+:root{
+  --bg:#eef2f8; --panel:#ffffff; --panel-2:#f4f7fc; --line:#d6deeb; --ink:#0c1426; --ink-2:#4a587c;
+  --brand:#0c1426; --hv:#ffb020; --hv-ink:#1b1200; --cy:#006f9e; --ok:#08805a; --ok-soft:rgba(8,128,90,.1);
+  --bad:#c8213f; --bad-soft:rgba(200,33,63,.08); --warn-soft:rgba(214,138,0,.12);
+  --f-body:"Atkinson Hyperlegible",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-num:"Chakra Petch",ui-sans-serif,system-ui,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#05080f; --panel:#0e1524; --panel-2:#141d30; --line:#26334f; --ink:#eef3ff; --ink-2:#9eabc9;
+    --brand:#eef3ff; --cy:#5ad8ff; --ok:#43e2a3; --ok-soft:rgba(67,226,163,.12); --bad:#ff6680; --bad-soft:rgba(255,102,128,.12); --warn-soft:rgba(255,182,39,.12);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#05080f; --panel:#0e1524; --panel-2:#141d30; --line:#26334f; --ink:#eef3ff; --ink-2:#9eabc9;
+  --brand:#eef3ff; --cy:#5ad8ff; --ok:#43e2a3; --ok-soft:rgba(67,226,163,.12); --bad:#ff6680; --bad-soft:rgba(255,102,128,.12); --warn-soft:rgba(255,182,39,.12);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 var(--f-body);-webkit-font-smoothing:antialiased}
+.wrap{max-width:560px;margin:0 auto;padding-block:24px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:14px}
+h1,h2{margin:0;line-height:1.2;text-wrap:balance}
+.num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+.top{display:flex;gap:12px;align-items:center}
+.mark{width:40px;height:40px;flex:none;display:grid;place-items:center;background:var(--hv);color:var(--hv-ink);font:700 18px var(--f-num);clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%)}
+.top h1{font:700 19px/1.2 var(--f-num);letter-spacing:.01em}
+.top .sub{color:var(--ink-2);font-size:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:18px}
+.hero{text-align:center;padding:24px 18px;border-top:4px solid var(--hv)}
+.hero .lbl{font:600 12px var(--f-num);letter-spacing:.16em;text-transform:uppercase;color:var(--ink-2)}
+.hero .amt{font:600 clamp(40px,12vw,54px)/1.1 var(--f-num);margin:6px 0;font-variant-numeric:tabular-nums}
+.pill{display:inline-flex;gap:6px;align-items:center;padding:4px 12px;border-radius:999px;font-weight:700;font-size:14px;background:var(--panel-2)}
+.pill.bad{background:var(--bad-soft);color:var(--bad)} .pill.ok{background:var(--ok-soft);color:var(--ok)}
+.card h2{font:600 13px var(--f-num);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2);margin-bottom:12px}
+.payrow{display:flex;align-items:center;gap:10px;padding:10px 0}
+.payrow + .payrow{border-top:1px solid var(--line)}
+.payrow .k{color:var(--ink-2);font-size:14px;width:96px;flex:none}
+.payrow .v{flex:1;min-width:0;font:600 17px var(--f-num);overflow-wrap:anywhere}
+.copy{flex:none;border:1px solid var(--line);background:var(--panel-2);color:var(--ink);font:700 14px var(--f-body);padding:8px 14px;border-radius:6px;cursor:pointer;min-height:40px}
+.copy.done{border-color:var(--ok);color:var(--ok)}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;min-height:52px;padding:0 20px;border-radius:6px;font:700 17px var(--f-body);text-decoration:none;cursor:pointer;border:1px solid var(--line);background:var(--panel);color:var(--ink);width:100%}
+.btn.primary{background:var(--hv);border-color:var(--hv);color:var(--hv-ink)}
+.stack{display:flex;flex-direction:column;gap:10px}
+.warn{background:var(--warn-soft);border-radius:6px;padding:12px 14px;font-size:14px}
+.warn b{display:block}
+table{width:100%;border-collapse:collapse;font-size:15px}
+td{padding:9px 0;border-top:1px solid var(--line);vertical-align:top}
+td.r{text-align:right;white-space:nowrap;padding-left:12px;font-family:var(--f-num);font-variant-numeric:tabular-nums}
+.free{font-size:12px;color:var(--ink-2)}
+.tot{margin-top:6px}
+.tot div{display:flex;justify-content:space-between;padding:4px 0;color:var(--ink-2)}
+.tot div span:last-child{font-family:var(--f-num);color:var(--ink)}
+.tot .grand{border-top:2px solid var(--ink);margin-top:6px;padding-top:10px;font-weight:700;color:var(--ink);font-size:18px}
+.meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;font-size:14px}
+.meta .lb{font:600 11px var(--f-num);letter-spacing:.14em;text-transform:uppercase;color:var(--cy);margin-bottom:2px}
+@media (max-width:420px){.meta{grid-template-columns:minmax(0,1fr)}}
+.foot{text-align:center;font-size:13px;color:var(--ink-2)}
+.err{text-align:center;padding:40px 18px}
+:focus-visible{outline:2px solid var(--cy);outline-offset:2px}
+@media print{
+  body{background:#fff;color:#000}
+  .noprint{display:none!important}
+  .card{border:0;padding:8px 0}
+}
+</style>
+</head>
+<body>
+<main class="wrap" id="app"><div class="card err">Loading your invoice…</div></main>
+<script>
+'use strict';
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const num = s => { const n = parseFloat(String(s ?? '').replace(/[$,\s]/g, '')); return isFinite(n) ? n : 0; };
+const money = c => (c < 0 ? '-' : '') + '$' + (Math.abs(c) / 100).toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const pad = n => String(n).padStart(2, '0');
+const isoOf = dt => `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}`;
+const longDate = s => { if (!s) return ''; const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d).toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }); };
+const daysBetween = (a, b) => { const [y1, m1, d1] = a.split('-').map(Number), [y2, m2, d2] = b.split('-').map(Number); return Math.round((Date.UTC(y2, m2 - 1, d2) - Date.UTC(y1, m1 - 1, d1)) / 864e5); };
+const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
+const nl2br = s => esc(s).replace(/\n/g, '<br>');
+const abnFmt = a => { const s = String(a || '').replace(/\D/g, ''); return s.length === 11 ? s.replace(/^(\d{2})(\d{3})(\d{3})(\d{3})$/, '$1 $2 $3 $4') : String(a || ''); };
+const bsbFmt = b => { const s = String(b || '').replace(/\D/g, ''); return s.length === 6 ? s.slice(0, 3) + '-' + s.slice(3) : String(b || ''); };
+
+// Link format: #z.<base64url(deflate-raw(JSON))> or #j.<base64url(JSON)>
+function b64urlToBytes(s) {
+  s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '=';
+  const bin = atob(s); return Uint8Array.from(bin, c => c.charCodeAt(0));
+}
+async function decode(hash) {
+  const [kind, body] = [hash.slice(0, 2), hash.slice(2)];
+  const bytes = b64urlToBytes(body);
+  if (kind === 'z.') {
+    const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+    return JSON.parse(await new Response(stream).text());
+  }
+  if (kind === 'j.') return JSON.parse(new TextDecoder().decode(bytes));
+  throw new Error('bad link');
+}
+
+function totals(D) {
+  const lineC = l => Math.round(num(l[1]) * num(l[3]) * 100);
+  let lines = 0, taxable = 0;
+  for (const l of D.l) { const c = lineC(l); lines += c; if (D.g && l[4]) taxable += c; }
+  let sub, gst, total;
+  if (!D.g) { sub = lines; gst = 0; total = lines; }
+  else if (D.x) { total = lines; gst = Math.round(taxable / 11); sub = total - gst; }
+  else { sub = lines; gst = Math.round(taxable * 0.1); total = sub + gst; }
+  const paid = D.p || 0;
+  return { sub, gst, total, paid, balance: total - paid, lineC };
+}
+
+function copyBtn(label, value) { return `<button type="button" class="copy" data-copy="${esc(value)}" aria-label="Copy ${esc(label)}">Copy</button>`; }
+
+function render(D) {
+  const B = D.b || {}, C = D.c || {}, t = totals(D), isQ = D.t === 'q';
+  const who = B.t || B.n || 'Your tradie';
+  const today = isoOf(new Date()), left = D.d ? daysBetween(today, D.d) : 0;
+  const docName = isQ ? 'Quote' : (D.g ? 'Tax invoice' : 'Invoice');
+  document.title = `${docName} ${D.n} · ${who}`;
+  let state;
+  if (isQ) state = left < 0 ? `<span class="pill bad">Expired ${longDate(D.d)}</span>` : `<span class="pill">Valid until ${longDate(D.d)}</span>`;
+  else if (t.balance <= 0) state = `<span class="pill ok">✓ Paid in full. Thank you!</span>`;
+  else if (left < 0) state = `<span class="pill bad">${plural(-left, 'day')} overdue · was due ${longDate(D.d)}</span>`;
+  else if (left === 0) state = `<span class="pill">Due today</span>`;
+  else state = `<span class="pill">Due ${longDate(D.d)} · in ${plural(left, 'day')}</span>`;
+
+  const pay = [];
+  if (B.pid) pay.push(['PayID', B.pid]);
+  if (B.bsb) pay.push(['BSB', bsbFmt(B.bsb)]);
+  if (B.ac) pay.push(['Account', B.ac]);
+  if (B.an) pay.push(['Name', B.an]);
+  pay.push(['Reference', D.n]);
+  const phone = (B.p || '').replace(/[^\d+]/g, '');
+
+  const rows = D.l.map(l => `<tr><td>${esc(l[0]) || '—'}${D.g && !l[4] ? ' <span class="free">(GST-free)</span>' : ''}<div class="free">${esc(String(num(l[1])))} ${esc(l[2])} × ${money(Math.round(num(l[3]) * 100))}</div></td><td class="r">${money(t.lineC(l))}</td></tr>`).join('');
+
+  document.getElementById('app').innerHTML = `
+  <header class="top"><div class="mark" aria-hidden="true">${esc(who.trim().charAt(0).toUpperCase() || 'D')}</div>
+    <div><h1>${esc(who)}</h1><div class="sub">${docName} ${esc(D.n)}${C.n ? ` for ${esc(C.n)}` : ''}</div></div></header>
+
+  <section class="card hero" aria-label="Amount">
+    <div class="lbl">${isQ ? 'Quoted price' : t.balance <= 0 ? 'Amount paid' : 'Amount due'}</div>
+    <div class="amt">${money(isQ ? t.total : t.balance > 0 ? t.balance : t.total)}</div>
+    ${state}
+    ${D.g ? `<div class="free" style="margin-top:8px">Includes ${money(t.gst)} GST</div>` : ''}
+  </section>
+
+  ${isQ ? `
+  <section class="card noprint"><h2>Happy to go ahead?</h2><div class="stack">
+    ${phone ? `<a class="btn primary" href="sms:${esc(phone)}?&body=${encodeURIComponent(`Hi ${who}, I'd like to go ahead with quote ${D.n}. Thanks!`)}">Text to accept</a>` : ''}
+    ${B.e ? `<a class="btn" href="mailto:${esc(B.e)}?subject=${encodeURIComponent('Accepting quote ' + D.n)}&body=${encodeURIComponent(`Hi ${who},\n\nI'd like to go ahead with quote ${D.n}.\n\nThanks`)}">Email to accept</a>` : ''}
+    ${phone ? `<a class="btn" href="tel:${esc(phone)}">Call ${esc(B.p)}</a>` : ''}
+  </div></section>`
+  : t.balance > 0 ? `
+  <section class="card noprint"><h2>How to pay</h2>
+    ${B.card ? `<div class="stack" style="margin-bottom:14px"><a class="btn primary" href="${esc(B.card)}" target="_blank" rel="noopener noreferrer">Pay ${money(t.balance)} by card →</a></div><div class="free" style="margin-bottom:6px">Or pay by bank transfer:</div>` : ''}
+    ${pay.map(([k, v]) => `<div class="payrow"><span class="k">${k}</span><span class="v">${esc(v)}</span>${copyBtn(k, v)}</div>`).join('')}
+    <div class="payrow"><span class="k">Amount</span><span class="v">${money(t.balance)}</span>${copyBtn('amount', (t.balance / 100).toFixed(2))}</div>
+  </section>
+  <div class="warn noprint"><b>Stay safe from scams</b>Payment details for ${esc(who)} shouldn’t change by text or email.${phone ? ` If anything looks different, call <a href="tel:${esc(phone)}">${esc(B.p)}</a> before you pay.` : ''}</div>` : ''}
+
+  <section class="card"><h2>Details</h2>
+    <table>${rows}</table>
+    <div class="tot">
+      ${D.g ? `<div><span>Subtotal (ex GST)</span><span>${money(t.sub)}</span></div><div><span>GST</span><span>${money(t.gst)}</span></div>` : ''}
+      <div class="grand"><span>Total${D.g ? ' inc GST' : ''}</span><span>${money(t.total)}</span></div>
+      ${!isQ && t.paid > 0 ? `<div><span>Paid</span><span>-${money(t.paid)}</span></div><div class="grand"><span>Balance due</span><span>${money(t.balance)}</span></div>` : ''}
+    </div>
+    ${!D.g ? '<div class="free" style="margin-top:8px">No GST has been charged. Supplier is not registered for GST.</div>' : ''}
+    ${D.no ? `<p style="white-space:pre-wrap;margin:14px 0 0">${esc(D.no)}</p>` : ''}
+  </section>
+
+  <section class="card meta">
+    <div><div class="lb">From</div><b>${esc(B.n || '')}</b>${B.t && B.t !== B.n ? `<br>Trading as ${esc(B.t)}` : ''}${B.a ? `<br>ABN ${esc(abnFmt(B.a))}` : ''}${B.l ? `<br>Licence ${esc(B.l)}` : ''}${B.ad ? `<br>${nl2br(B.ad)}` : ''}${B.p ? `<br>${esc(B.p)}` : ''}${B.e ? `<br>${esc(B.e)}` : ''}</div>
+    <div><div class="lb">${isQ ? 'Prepared for' : 'Bill to'}</div><b>${esc(C.n || '')}</b>${C.ct ? `<br>Attn: ${esc(C.ct)}` : ''}${C.ad ? `<br>${nl2br(C.ad)}` : ''}${C.a ? `<br>ABN ${esc(abnFmt(C.a))}` : ''}
+      <div class="lb" style="margin-top:10px">${docName}</div>${esc(D.n)} · issued ${longDate(D.i)}${D.r ? `<br>Your ref: ${esc(D.r)}` : ''}${D.s ? `<br>Job site: ${esc(D.s)}` : ''}</div>
+  </section>
+
+  <button type="button" class="btn noprint" onclick="window.print()">Save as PDF / print</button>
+  <p class="foot">${esc(D.f || '')}</p>`;
+}
+
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-copy]'); if (!b) return;
+  const v = b.dataset.copy;
+  const ok = () => { b.textContent = 'Copied ✓'; b.classList.add('done'); setTimeout(() => { b.textContent = 'Copy'; b.classList.remove('done'); }, 1800); };
+  try { navigator.clipboard.writeText(v).then(ok, () => window.prompt('Copy this:', v)); } catch (err) { window.prompt('Copy this:', v); }
+});
+
+async function boot() {
+  const h = location.hash.slice(1);
+  try {
+    if (!h) throw new Error('empty');
+    render(await decode(h));
+  } catch (e) {
+    document.getElementById('app').innerHTML = `<div class="card err"><h1 style="font-size:20px">This link isn’t complete</h1><p>It may have been cut off when it was copied. Please ask whoever sent it to send it again.</p></div>`;
+  }
+}
+window.addEventListener('hashchange', boot);
+boot();
+</script>
+</body>
+</html>
