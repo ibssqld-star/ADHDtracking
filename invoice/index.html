@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1b2a3a">
-<title>Docket – Tradie Invoices</title>
+<title>Docket Invoicing</title>
 <style>
 :root{
   --bg:#f3f1ec; --surface:#fff; --surface-2:#f8f7f3; --ink:#1a1f26; --ink-2:#5b6470; --line:#e0dcd3;
@@ -20,7 +20,7 @@
     --accent:#f0782f; --accent-hover:#ff8a45; --accent-ink:#1a1006; --accent-soft:#3a2416;
     --navy:#0d1319; --info:#8fb6ec; --info-soft:#1c2a3d;
     --ok:#6fd19c; --ok-soft:#173226; --warn:#f3c26b; --warn-soft:#3a2d12; --bad:#ff8f84; --bad-soft:#3d1a17;
-    --muted-soft:#2a323c; --shadow:0 1px 2px rgba(0,0,0,.3);
+    --muted-soft:#2a323c; --shadow:0 1px 2px rgba(0,0,0,.3); color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
@@ -28,7 +28,7 @@
   --accent:#f0782f; --accent-hover:#ff8a45; --accent-ink:#1a1006; --accent-soft:#3a2416;
   --navy:#0d1319; --info:#8fb6ec; --info-soft:#1c2a3d;
   --ok:#6fd19c; --ok-soft:#173226; --warn:#f3c26b; --warn-soft:#3a2d12; --bad:#ff8f84; --bad-soft:#3d1a17;
-  --muted-soft:#2a323c; --shadow:0 1px 2px rgba(0,0,0,.3);
+  --muted-soft:#2a323c; --shadow:0 1px 2px rgba(0,0,0,.3); color-scheme:dark;
 }
 *{box-sizing:border-box}
 html,body{margin:0}
@@ -49,14 +49,14 @@ button,input,select,textarea{font:inherit;color:inherit}
 .nav svg{width:20px;height:20px;flex:none}
 .nav .spacer{flex:1}
 .nav .small{font-size:12px;color:#8a97a6;padding:8px 12px}
-main{flex:1;min-width:0;padding:28px 32px 120px;max-width:1100px}
+main{flex:1;min-width:0;padding-block:28px 120px;padding-left:max(32px,env(safe-area-inset-left,0px));padding-right:max(32px,env(safe-area-inset-right,0px));max-width:1100px}
 
 @media (max-width:820px){
   .shell{display:block}
-  .nav{position:fixed;bottom:0;left:0;right:0;top:auto;height:auto;width:auto;flex-direction:row;justify-content:space-around;padding:6px 4px calc(6px + env(safe-area-inset-bottom));z-index:20;gap:0}
+  .nav{position:fixed;bottom:0;left:0;right:0;top:auto;height:auto;width:auto;flex-direction:row;justify-content:space-around;padding:6px max(4px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(4px,env(safe-area-inset-left,0px));z-index:20;gap:0}
   .brand,.nav .spacer,.nav .small{display:none}
   .nav a{flex-direction:column;gap:2px;font-size:11px;padding:6px 4px;flex:1;text-align:center;justify-content:center}
-  main{padding:16px 16px 110px}
+  main{padding-block:16px 110px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 }
 
 /* ---------- common ---------- */
@@ -212,6 +212,10 @@ dialog .actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
 #toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--bg);padding:11px 18px;border-radius:10px;font-weight:600;opacity:0;pointer-events:none;transition:.2s;z-index:50;max-width:calc(100vw - 32px)}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
+.banner.example{background:var(--info-soft);border-color:color-mix(in srgb,var(--info) 30%,transparent)}
+.copybox{display:flex;flex-direction:column;gap:6px;margin-top:12px}
+.copybox .row{justify-content:space-between}
+.copybox textarea{font:13px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;min-height:120px}
 .pricelist .pl{display:grid;grid-template-columns:1fr auto auto auto;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
 .pricelist .pl:first-child{border-top:0}
 
@@ -424,9 +428,10 @@ const I = {
 let current = { view: '', id: '' };
 let listFilter = { invoices: 'all', quotes: 'all', q: '' };
 
-function go(hash) { location.hash = hash; }
+let path = '/';
+function go(p) { path = p; route(); }
 function route() {
-  const parts = (location.hash.slice(1) || '/').split('/').filter(Boolean);
+  const parts = path.split('/').filter(Boolean);
   const view = parts[0] || 'home', id = parts[1] || '';
   if (current.view === 'edit' && current.id && !(view === 'edit' && id === current.id)) discardIfEmpty(current.id);
   current = { view, id };
@@ -437,7 +442,6 @@ function route() {
   if (view !== 'edit') window.scrollTo(0, 0);
   afterRender();
 }
-window.addEventListener('hashchange', route);
 
 function afterRender() {
   const abnInput = document.querySelector('[data-abn-hint]');
@@ -458,7 +462,7 @@ function renderNav() {
     ${link('clients', 'clients', I.users, 'Clients')}
     ${link('settings', 'settings', I.cog, 'Settings')}
     <div class="spacer"></div>
-    <div class="small">Saved on this device</div>`;
+    <div class="small">${S.example ? 'Example data' : 'Saved on this device'}</div>`;
 }
 
 /* ---------- views: home ---------- */
@@ -487,6 +491,7 @@ function viewHome() {
   const hello = st.businessName ? `G’day, ${esc(st.tradingName || st.businessName)}` : 'G’day';
 
   return `
+  ${S.example ? `<div class="banner example"><div><b>You’re looking at example data</b><div class="small">Smithy’s Plumbing isn’t real. Have a play — then clear it out and add your own business.</div></div><button class="btn primary right" data-act="examples-clear">Clear examples & start</button></div>` : ''}
   ${!st.businessName || !st.abn ? `<div class="banner"><div><b>Set up your business first</b><div class="small">Your business name, ABN and bank details go on every invoice.</div></div><a class="btn primary right" href="#/settings">Add details</a></div>` : ''}
   <div class="page-head">
     <div><h1>${hello}</h1><div class="sub">${longDate(today())}</div></div>
@@ -500,7 +505,7 @@ function viewHome() {
   </div>
   ${overdue.length ? `<div class="card mt"><h2>Chase these up</h2><div class="list">${overdue.map(rowHtml).join('')}</div></div>` : ''}
   ${openQuotes.length ? `<div class="card mt"><h2>Quotes waiting on an answer</h2><div class="list">${openQuotes.map(rowHtml).join('')}</div></div>` : ''}
-  <div class="card mt"><h2>Recent</h2>${recent.length ? `<div class="list">${recent.map(rowHtml).join('')}</div>` : `<div class="empty"><b>Nothing here yet</b>Create your first quote or invoice to get started.</div>`}</div>`;
+  <div class="card mt"><h2>Recent</h2>${recent.length ? `<div class="list">${recent.map(rowHtml).join('')}</div>` : `<div class="empty"><b>Nothing here yet</b>Create your first quote or invoice to get started.<div class="mt"><button class="btn sm" data-act="examples-load">Or load example data to try it out</button></div></div>`}</div>`;
 }
 
 function rowHtml(d) {
@@ -653,6 +658,7 @@ function viewSettings() {
       <button class="btn" data-act="backup">Download backup</button>
       <label class="btn">Restore backup<input type="file" accept="application/json,.json" data-act-change="restore" hidden></label>
       <button class="btn" data-act="csv">Export invoices (CSV) for your accountant</button>
+      <button class="btn" data-act="examples-load">Load example data</button>
       <button class="btn ghost danger right" data-act="wipe">Erase everything</button>
     </div>
   </div>`;
@@ -867,10 +873,36 @@ function openModal(title, body, submitLabel, onSubmit) {
   const first = form.querySelector('input,select,textarea'); if (first) first.focus();
   return m;
 }
+// In-page confirmation (browser confirm()/prompt() are blocked in some viewers)
+function ask(title, message, okLabel, onOk, typeWord) {
+  openModal(esc(title), `<p style="margin:0">${message}</p>${typeWord ? `<label class="f mt">Type ${typeWord} to confirm<input class="inp" name="word" id="ask-word" autocomplete="off" required></label>` : ''}`,
+    okLabel, data => {
+      if (typeWord && String(data.word || '').trim().toUpperCase() !== typeWord) { toast(`Type ${typeWord} to confirm`); return false; }
+      setTimeout(onOk, 0);
+    });
+  const ok = document.querySelector('#modal button[value=ok]');
+  ok.style.background = 'var(--bad)'; ok.style.borderColor = 'var(--bad)'; ok.style.color = '#fff';
+}
+function copyText(text, el) {
+  const done = () => toast('Copied');
+  try {
+    navigator.clipboard.writeText(text).then(done, () => { if (el) { el.focus(); el.select(); } toast('Select the text and copy it'); });
+  } catch (e) { if (el) { el.focus(); el.select(); } toast('Select the text and copy it'); }
+}
+// Show text the person can copy (used where downloads or mail links are blocked)
+function showCopy(title, intro, blocks) {
+  const m = openModal(esc(title), `<p class="muted small" style="margin:0">${intro}</p>` + blocks.map((b, i) => `
+    <div class="copybox"><div class="row"><b class="small">${esc(b.label)}</b><button type="button" class="btn sm" data-copy="${i}">Copy</button></div>
+    ${b.multi ? `<textarea class="inp" id="copy-${i}" readonly>${esc(b.text)}</textarea>` : `<input class="inp" id="copy-${i}" readonly value="${esc(b.text)}">`}</div>`).join(''), 'Done', () => {});
+  m.querySelector('button[value=cancel]').classList.add('hide');
+  m.querySelectorAll('[data-copy]').forEach(btn => btn.addEventListener('click', () => { const i = btn.dataset.copy; copyText(blocks[i].text, document.getElementById('copy-' + i)); }));
+}
+const EMBEDDED = (() => { try { return window.self !== window.top; } catch (e) { return true; } })();
+
 function clientModal(onDone) {
   openModal('New client', clientFields(), 'Add client', data => {
     const c = { id: uid(), name: data.name.trim(), contact: data.contact.trim(), email: data.email.trim(), phone: data.phone.trim(), address: data.address.trim(), abn: abnClean(data.abn) };
-    if (c.abn && !abnValid(c.abn) && !confirm('That ABN doesn’t look valid. Save anyway?')) return false;
+    if (c.abn && !abnValid(c.abn)) { toast('That ABN doesn’t check out — fix it or leave it blank'); return false; }
     S.clients.push(c); save(); toast('Client added');
     onDone && onDone(c);
   });
@@ -886,8 +918,9 @@ const ACT = {
   'client-new'() { clientModal(c => go('/client/' + c.id)); },
   'client-del'(ds) {
     const n = S.docs.filter(d => d.clientId === ds.id).length;
-    if (!confirm(n ? `This client has ${n} quote/invoice(s). They’ll be kept but show “No client”. Delete client?` : 'Delete this client?')) return;
-    S.clients = S.clients.filter(c => c.id !== ds.id); save(); go('/clients');
+    ask('Delete client?', n ? `This client has ${n} quote/invoice(s). They’ll be kept but show “No client”.` : 'This can’t be undone.', 'Delete client', () => {
+      S.clients = S.clients.filter(c => c.id !== ds.id); save(); go('/clients'); toast('Client deleted');
+    });
   },
   terms(ds) {
     const d = getDoc(current.id); const n = Number(ds.days);
@@ -917,11 +950,18 @@ const ACT = {
   },
   delete() {
     const d = getDoc(current.id);
-    if (!isEmptyDoc(d) && !confirm(`Delete ${docLabel(d).toLowerCase()} ${d.number}? This can’t be undone.`)) return;
-    removeDoc(d); current = { view: '', id: '' };
-    go(d.type === 'quote' ? '/quotes' : '/invoices'); toast('Deleted');
+    const doIt = () => { removeDoc(d); current = { view: '', id: '' }; go(d.type === 'quote' ? '/quotes' : '/invoices'); toast('Deleted'); };
+    if (isEmptyDoc(d)) return doIt();
+    ask(`Delete ${d.number}?`, `This ${docLabel(d).toLowerCase()} will be gone for good.`, 'Delete', doIt);
   },
-  print() { window.print(); },
+  print() {
+    if (EMBEDDED) {
+      openModal('Print / save as PDF', `<p style="margin:0">This preview can’t open the print dialog. Open <b>invoice/index.html</b> from your repo in Chrome, Safari or Edge and tap <b>Print / PDF</b> there — choose “Save as PDF” to get a file you can attach.</p>`, 'OK', () => {});
+      document.querySelector('#modal button[value=cancel]').classList.add('hide');
+      return;
+    }
+    window.print();
+  },
   'mark-sent'() { const d = getDoc(current.id); d.status = 'sent'; save(); route(); toast('Marked as sent'); },
   email() {
     const d = getDoc(current.id), c = getClient(d.clientId) || {}, st = S.settings, t = totals(d), s = status(d);
@@ -942,10 +982,15 @@ const ACT = {
         body = `Hi ${who},\n\nPlease find invoice ${d.number} attached for ${money(t.balance)}, due ${d.dueDate === d.issueDate ? 'on receipt' : auDate(d.dueDate)}.\n\n${pay}\n\nThanks for your business.\n\nCheers,\n${from}${st.phone ? '\n' + st.phone : ''}`;
       }
     }
-    if (d.status === 'draft') { d.status = 'sent'; save(); }
-    location.href = `mailto:${encodeURIComponent(c.email || '')}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    toast('Email opened — attach the PDF from “Print / PDF”');
-    setTimeout(route, 300);
+    const href = `mailto:${encodeURIComponent(c.email || '')}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    const m = openModal(s === 'overdue' ? 'Send a reminder' : `Email ${docLabel(d).toLowerCase()}`, `
+      <p class="muted small" style="margin:0">Your email is written for you. Copy it into your mail app, or try the button below. Attach the PDF from “Print / PDF”.</p>
+      ${[['To', c.email || '(no email saved for this client)'], ['Subject', subject]].map(([l, v], i) => `<div class="copybox"><div class="row"><b class="small">${l}</b><button type="button" class="btn sm" data-copy="${i}">Copy</button></div><input class="inp" id="copy-${i}" readonly value="${esc(v)}"></div>`).join('')}
+      <div class="copybox"><div class="row"><b class="small">Message</b><button type="button" class="btn sm" data-copy="2">Copy</button></div><textarea class="inp" id="copy-2" readonly rows="8">${esc(body)}</textarea></div>
+      <div class="row mt"><a class="btn sm" href="${esc(href)}" target="_blank" rel="noopener">${I.mail}Open in mail app</a></div>`,
+      d.status === 'draft' ? 'Mark as sent' : 'Done', () => { if (d.status === 'draft') { d.status = 'sent'; save(); route(); toast('Marked as sent'); } });
+    const vals = [c.email || '', subject, body];
+    m.querySelectorAll('[data-copy]').forEach(btn => btn.addEventListener('click', () => copyText(vals[btn.dataset.copy], document.getElementById('copy-' + btn.dataset.copy))));
   },
   pay() {
     const d = getDoc(current.id), t = totals(d);
@@ -964,8 +1009,9 @@ const ACT = {
       });
   },
   'pay-del'(ds) {
-    if (!confirm('Remove this payment?')) return;
-    const d = getDoc(current.id); d.payments = d.payments.filter(p => p.id !== ds.id); save(); route();
+    ask('Remove payment?', 'The invoice balance will go back up by this amount.', 'Remove', () => {
+      const d = getDoc(current.id); d.payments = d.payments.filter(p => p.id !== ds.id); save(); route();
+    });
   },
   'quote-status'(ds) { const d = getDoc(current.id); d.status = ds.val; save(); route(); toast(`Quote marked ${ds.val}`); },
   convert() {
@@ -998,7 +1044,11 @@ const ACT = {
       });
   },
   'item-del'(ds) { S.items = S.items.filter(i => i.id !== ds.id); save(); route(); },
-  backup() { download(`docket-backup-${today()}.json`, JSON.stringify(S, null, 2), 'application/json'); toast('Backup downloaded'); },
+  backup() {
+    const json = JSON.stringify(S, null, 2);
+    if (EMBEDDED) return showCopy('Backup', 'Copy this and save it somewhere safe (a note or a .json file). Paste it back with “Restore backup” on any device.', [{ label: 'Backup data', text: json, multi: true }]);
+    download(`docket-backup-${today()}.json`, json, 'application/json'); toast('Backup downloaded');
+  },
   csv() {
     const q = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
     const rows = [['Number', 'Issue date', 'Due date', 'Client', 'Client ABN', 'Job site', 'Subtotal ex GST', 'GST', 'Total', 'Paid', 'Balance', 'Status', 'Last payment date']];
@@ -1007,16 +1057,20 @@ const ACT = {
       const last = d.payments.map(p => p.date).sort().pop() || '';
       rows.push([d.number, auDate(d.issueDate), auDate(d.dueDate), c.name, abnFmt(c.abn), d.site, (t.sub / 100).toFixed(2), (t.gst / 100).toFixed(2), (t.total / 100).toFixed(2), (t.paid / 100).toFixed(2), (t.balance / 100).toFixed(2), status(d), auDate(last)]);
     }
-    download(`invoices-${today()}.csv`, rows.map(r => r.map(q).join(',')).join('\r\n'), 'text/csv');
+    const csv = rows.map(r => r.map(q).join(',')).join('\r\n');
+    if (EMBEDDED) return showCopy('Invoices for your accountant', 'Copy this and paste it into Excel or Google Sheets.', [{ label: 'CSV', text: rows.map(r => r.join('\t')).join('\n'), multi: true }]);
+    download(`invoices-${today()}.csv`, csv, 'text/csv');
   },
   wipe() {
-    if (!confirm('Erase ALL clients, quotes, invoices and settings from this device?')) return;
-    if (prompt('Type ERASE to confirm') !== 'ERASE') return;
-    S = structuredClone(DEFAULT); save(); go('/'); route(); toast('Everything erased');
+    ask('Erase everything?', 'All clients, quotes, invoices and settings on this device will be deleted.', 'Erase everything', () => {
+      S = structuredClone(DEFAULT); save(); go('/'); toast('Everything erased');
+    }, 'ERASE');
   }
 };
 
 document.addEventListener('click', e => {
+  const a = e.target.closest('a[href^="#/"]');
+  if (a) { e.preventDefault(); go(a.getAttribute('href').slice(1)); return; }
   const el = e.target.closest('[data-act]');
   if (!el) return;
   const fn = ACT[el.dataset.act];
@@ -1117,15 +1171,42 @@ document.addEventListener('change', e => {
     file.text().then(txt => {
       const data = JSON.parse(txt);
       if (!data.settings || !Array.isArray(data.docs)) throw new Error('bad');
-      if (!confirm(`Restore backup with ${data.docs.length} documents and ${(data.clients || []).length} clients? This replaces what’s on this device.`)) return;
-      S = migrate(data); save(); route(); toast('Backup restored');
+      ask('Restore backup?', `It has ${data.docs.length} documents and ${(data.clients || []).length} clients, and replaces what’s on this device.`, 'Restore', () => {
+        S = migrate(data); save(); go('/'); toast('Backup restored');
+      });
     }).catch(() => toast('That file isn’t a Docket backup'));
   }
   t.value = '';
 });
 
+/* ---------- example data ---------- */
+function loadExamples() {
+  S = structuredClone(DEFAULT);
+  S.example = true;
+  Object.assign(S.settings, { businessName: 'Smith Plumbing Pty Ltd', tradingName: 'Smithy’s Plumbing', abn: '51824753556', licence: 'QBCC 1234567', phone: '0400 123 456', email: 'jobs@smithy.example', address: '12 Wrench St\nBrisbane QLD 4000', accountName: 'Smith Plumbing Pty Ltd', bsb: '064000', accountNumber: '12345678', payId: 'jobs@smithy.example' });
+  S.items.push({ id: uid(), desc: 'Call-out fee', price: '120.00', unit: 'ea', gst: true }, { id: uid(), desc: 'Drain camera inspection', price: '180.00', unit: 'ea', gst: true });
+  const mk = (name, contact, email, address) => { const c = { id: uid(), name, contact, email, phone: '', address, abn: '' }; S.clients.push(c); return c.id; };
+  const jane = mk('Jane Citizen', '', 'jane@example.com', '5 Gum Tree Rd\nPaddington QLD 4064');
+  const bld = mk('Coastline Builders', 'Mick Rogers', 'accounts@coastline.example', '88 Esplanade\nRedcliffe QLD 4020');
+  const tom = mk('Tom Nguyen', '', 'tom@example.com', '3 Banksia Ct\nSunnybank QLD 4109');
+  const L = (desc, qty, unit, price, gst = true) => blankLine({ desc, qty, unit, price, gst });
+  const add = (type, o) => { const d = newDoc(type, o); delete d.isNew; return d; };
+  const t = today();
+  add('invoice', { clientId: bld, site: 'Lot 14, Kippa-Ring', issueDate: addDays(t, -44), dueDate: addDays(t, -30), status: 'sent', lines: [L('Rough-in plumbing, 2 bathrooms', '1', 'lot', '3200')] });
+  add('invoice', { clientId: tom, site: '3 Banksia Ct, Sunnybank', issueDate: addDays(t, -26), dueDate: addDays(t, -12), status: 'sent', lines: [L('Call-out fee', '1', 'ea', '120'), L('Clear blocked drain – jet & CCTV', '1', 'ea', '260')], payments: [{ id: uid(), date: addDays(t, -14), amount: '418.00', method: 'Bank transfer' }] });
+  const q = add('quote', { clientId: jane, site: '5 Gum Tree Rd, Paddington', issueDate: addDays(t, -6), dueDate: addDays(t, 24), status: 'accepted', lines: [L('Call-out fee', '1', 'ea', '120'), L('Labour', '3.5', 'hr', '95'), L('Rheem 315L hot water system', '1', 'ea', '1849.50'), L('Council permit fee', '1', 'ea', '85', false)] });
+  add('invoice', { clientId: jane, site: q.site, fromQuote: q.number, issueDate: addDays(t, -1), terms: 7, dueDate: addDays(t, 6), status: 'sent', lines: q.lines.map(l => ({ ...l, id: uid() })), payments: [{ id: uid(), date: t, amount: '1000.00', method: 'PayID / Osko' }] });
+  add('quote', { clientId: bld, site: 'Lot 22, Kippa-Ring', status: 'sent', lines: [L('Rough-in & fit-off, 3 bed home', '1', 'lot', '8900')] });
+  save();
+}
+ACT['examples-clear'] = () => ask('Start fresh?', 'This removes the example business, clients, quotes and invoices so you can enter your own.', 'Clear examples', () => { S = structuredClone(DEFAULT); save(); go('/settings'); toast('Examples cleared — add your business details'); });
+ACT['examples-load'] = () => { loadExamples(); go('/'); toast('Example data loaded'); };
+
 window.addEventListener('beforeunload', () => { if (current.view === 'edit') { const d = getDoc(current.id); if (d && d.isNew && isEmptyDoc(d)) discardIfEmpty(d.id); } });
 
+let hasSaved = false;
+try { hasSaved = !!localStorage.getItem(KEY); } catch (e) { /* storage blocked */ }
+if (!hasSaved) loadExamples();
 route();
 </script>
 </body>
