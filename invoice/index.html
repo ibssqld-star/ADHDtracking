@@ -220,12 +220,11 @@ textarea.inp{min-height:84px;resize:vertical}
 .dial .goalarc{fill:none;stroke:var(--hv);stroke-width:12;filter:drop-shadow(0 0 6px color-mix(in srgb,var(--hv) 70%,transparent));transition:stroke-dashoffset 1.2s cubic-bezier(.2,.8,.2,1)}
 .dial .dayarc{fill:none;stroke:var(--cy);stroke-width:4;opacity:.9}
 .dial .dash{fill:none;stroke:var(--cy);stroke-width:2;stroke-dasharray:2 7;opacity:.5}
-.dial .spin{transform-origin:150px 150px;animation:spin 90s linear infinite}
-.dial .spin-r{transform-origin:150px 150px;animation:spin 60s linear infinite reverse}
-@keyframes spin{to{transform:rotate(360deg)}}
+.dial .spin{transform-origin:150px 150px;animation:settle 1.2s cubic-bezier(.2,.8,.2,1) 1}
+@keyframes settle{from{transform:rotate(-40deg);opacity:0}to{transform:none;opacity:1}}
 .dial .center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;pointer-events:none}
 .dial .center .lbl{font:600 11px var(--f-display);letter-spacing:.2em;color:var(--cy);text-transform:uppercase}
-.dial .center .amt{font:600 clamp(26px,7vw,32px)/1.1 var(--f-display);margin:6px 0 4px;color:var(--ink);text-shadow:0 0 18px color-mix(in srgb,var(--hv) 35%,transparent)}
+.dial .center .amt{font:600 clamp(26px,7vw,32px)/1.1 var(--f-display);margin:6px 0 4px;color:var(--ink)}
 .dial .center .pct{font:700 13px var(--f-display);color:var(--hv-text);letter-spacing:.06em}
 .dial .center .left{font-size:12px;color:var(--ink-2);margin-top:2px}
 .dial-legend{display:flex;justify-content:center;gap:16px;font-size:12px;color:var(--ink-2);margin-top:8px}
@@ -353,7 +352,7 @@ dialog h2{font-size:21px;margin-bottom:16px}
 dialog .actions{display:flex;justify-content:flex-end;gap:10px;margin-top:22px}
 .copybox{display:flex;flex-direction:column;gap:6px;margin-top:12px}
 .copybox .row{justify-content:space-between}
-.copybox textarea{font:13px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;min-height:120px}
+.copybox textarea{font:15px/1.5 var(--f-body);min-height:120px}
 
 #toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(16px);background:var(--panel-2);color:var(--ink);border:1px solid var(--line-2);box-shadow:var(--glow);padding:10px 12px 10px 18px;border-radius:var(--radius);font-weight:700;opacity:0;pointer-events:none;transition:.2s;z-index:60;max-width:calc(100vw - 32px);display:flex;gap:14px;align-items:center}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
@@ -406,7 +405,7 @@ const DEFAULT = {
     paymentTermsDays: 14, quoteValidDays: 30, defaultRate: '95',
     invoicePrefix: 'INV-', nextInvoice: 1, quotePrefix: 'Q-', nextQuote: 1,
     footerNote: 'Thanks for your business!', logo: '',
-    monthlyGoal: '15000', bigText: false, calm: false, celebrate: true, accent: 'gold'
+    monthlyGoal: '15000', bigText: false, calm: false, celebrate: true, accent: 'gold', display: 'auto', focusHome: false, reminderTone: 'friendly'
   },
   clients: [],
   docs: [],
@@ -462,9 +461,9 @@ const abnFmt = a => { const s = abnClean(a); return s.length === 11 ? s.replace(
 const bsbFmt = b => { const s = String(b || '').replace(/\D/g, ''); return s.length === 6 ? s.slice(0, 3) + '-' + s.slice(3) : String(b || ''); };
 
 let toastTimer;
-function toast(msg, undo) {
+function toast(msg, undo, label = 'Undo') {
   const t = document.getElementById('toast');
-  t.innerHTML = `<span>${esc(msg)}</span>${undo ? '<button type="button">Undo</button>' : ''}`;
+  t.innerHTML = `<span>${esc(msg)}</span>${undo ? `<button type="button">${esc(label)}</button>` : ''}`;
   if (undo) t.querySelector('button').onclick = () => { undo(); t.classList.remove('show'); };
   t.classList.add('show');
   clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), undo ? 6000 : 2600);
@@ -609,6 +608,9 @@ function applyComfort() {
   const r = document.documentElement;
   r.toggleAttribute('data-big', !!S.settings.bigText);
   r.toggleAttribute('data-calm', !!S.settings.calm);
+  const disp = S.settings.display;
+  if (disp === 'light' || disp === 'dark') { r.setAttribute('data-theme', disp); r.dataset.docketTheme = '1'; }
+  else if (r.dataset.docketTheme) { r.removeAttribute('data-theme'); delete r.dataset.docketTheme; }
   if (S.settings.accent && S.settings.accent !== 'gold') r.setAttribute('data-accent', S.settings.accent); else r.removeAttribute('data-accent');
 }
 function route() {
@@ -638,7 +640,7 @@ function renderNav() {
   const link = (key, href, icon, label, cls) => `<a href="#/${href}" class="${cls} ${on === key ? 'on' : ''}" ${on === key ? 'aria-current="page"' : ''}>${icon}<span>${label}</span></a>`;
   document.getElementById('nav').innerHTML = `
     <div class="brand"><span class="brand-mark">${I.bolt}</span><div>DOCKET<small>TRADIE INVOICING</small></div></div>
-    <a href="#" class="fab" data-act="new" data-type="invoice" aria-label="Bill a job">${I.plus}<span>Bill a job</span></a>
+    <a href="#" class="fab" data-act="quick" aria-label="Log a job">${I.plus}<span>Log a job</span></a>
     ${link('home', '', I.home, 'Home', 'n-home')}
     ${link('invoices', 'invoices', I.inv, 'Invoices', 'n-inv')}
     ${link('quotes', 'quotes', I.quote, 'Quotes', 'desk')}
@@ -657,7 +659,7 @@ function nextUps() {
   const byOld = (a, b) => (a.createdAt || 0) - (b.createdAt || 0);
   S.docs.filter(d => d.type === 'invoice' && d.status === 'draft' && !isEmptyDoc(d)).sort(byOld).forEach(d => out.push({
     id: d.id, tone: 'hv', tag: 'Unsent invoice', title: `Send ${d.number} to ${name(d)}`,
-    why: `${money(totals(d).total)} of finished work isn’t money until it’s sent. You made it ${ago(d.issueDate)}.`, btn: 'Check it & send', href: '#/view/' + d.id }));
+    why: `Send it and ${money(totals(d).total)} is on its way to you. Started ${ago(d.issueDate)}.`, btn: 'Check it & send', href: '#/view/' + d.id }));
   S.docs.filter(d => d.type === 'invoice' && status(d) === 'overdue').sort((a, b) => a.dueDate.localeCompare(b.dueDate)).forEach(d => {
     const n = daysBetween(d.dueDate, today());
     out.push({ id: d.id, tone: 'bad', tag: `${plural(n, 'day')} overdue`, title: `Chase ${name(d)} for ${money(totals(d).balance)}`,
@@ -673,7 +675,7 @@ function nextUps() {
 }
 function missionHtml() {
   const all = nextUps(), list = all.filter(x => !skipped.has(x.id));
-  if (!all.length) return `<section class="card mission t-ok"><span class="eyebrow">✓ All clear</span><h3>Nothing needs you right now</h3><p>No unsent invoices, nothing overdue, no quotes to chase. Go do the work — then bill it while it’s fresh.</p><button class="btn primary big" data-act="new" data-type="invoice">${I.plus}Bill a job</button></section>`;
+  if (!all.length) return `<section class="card mission t-ok"><span class="eyebrow">✓ All clear</span><h3>Nothing needs you right now</h3><p>No unsent invoices, nothing overdue, no quotes to chase. Finished a job? Log it now while it’s fresh.</p><button class="btn primary big" data-act="quick">${I.plus}Log a job</button></section>`;
   if (!list.length) return `<section class="card mission t-cy"><span class="eyebrow">Paused</span><h3>You’ve skipped everything for now</h3><p>That’s fine. ${plural(all.length, 'thing')} will still be here when you’re ready.</p><button class="btn" data-act="unskip">Show them again</button></section>`;
   const m = list[0], pos = all.indexOf(m);
   const go = m.act ? `<button class="btn primary big" data-act="${m.act}" data-id="${m.id}">${esc(m.btn)} →</button>` : `<a class="btn primary big" href="${m.href}">${esc(m.btn)} →</a>`;
@@ -704,7 +706,7 @@ function dialHtml(paidMonth, goal) {
       <circle class="goalarc" cx="150" cy="150" r="${R1}" stroke-dasharray="${C1.toFixed(1)}" stroke-dashoffset="${(C1 * (1 - pct)).toFixed(1)}" transform="rotate(-90 150 150)"/>
       <circle class="trk" cx="150" cy="150" r="${R2}" stroke-width="4"/>
       <circle class="dayarc" cx="150" cy="150" r="${R2}" stroke-dasharray="${C2.toFixed(1)}" stroke-dashoffset="${(C2 * (1 - day / dim)).toFixed(1)}" transform="rotate(-90 150 150)"/>
-      <circle class="dash spin-r" cx="150" cy="150" r="80"/>
+      <circle class="dash" cx="150" cy="150" r="80"/>
     </svg>
     <div class="center"><span class="lbl">Paid this month</span><span class="amt">${money(paidMonth)}</span><span class="pct">${Math.round(pct * 100)}% of ${money(goal)}</span><span class="left">${left ? plural(left, 'day') + ' left in the month' : 'Last day of the month'}</span></div>
   </div>
@@ -740,15 +742,16 @@ function viewHome() {
   ${!st.businessName || !st.abn ? `<div class="banner"><div><b>Set up your business first</b><div class="small">Your business name, ABN and bank details go on every invoice.</div></div><a class="btn right" href="#/settings">Add details</a></div>` : ''}
   <div class="page-head">
     <div><div class="eyebrow">${longDate(today())}</div><h1>${hello}</h1></div>
-    <button class="btn" data-act="new" data-type="quote">${I.plus}New quote</button>
+    <div class="row"><button class="btn ${st.focusHome ? '' : 'ghost'}" data-act="focus" aria-pressed="${!!st.focusHome}">${st.focusHome ? '◉ Focus on' : '◎ Focus'}</button><button class="btn" data-act="new" data-type="quote">${I.plus}New quote</button></div>
   </div>
+  ${st.focusHome ? `${missionHtml()}<p class="muted small mt">Focus is on, so everything else is hidden. Tap “Focus on” to see your numbers and paperwork again.</p>` : `
   <div class="hud">${dialHtml(paidMonth, goal)}${missionHtml()}</div>
   <div class="grid g3 mt">
     <div class="card stat"><div class="lbl">Owed to you</div><div class="val">${money(outstanding)}</div><div class="foot">Sent, not paid yet</div></div>
     <div class="card stat ${overdueN ? 'alert' : ''}"><div class="lbl">Overdue</div><div class="val">${money(overdueSum)}</div><div class="foot">${overdueN ? plural(overdueN, 'invoice') + ' past due' : 'Nothing late ✓'}</div></div>
     <div class="card stat"><div class="lbl">GST · ${q.label}</div><div class="val">${money(gstAccrual)}</div><div class="foot">Cash basis ${money(gstCash)} · BAS due ${q.due}</div></div>
   </div>
-  <div class="card mt"><h2>Latest paperwork</h2>${recent.length ? `<div class="list">${recent.map(rowHtml).join('')}</div>` : `<div class="empty"><b>Nothing here yet</b>Tap “Bill a job” to make your first invoice.<div class="mt"><button class="btn sm" data-act="examples-load">Or load example data to try it out</button></div></div>`}</div>`;
+  <div class="card mt"><h2>Latest paperwork</h2>${recent.length ? `<div class="list">${recent.map(rowHtml).join('')}</div>` : `<div class="empty"><b>Nothing here yet</b>Tap “Log a job” to jot down your first one.<div class="mt"><button class="btn sm" data-act="examples-load">Or load example data to try it out</button></div></div>`}</div>`}`;
 }
 
 function rowHtml(d) {
@@ -895,6 +898,9 @@ function viewSettings() {
       <label class="check"><input type="checkbox" data-bind="set" data-key="calm" ${s.calm ? 'checked' : ''}>Calm mode (no glow or motion)</label>
       <label class="check"><input type="checkbox" data-bind="set" data-key="celebrate" ${s.celebrate ? 'checked' : ''}>Celebrate when I get paid</label>
     </div>
+    <div class="f mt" style="font-size:13px;font-weight:700;color:var(--ink-2)">Screen</div>
+    <div class="seg" style="margin-top:8px">${[['auto', 'Match my phone'], ['light', 'Light'], ['dark', 'Dark']].map(([k, l]) => `<button type="button" class="${(s.display || 'auto') === k ? 'on' : ''}" data-act="display" data-val="${k}">${l}</button>`).join('')}</div>
+    <div class="muted small" style="margin-top:6px">Light is easier to read for many people, especially with astigmatism. Dark is nice at night.</div>
     <div class="f mt" style="font-size:13px;font-weight:700;color:var(--ink-2)">Colour</div>
     <div class="swatches mt" style="margin-top:8px">${[['gold', 'Gold', '#ffc21a'], ['cyan', 'Cyan', '#22e4ff'], ['pink', 'Neon pink', '#ff4fd8'], ['green', 'Toxic green', '#3dff8b']].map(([k, l, c]) => `<button type="button" class="${(s.accent || 'gold') === k ? 'on' : ''}" data-act="accent" data-val="${k}"><i style="background:${c};color:${c}"></i>${l}</button>`).join('')}</div>
     <div class="grid g3 mt">${field('monthlyGoal', 'Monthly income goal ($)', 'inputmode="decimal"')}</div>
@@ -911,7 +917,7 @@ function viewSettings() {
     <div class="row">
       <button class="btn" data-act="backup">Download backup</button>
       <label class="btn">Restore backup<input type="file" accept="application/json,.json" data-act-change="restore" hidden></label>
-      <button class="btn" data-act="csv">Export invoices (CSV) for your accountant</button>
+      <button class="btn" data-act="csv">CSV for accountant</button>
       <button class="btn" data-act="examples-load">Load example data</button>
       <button class="btn ghost danger right" data-act="wipe">Erase everything</button>
     </div>
@@ -1237,6 +1243,33 @@ const ACT = {
     const f = el.querySelector('select,input,textarea'); if (f) setTimeout(() => f.focus({ preventScroll: true }), 300);
   },
   accent(ds) { S.settings.accent = ds.val; save(); route(); },
+  display(ds) { S.settings.display = ds.val; save(); route(); },
+  focus() { S.settings.focusHome = !S.settings.focusHome; save(); route(); },
+  quick() {
+    const st = S.settings;
+    const opts = S.clients.slice().sort((a, b) => a.name.localeCompare(b.name)).map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join('');
+    openModal('Log a job', `
+      <p class="muted small" style="margin:0 0 14px">Jot it down while it’s fresh. It becomes a draft invoice you can tidy up and send later.</p>
+      <label class="f">What did you do?<textarea class="inp" name="what" id="q-what" rows="2" required placeholder="e.g. Replaced hot water system"></textarea></label>
+      <div class="grid g2 mt">
+        <label class="f">Who for<select class="inp" name="client" id="q-client"><option value="">— Pick a client —</option>${opts}</select></label>
+        <label class="f">…or a new client<input class="inp" name="newname" id="q-new" placeholder="Name"></label>
+        <label class="f">Hours on site<input class="inp" name="hours" id="q-hours" inputmode="decimal" placeholder="e.g. 2.5"></label>
+        <label class="f">Materials $ ${st.gstRegistered ? (st.pricesIncGst ? '(inc GST)' : '(ex GST)') : ''}<input class="inp" name="mat" id="q-mat" inputmode="decimal" placeholder="0"></label>
+      </div>`, 'Save job', data => {
+      let cid = data.client;
+      if (!cid && data.newname.trim()) { const c = { id: uid(), name: data.newname.trim(), contact: '', email: '', phone: '', address: '', abn: '' }; S.clients.push(c); cid = c.id; }
+      let rate = num(st.defaultRate);
+      if (st.gstRegistered && st.pricesIncGst) rate = Math.round(rate * 110) / 100;
+      const what = data.what.trim(), lines = [];
+      if (num(data.hours)) lines.push(blankLine({ desc: what, qty: String(num(data.hours)), unit: 'hr', price: rate ? rate.toFixed(2) : '' }));
+      else lines.push(blankLine({ desc: what }));
+      if (num(data.mat)) lines.push(blankLine({ desc: 'Materials', qty: '1', unit: 'lot', price: num(data.mat).toFixed(2) }));
+      const d = newDoc('invoice', { clientId: cid, lines }); delete d.isNew; save();
+      skipped.delete(d.id); go('/');
+      toast(`${d.number} saved as a draft. It’s in Next up.`, () => go('/edit/' + d.id), 'Open');
+    });
+  },
   skip(ds) { skipped.add(ds.id); route(); },
   unskip() { skipped.clear(); route(); },
   remind(ds) { go('/view/' + ds.id); ACT.email(); },
@@ -1266,15 +1299,20 @@ const ACT = {
     const isQ = d.type === 'quote';
     const who = c.contact ? c.contact.split(' ')[0] : (c.name || 'there');
     const from = st.tradingName || st.businessName || '';
-    let subject, body;
+    let subject, body, tones = null;
     if (isQ) {
       subject = `Quote ${d.number}${d.site ? ' – ' + d.site : ''} from ${from}`;
       body = `Hi ${who},\n\nThanks for the opportunity to quote. Please find quote ${d.number} attached for ${money(t.total)}${d.gstReg ? ' (inc GST)' : ''}.\n\nThe quote is valid until ${auDate(d.dueDate)}. Just reply to this email to go ahead.\n\nCheers,\n${from}${st.phone ? '\n' + st.phone : ''}`;
     } else {
       const pay = [st.accountName && `Account name: ${st.accountName}`, st.bsb && `BSB: ${bsbFmt(st.bsb)}`, st.accountNumber && `Account: ${st.accountNumber}`, st.payId && `PayID: ${st.payId}`, `Reference: ${d.number}`].filter(Boolean).join('\n');
       if (s === 'overdue') {
-        subject = `Reminder: invoice ${d.number} is overdue`;
-        body = `Hi ${who},\n\nJust a friendly reminder that invoice ${d.number} for ${money(t.balance)} was due on ${auDate(d.dueDate)}. If you’ve already paid, thanks and please ignore this.\n\n${pay}\n\nCheers,\n${from}${st.phone ? '\n' + st.phone : ''}`;
+        const late = daysBetween(d.dueDate, today()), sign = `${from}${st.phone ? '\n' + st.phone : ''}`;
+        tones = {
+          friendly: [`Quick reminder: invoice ${d.number}`, `Hi ${who},\n\nHope all’s well. Just a quick reminder that invoice ${d.number} for ${money(t.balance)} was due on ${auDate(d.dueDate)}. It’s easy to miss, so no stress. If you’ve already paid, thanks and please ignore this.\n\n${pay}\n\nCheers,\n${sign}`],
+          firm: [`Invoice ${d.number} is ${plural(late, 'day')} overdue`, `Hi ${who},\n\nInvoice ${d.number} for ${money(t.balance)} is now ${plural(late, 'day')} overdue (due ${auDate(d.dueDate)}). Could you please arrange payment this week, or let me know when it will be paid?\n\n${pay}\n\nThanks,\n${sign}`],
+          final: [`Final notice: invoice ${d.number}`, `Hi ${who},\n\nThis is a final notice for invoice ${d.number}. ${money(t.balance)} was due on ${auDate(d.dueDate)} and is now ${plural(late, 'day')} overdue. Please pay within 7 days. If I don’t hear from you, I’ll need to take further steps to recover the amount.\n\n${pay}\n\nRegards,\n${sign}`]
+        };
+        [subject, body] = tones[st.reminderTone] || tones.friendly;
       } else {
         subject = `${d.gstReg ? 'Tax invoice' : 'Invoice'} ${d.number}${d.site ? ' – ' + d.site : ''} from ${from}`;
         body = `Hi ${who},\n\nPlease find invoice ${d.number} attached for ${money(t.balance)}, due ${d.dueDate === d.issueDate ? 'on receipt' : auDate(d.dueDate)}.\n\n${pay}\n\nThanks for your business.\n\nCheers,\n${from}${st.phone ? '\n' + st.phone : ''}`;
@@ -1283,11 +1321,20 @@ const ACT = {
     const href = `mailto:${encodeURIComponent(c.email || '')}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     const m = openModal(s === 'overdue' ? 'Send a reminder' : `Email ${docLabel(d).toLowerCase()}`, `
       <p class="muted small" style="margin:0">Your email is written for you. Copy it into your mail app, or try the button below. Attach the PDF from “Print / PDF”.</p>
+      ${tones ? `<div class="f mt" style="font-size:13px;font-weight:700;color:var(--ink-2)">How firm?</div><div class="seg" style="margin-top:6px" id="tone">${[['friendly', 'Friendly nudge'], ['firm', 'Firm'], ['final', 'Final notice']].map(([k, l]) => `<button type="button" data-tone="${k}" class="${(st.reminderTone || 'friendly') === k ? 'on' : ''}">${l}</button>`).join('')}</div>
+      <div class="muted small" style="margin-top:6px">Most late payers just forgot. Start friendly; you can always get firmer next time.</div>` : ''}
       ${[['To', c.email || '(no email saved for this client)'], ['Subject', subject]].map(([l, v], i) => `<div class="copybox"><div class="row"><b class="small">${l}</b><button type="button" class="btn sm" data-copy="${i}">Copy</button></div><input class="inp" id="copy-${i}" readonly value="${esc(v)}"></div>`).join('')}
       <div class="copybox"><div class="row"><b class="small">Message</b><button type="button" class="btn sm" data-copy="2">Copy</button></div><textarea class="inp" id="copy-2" readonly rows="8">${esc(body)}</textarea></div>
       <div class="row mt"><a class="btn sm" href="${esc(href)}" target="_blank" rel="noopener">${I.mail}Open in mail app</a></div>`,
       d.status === 'draft' ? 'Mark as sent' : 'Done', () => { if (d.status === 'draft') { d.status = 'sent'; save(); route(); toast('Marked as sent'); } });
     const vals = [c.email || '', subject, body];
+    m.querySelectorAll('[data-tone]').forEach(btn => btn.addEventListener('click', () => {
+      st.reminderTone = btn.dataset.tone; save();
+      [vals[1], vals[2]] = tones[btn.dataset.tone];
+      document.getElementById('copy-1').value = vals[1]; document.getElementById('copy-2').value = vals[2];
+      m.querySelector('a[href^="mailto:"]').href = `mailto:${encodeURIComponent(c.email || '')}?subject=${encodeURIComponent(vals[1])}&body=${encodeURIComponent(vals[2])}`;
+      m.querySelectorAll('[data-tone]').forEach(b => b.classList.toggle('on', b === btn));
+    }));
     m.querySelectorAll('[data-copy]').forEach(btn => btn.addEventListener('click', () => copyText(vals[btn.dataset.copy], document.getElementById('copy-' + btn.dataset.copy))));
   },
   pay() {
