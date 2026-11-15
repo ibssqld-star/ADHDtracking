@@ -178,57 +178,70 @@ textarea.inp{min-height:84px;resize:vertical}
 .filters button{border:1px solid var(--line-2);background:transparent;border-radius:3px;padding:6px 14px;font-weight:700;cursor:pointer;font-size:.88em;color:var(--ink-2)}
 .filters button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 
-/* ---------- home ---------- */
-.mission{border-color:color-mix(in srgb,var(--hv) 55%,var(--line));box-shadow:var(--hv-glow);padding:24px 26px;background:linear-gradient(120deg,var(--hv-soft),transparent 55%),var(--panel)}
-.mission::after{background:linear-gradient(to bottom left,transparent calc(50% - .8px),var(--hv) 50%,transparent calc(50% + .8px))}
-.mission .eyebrow{color:var(--hv-text)}
-.mission h3{font-size:clamp(22px,3.4vw,30px);margin:10px 0 6px}
-.mission p{margin:0 0 18px;color:var(--ink-2);max-width:56ch}
-.mission.t-bad{border-color:color-mix(in srgb,var(--bad) 55%,var(--line));box-shadow:0 0 0 1px var(--bad-soft),0 0 28px var(--bad-soft);background:linear-gradient(120deg,var(--bad-soft),transparent 55%),var(--panel)}
-.mission.t-bad .eyebrow{color:var(--bad)}
-.mission.t-bad::after{background:linear-gradient(to bottom left,transparent calc(50% - .8px),var(--bad) 50%,transparent calc(50% + .8px))}
-.mission.t-cy{border-color:color-mix(in srgb,var(--cy) 50%,var(--line));box-shadow:var(--glow);background:linear-gradient(120deg,var(--cy-soft),transparent 55%),var(--panel)}
-.mission.t-ok{border-color:color-mix(in srgb,var(--ok) 50%,var(--line));background:linear-gradient(120deg,var(--ok-soft),transparent 55%),var(--panel);box-shadow:none}
-.mission.t-ok .eyebrow{color:var(--ok)}
-.pips{display:flex;gap:5px;margin-left:auto}
-.pips span{width:22px;height:4px;background:var(--line-2)}
-.pips span.on{background:var(--hv)}
-.queue{margin-top:14px;padding-top:12px;border-top:1px dashed var(--line-2);display:flex;flex-direction:column;gap:6px}
-.queue a{display:flex;gap:10px;align-items:center;text-decoration:none;color:var(--ink-2);font-size:.92em;padding:4px 0}
-.queue a:hover{color:var(--ink)}
-.queue b{color:var(--ink);font-weight:700}
-.stat .lbl{font:600 12px/1.2 var(--f-display);text-transform:uppercase;letter-spacing:.14em;color:var(--ink-2)}
-.stat .val{font-size:clamp(24px,2.6vw,30px);font-weight:600;margin-top:8px;color:var(--ink)}
-.stat .foot{font-size:.8em;color:var(--ink-2);margin-top:6px}
-.stat.alert .val{color:var(--bad)}
-.stat.alert{border-color:color-mix(in srgb,var(--bad) 40%,var(--line))}
-.goal{display:flex;gap:16px;align-items:center}
-.ring{width:78px;height:78px;flex:none}
-.ring circle{fill:none;stroke-width:8}
-.ring .track{stroke:var(--line)}
-.ring .bar{stroke:var(--ok);stroke-linecap:butt;transition:stroke-dashoffset .9s cubic-bezier(.2,.8,.2,1);filter:drop-shadow(0 0 4px var(--ok-soft))}
-.ring text{fill:var(--ink);font:600 17px var(--f-display);text-anchor:middle;dominant-baseline:central}
-
-/* ---------- HUD dial ---------- */
-.hud{display:grid;grid-template-columns:300px minmax(0,1fr);gap:20px;align-items:center}
-@media (max-width:900px){.hud{grid-template-columns:minmax(0,1fr)}.hud > section{order:-1}.dial{max-width:250px}}
-.dial{position:relative;width:100%;max-width:300px;margin:0 auto;aspect-ratio:1}
-.dial svg{width:100%;height:100%;display:block;overflow:visible}
-.dial .tick{stroke:var(--cy);opacity:.45}
-.dial .tick.major{opacity:.9}
-.dial .trk{fill:none;stroke:var(--line)}
-.dial .goalarc{fill:none;stroke:var(--hv);stroke-width:12;filter:drop-shadow(0 0 6px color-mix(in srgb,var(--hv) 70%,transparent));transition:stroke-dashoffset 1.2s cubic-bezier(.2,.8,.2,1)}
-.dial .dayarc{fill:none;stroke:var(--cy);stroke-width:4;opacity:.9}
-.dial .dash{fill:none;stroke:var(--cy);stroke-width:2;stroke-dasharray:2 7;opacity:.5}
-.dial .spin{transform-origin:150px 150px;animation:settle 1.2s cubic-bezier(.2,.8,.2,1) 1}
-@keyframes settle{from{transform:rotate(-40deg);opacity:0}to{transform:none;opacity:1}}
-.dial .center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;pointer-events:none}
-.dial .center .lbl{font:600 11px var(--f-display);letter-spacing:.2em;color:var(--cy);text-transform:uppercase}
-.dial .center .amt{font:600 clamp(26px,7vw,32px)/1.1 var(--f-display);margin:6px 0 4px;color:var(--ink)}
-.dial .center .pct{font:700 13px var(--f-display);color:var(--hv-text);letter-spacing:.06em}
-.dial .center .left{font-size:12px;color:var(--ink-2);margin-top:2px}
-.dial-legend{display:flex;justify-content:center;gap:16px;font-size:12px;color:var(--ink-2);margin-top:8px}
-.dial-legend i{display:inline-block;width:10px;height:3px;vertical-align:middle;margin-right:6px}
+/* ---------- home console: one screen, one target ---------- */
+.console{max-width:620px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+@media (min-width:1100px){.console{max-width:none;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:18px 28px;align-items:start}}
+.c-left,.c-right{display:flex;flex-direction:column;gap:16px;min-width:0}
+.strip{grid-column:1/-1;display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:.85em;color:var(--ink-2);border:1px dashed var(--line-2);padding:8px 12px;border-radius:var(--radius)}
+.strip span{min-width:0}
+@media (max-width:520px){.strip span{display:none}}
+.strip b{font:600 11px var(--f-display);letter-spacing:.16em;color:var(--cy);text-transform:uppercase}
+.strip .link{white-space:nowrap;margin-left:auto;background:none;border:0;color:var(--cy);font-weight:700;cursor:pointer;text-decoration:underline;padding:6px 0}
+/* HUD bracket frame: cut corners + gradient edge */
+.frame{position:relative;padding:18px 20px;background:var(--panel);--c:18px;clip-path:polygon(var(--c) 0,calc(100% - var(--c)) 0,100% var(--c),100% calc(100% - var(--c)),calc(100% - var(--c)) 100%,var(--c) 100%,0 calc(100% - var(--c)),0 var(--c))}
+.frame::before{content:"";position:absolute;inset:0;padding:1.5px;background:linear-gradient(135deg,var(--cy),color-mix(in srgb,var(--cy) 10%,transparent) 28%,color-mix(in srgb,var(--cy) 10%,transparent) 72%,var(--cy));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
+.frame .tag{position:absolute;top:0;left:50%;transform:translateX(-50%);padding:3px 14px 4px;font:600 10px var(--f-display);letter-spacing:.2em;text-transform:uppercase;color:var(--bg);background:var(--cy);clip-path:polygon(0 0,100% 0,calc(100% - 8px) 100%,8px 100%);white-space:nowrap}
+/* clock */
+.clock{text-align:center;padding-top:26px}
+.clock .time{font:600 clamp(52px,15vw,78px)/1 var(--f-display);letter-spacing:.03em;font-variant-numeric:tabular-nums;margin:2px 0}
+.clock .time small{font-size:.3em;letter-spacing:.12em;color:var(--ink-2);margin-left:6px}
+.clock .date{color:var(--ink-2);font-weight:700}
+.monthbar{margin-top:14px;display:flex;align-items:center;gap:10px;font:600 11px var(--f-display);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2)}
+.cells{flex:1;display:flex;gap:2px;min-width:0}
+.cells i{flex:1;height:9px;background:var(--line)}
+.cells i.p{background:color-mix(in srgb,var(--cy) 65%,transparent)}
+.cells i.t{background:var(--hv);box-shadow:0 0 8px var(--hv)}
+/* the core = the next action */
+.coreblock{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
+.core{position:relative;width:min(300px,76vw);aspect-ratio:1}
+.core svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.core .tk{stroke:var(--tone);opacity:.35}
+.core .tk.mj{opacity:.9}
+.core .thin{fill:none;stroke:var(--tone);opacity:.3}
+.core .dash{fill:none;stroke:var(--tone);stroke-width:2;stroke-dasharray:2 7;opacity:.55}
+.core .seg{fill:none;stroke:var(--line-2);stroke-width:7}
+.core .seg.on{stroke:var(--tone);filter:drop-shadow(0 0 6px var(--tone))}
+.core .chev{fill:var(--tone)}
+.core-btn{position:absolute;left:50%;top:50%;width:58%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-decoration:none;cursor:pointer;color:var(--ink);border:2px solid var(--tone);padding:0;font:inherit;
+  background:radial-gradient(circle at 50% 38%,color-mix(in srgb,var(--tone) 30%,var(--panel)),var(--panel) 72%);
+  box-shadow:0 0 0 7px color-mix(in srgb,var(--tone) 12%,transparent),0 0 42px color-mix(in srgb,var(--tone) 32%,transparent);transition:box-shadow .2s,transform .1s}
+.core-btn:hover{box-shadow:0 0 0 9px color-mix(in srgb,var(--tone) 20%,transparent),0 0 56px color-mix(in srgb,var(--tone) 45%,transparent)}
+.core-btn:active{transform:translate(-50%,-50%) scale(.98)}
+.core-btn .verb{font:700 13px var(--f-display);letter-spacing:.18em;text-transform:uppercase;color:var(--tone-text)}
+.core-btn .amt{font:600 clamp(24px,7vw,30px)/1.1 var(--f-display);margin:6px 0;font-variant-numeric:tabular-nums}
+.core-btn .go{font-size:12px;font-weight:700;color:var(--ink-2)}
+.t-bad{--tone:var(--bad);--tone-text:var(--bad)} .t-hv{--tone:var(--hv);--tone-text:var(--hv-text)}
+.t-cy{--tone:var(--cy);--tone-text:var(--cy)} .t-ok{--tone:var(--ok);--tone-text:var(--ok)}
+.core-cap h2{font-size:clamp(22px,5vw,26px);text-transform:none;letter-spacing:.01em;color:var(--ink);margin:4px 0 2px}
+.core-cap p{margin:0;color:var(--ink-2)}
+.core-cap .eyebrow{color:var(--tone-text)}
+/* gauges */
+.gauges{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding-top:8px}
+.gauge{display:flex;flex-direction:column;align-items:center;gap:4px;text-decoration:none;color:inherit;padding:8px 2px;border-radius:var(--radius);text-align:center;min-width:0}
+.gauge:hover{background:var(--cy-soft)}
+.gauge .g{position:relative;width:min(88px,100%);aspect-ratio:1}
+.gauge svg{width:100%;height:100%;display:block}
+.gauge .g span{position:absolute;inset:0;display:grid;place-items:center;font:600 16px var(--f-display);font-variant-numeric:tabular-nums}
+.gauge .lbl{font:600 11px var(--f-display);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2)}
+.gauge .sub{font-size:11px;color:var(--ink-3)}
+/* status log */
+.log{font:500 14px/1.5 var(--f-display);font-variant-numeric:tabular-nums;padding-top:28px}
+.log .ln{display:flex;gap:8px;align-items:baseline;text-decoration:none;color:var(--ink-2);padding:5px 4px;border-radius:3px}
+.log a.ln:hover{color:var(--ink);background:var(--cy-soft)}
+.log .p{font-weight:700}
+.log .k{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.log .dots{flex:1;border-bottom:1px dotted var(--line-2);min-width:12px;transform:translateY(-4px)}
+.log .v{color:var(--ink);white-space:nowrap}
 .swatches{display:flex;gap:10px;flex-wrap:wrap}
 .swatches button{display:flex;align-items:center;gap:8px;border:1px solid var(--line-2);background:var(--bg-2);padding:7px 12px;border-radius:var(--radius);cursor:pointer;font-weight:700;color:var(--ink-2)}
 .swatches button i{width:16px;height:16px;border-radius:50%;box-shadow:0 0 10px currentColor}
@@ -385,10 +398,10 @@ dialog .actions{display:flex;justify-content:flex-end;gap:10px;margin-top:22px}
 
 /* calm mode + reduced motion: no glow, no animation */
 :root[data-calm]{--glow:0 0 0 1px var(--line);--hv-glow:none}
-:root[data-calm] .mission{box-shadow:none}
+:root[data-calm] .core-btn{box-shadow:0 0 0 2px color-mix(in srgb,var(--tone) 25%,transparent)}
+:root[data-calm] .core .seg.on{filter:none}
 :root[data-calm] *,:root[data-calm] *::before{transition:none!important;animation:none!important}
 :root[data-calm] body{background-image:none}
-:root[data-calm] .dial .goalarc{filter:none}
 @media (prefers-reduced-motion:reduce){*,*::before{transition:none!important;animation:none!important}}
 
 @media print{
@@ -677,103 +690,120 @@ const skipped = new Set();
 // One thing at a time: the most useful next action, in priority order
 function nextUps() {
   const out = [];
-  const name = d => (getClient(d.clientId) || {}).name || 'your client';
+  const name = d => (getClient(d.clientId) || {}).name || 'No client yet';
   const byOld = (a, b) => (a.createdAt || 0) - (b.createdAt || 0);
   S.docs.filter(d => d.type === 'invoice' && d.status === 'draft' && !isEmptyDoc(d)).sort(byOld).forEach(d => out.push({
-    id: d.id, tone: 'hv', tag: 'Unsent invoice', title: `Send ${d.number} to ${name(d)}`,
-    why: `Send it and ${money(totals(d).total)} is on its way to you. Started ${ago(d.issueDate)}.`, btn: 'Check it & send', href: '#/view/' + d.id }));
-  S.docs.filter(d => d.type === 'invoice' && status(d) === 'overdue').sort((a, b) => a.dueDate.localeCompare(b.dueDate)).forEach(d => {
-    const n = daysBetween(d.dueDate, today());
-    out.push({ id: d.id, tone: 'bad', tag: `${plural(n, 'day')} overdue`, title: `Chase ${name(d)} for ${money(totals(d).balance)}`,
-      why: `${d.number} was due ${longDate(d.dueDate)}. The reminder is already written for you — about 30 seconds.`, btn: 'Send reminder', act: 'remind', href: '#/view/' + d.id });
-  });
+    id: d.id, tone: 'hv', tag: 'Ready to send', verb: 'Send it', amt: money(totals(d).total), who: name(d), detail: `${d.number} · started ${ago(d.issueDate)}`, href: '#/view/' + d.id }));
+  S.docs.filter(d => d.type === 'invoice' && status(d) === 'overdue').sort((a, b) => a.dueDate.localeCompare(b.dueDate)).forEach(d => out.push({
+    id: d.id, tone: 'bad', tag: `${plural(daysBetween(d.dueDate, today()), 'day')} overdue`, verb: 'Chase it', amt: money(totals(d).balance), who: name(d), detail: `${d.number} · the reminder is already written`, act: 'remind', href: '#/view/' + d.id }));
   S.docs.filter(d => d.type === 'quote' && d.status === 'draft' && !isEmptyDoc(d)).sort(byOld).forEach(d => out.push({
-    id: d.id, tone: 'cy', tag: 'Unsent quote', title: `Send quote ${d.number} to ${name(d)}`,
-    why: `A ${money(totals(d).total)} job is waiting on your price.`, btn: 'Check it & send', href: '#/view/' + d.id }));
+    id: d.id, tone: 'cy', tag: 'Quote to send', verb: 'Send quote', amt: money(totals(d).total), who: name(d), detail: `${d.number} · started ${ago(d.issueDate)}`, href: '#/view/' + d.id }));
   S.docs.filter(d => d.type === 'quote' && d.status === 'sent' && daysBetween(d.issueDate, today()) >= 3).sort(byOld).forEach(d => out.push({
-    id: d.id, tone: 'cy', tag: 'Follow up', title: `Check in with ${name(d)} about ${d.number}`,
-    why: `You quoted ${money(totals(d).total)} ${ago(d.issueDate)}. A quick call often wins the job.`, btn: 'Open quote', href: '#/view/' + d.id }));
+    id: d.id, tone: 'cy', tag: 'Follow up', verb: 'Follow up', amt: money(totals(d).total), who: name(d), detail: `${d.number} · quoted ${ago(d.issueDate)}`, href: '#/view/' + d.id }));
   return out;
 }
-function missionHtml() {
+const arcPath = (r, a0, a1) => {
+  const pt = a => [(150 + r * Math.sin(a)).toFixed(1), (150 - r * Math.cos(a)).toFixed(1)];
+  const [x0, y0] = pt(a0), [x1, y1] = pt(a1);
+  return `M${x0} ${y0}A${r} ${r} 0 ${a1 - a0 > Math.PI ? 1 : 0} 1 ${x1} ${y1}`;
+};
+function coreHtml() {
   const all = nextUps(), list = all.filter(x => !skipped.has(x.id));
-  if (!all.length) return `<section class="card mission t-ok"><span class="eyebrow">✓ All clear</span><h3>Nothing needs you right now</h3><p>No unsent invoices, nothing overdue, no quotes to chase. Finished a job? Log it now while it’s fresh.</p><button class="btn primary big" data-act="quick">${I.plus}Log a job</button></section>`;
-  if (!list.length) return `<section class="card mission t-cy"><span class="eyebrow">Paused</span><h3>You’ve skipped everything for now</h3><p>That’s fine. ${plural(all.length, 'thing')} will still be here when you’re ready.</p><button class="btn" data-act="unskip">Show them again</button></section>`;
-  const m = list[0], pos = all.indexOf(m);
-  const go = m.act ? `<button class="btn primary big" data-act="${m.act}" data-id="${m.id}">${esc(m.btn)} →</button>` : `<a class="btn primary big" href="${m.href}">${esc(m.btn)} →</a>`;
-  return `<section class="card mission t-${m.tone}" aria-live="polite">
-    <div class="row"><span class="eyebrow">Next up · ${esc(m.tag)}</span>
-      ${all.length > 1 ? '' : '<!--'}<span class="pips" aria-label="${pos + 1} of ${all.length}">${all.slice(0, 6).map((_, i) => `<span class="${i <= pos ? 'on' : ''}"></span>`).join('')}</span>${all.length > 1 ? '' : '-->'}</div>
-    <h3>${esc(m.title)}</h3><p>${esc(m.why)}</p>
-    <div class="row">${go}<button class="btn ghost" data-act="skip" data-id="${m.id}">Skip for now</button>
-      <span class="muted small right">${list.length > 1 ? `then ${plural(list.length - 1, 'more thing')}` : 'Last one — nearly there'}</span></div>
-    ${list.length > 1 ? `<div class="queue">${list.slice(1, 4).map(x => `<a href="${x.href}"><span class="muted">›</span><span><b>${esc(x.title)}</b> · ${esc(x.tag)}</span></a>`).join('')}</div>` : ''}
-  </section>`;
-}
-
-function dialHtml(paidMonth, goal) {
-  const pct = Math.min(1, paidMonth / goal);
-  const now = new Date(), dim = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate(), day = now.getDate();
-  const R1 = 112, C1 = 2 * Math.PI * R1, R2 = 92, C2 = 2 * Math.PI * R2;
-  let ticks = '';
-  for (let i = 0; i < 72; i++) {
-    const a = i / 72 * Math.PI * 2, major = i % 6 === 0, r1 = major ? 128 : 132, r2 = 140;
-    ticks += `<line class="tick ${major ? 'major' : ''}" x1="${(150 + r1 * Math.sin(a)).toFixed(1)}" y1="${(150 - r1 * Math.cos(a)).toFixed(1)}" x2="${(150 + r2 * Math.sin(a)).toFixed(1)}" y2="${(150 - r2 * Math.cos(a)).toFixed(1)}" stroke-width="${major ? 2 : 1}"/>`;
+  const btn = (tag, attrs, verb, big, go) => `<${tag} class="core-btn" ${attrs}><span class="verb">${esc(verb)}</span><span class="amt">${esc(big)}</span><span class="go">${esc(go)}</span></${tag}>`;
+  let tone, center, cap, nav = '', pos = -1;
+  if (!all.length) {
+    tone = 'ok'; center = btn('button', 'data-act="quick"', 'All clear', '✓', 'Log a job →');
+    cap = `<div class="eyebrow">Nothing needs you</div><h2>You’re all caught up</h2><p>Finished a job? Log it while it’s fresh.</p>`;
+  } else if (!list.length) {
+    tone = 'cy'; center = btn('button', 'data-act="unskip"', 'Paused', plural(all.length, 'thing'), 'Show again →');
+    cap = `<div class="eyebrow">Skipped for now</div><h2>They’ll wait for you</h2><p>Tap the core when you’re ready.</p>`;
+  } else {
+    const m = list[0]; pos = all.indexOf(m); tone = m.tone;
+    center = m.act ? btn('button', `data-act="${m.act}" data-id="${m.id}" aria-label="${esc(m.verb + ' ' + m.amt + ' from ' + m.who)}"`, m.verb, m.amt, 'Tap to start →')
+                   : btn('a', `href="${m.href}" aria-label="${esc(m.verb + ' ' + m.amt + ' to ' + m.who)}"`, m.verb, m.amt, 'Tap to start →');
+    cap = `<div class="eyebrow">Next up · ${esc(m.tag)}</div><h2>${esc(m.who)}</h2><p>${esc(m.detail)}</p>`;
+    nav = `<div class="row" style="justify-content:center"><button class="btn ghost sm" data-act="skip" data-id="${m.id}">Skip for now</button><span class="muted small">${pos + 1} of ${all.length}</span></div>`;
   }
-  const left = dim - day;
-  return `<div><div class="dial" role="img" aria-label="${money(paidMonth)} paid this month, ${Math.round(pct * 100)}% of your ${money(goal)} goal. Day ${day} of ${dim}.">
-    <svg viewBox="0 0 300 300" aria-hidden="true">
-      <g class="spin">${ticks}</g>
-      <circle class="trk" cx="150" cy="150" r="${R1}" stroke-width="12"/>
-      <circle class="goalarc" cx="150" cy="150" r="${R1}" stroke-dasharray="${C1.toFixed(1)}" stroke-dashoffset="${(C1 * (1 - pct)).toFixed(1)}" transform="rotate(-90 150 150)"/>
-      <circle class="trk" cx="150" cy="150" r="${R2}" stroke-width="4"/>
-      <circle class="dayarc" cx="150" cy="150" r="${R2}" stroke-dasharray="${C2.toFixed(1)}" stroke-dashoffset="${(C2 * (1 - day / dim)).toFixed(1)}" transform="rotate(-90 150 150)"/>
-      <circle class="dash" cx="150" cy="150" r="80"/>
-    </svg>
-    <div class="center"><span class="lbl">Paid this month</span><span class="amt">${money(paidMonth)}</span><span class="pct">${Math.round(pct * 100)}% of ${money(goal)}</span><span class="left">${left ? plural(left, 'day') + ' left in the month' : 'Last day of the month'}</span></div>
-  </div>
-  <div class="dial-legend"><span><i style="background:var(--hv)"></i>Goal</span><span><i style="background:var(--cy)"></i>Month so far</span></div></div>`;
+  // ring: one segment per to-do, current one lit
+  const n = Math.max(1, all.length), gap = n > 1 ? 0.14 : 0.0001;
+  let segs = '';
+  for (let i = 0; i < n; i++) segs += `<path class="seg ${(i === pos || !all.length) ? 'on' : ''}" d="${arcPath(112, i * 2 * Math.PI / n + gap / 2, (i + 1) * 2 * Math.PI / n - gap / 2 - (n === 1 ? 0.0002 : 0))}"/>`;
+  let ticks = '';
+  for (let i = 0; i < 60; i++) {
+    const a = i / 60 * Math.PI * 2, mj = i % 5 === 0, r1 = mj ? 134 : 138;
+    ticks += `<line class="tk ${mj ? 'mj' : ''}" x1="${(150 + r1 * Math.sin(a)).toFixed(1)}" y1="${(150 - r1 * Math.cos(a)).toFixed(1)}" x2="${(150 + 144 * Math.sin(a)).toFixed(1)}" y2="${(150 - 144 * Math.cos(a)).toFixed(1)}" stroke-width="${mj ? 2 : 1}"/>`;
+  }
+  const svg = `<svg viewBox="0 0 300 300" aria-hidden="true">${ticks}<circle class="dash" cx="150" cy="150" r="124"/>${segs}<circle class="thin" cx="150" cy="150" r="100" stroke-width="1"/>
+    <path class="chev" d="M10 150l-10-8v16zM290 150l10-8v16z"/></svg>`;
+  return `<div class="core t-${tone}">${svg}${center}</div><div class="core-cap t-${tone}">${cap}</div>${nav}`;
 }
+const moneyShort = c => { const d = c / 100; return d >= 1e6 ? '$' + (d / 1e6).toFixed(1) + 'm' : d >= 10000 ? '$' + Math.round(d / 1000) + 'k' : d >= 1000 ? '$' + (d / 1000).toFixed(1) + 'k' : '$' + Math.round(d); };
+function gaugeHtml(href, label, val, sub, frac, tone) {
+  const r = 36, C = 2 * Math.PI * r;
+  return `<a class="gauge" href="${href}"><div class="g"><svg viewBox="0 0 100 100" aria-hidden="true">
+    <circle cx="50" cy="50" r="46" fill="none" style="stroke:var(--cy)" stroke-width="1.5" stroke-dasharray="1.5 5" opacity=".6"/>
+    <circle cx="50" cy="50" r="${r}" fill="none" style="stroke:var(--line)" stroke-width="7"/>
+    ${frac > 0 ? `<circle cx="50" cy="50" r="${r}" fill="none" style="stroke:var(--${tone})" stroke-width="7" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C * (1 - Math.min(1, frac))).toFixed(1)}" transform="rotate(-90 50 50)"/>` : ''}
+  </svg><span>${esc(val)}</span></div><div class="lbl">${esc(label)}</div><div class="sub">${esc(sub)}</div></a>`;
+}
+function clockText() {
+  const d = new Date(), h = d.getHours() % 12 || 12;
+  return `${h}:${pad(d.getMinutes())}<small>${d.getHours() < 12 ? 'AM' : 'PM'}</small>`;
+}
+setInterval(() => { const el = document.getElementById('clock'); if (el) el.innerHTML = clockText(); }, 15000);
 
 function viewHome() {
   const st = S.settings;
   const inv = S.docs.filter(d => d.type === 'invoice');
-  let outstanding = 0, overdueSum = 0, overdueN = 0, paidMonth = 0;
+  let outstanding = 0, overdueSum = 0, overdueN = 0, paidMonth = 0, owedN = 0;
   const month = today().slice(0, 7);
   for (const d of inv) {
     const s = status(d), t = totals(d);
-    if (s === 'sent' || s === 'part paid' || s === 'overdue') outstanding += t.balance;
+    if (s === 'sent' || s === 'part paid' || s === 'overdue') { outstanding += t.balance; owedN++; }
     if (s === 'overdue') { overdueSum += t.balance; overdueN++; }
     for (const p of d.payments) if ((p.date || '').slice(0, 7) === month) paidMonth += toCents(p.amount);
   }
   const q = basQuarter(today());
-  let gstAccrual = 0, gstCash = 0;
-  for (const d of inv) {
-    if (d.status === 'draft' || !d.gstReg) continue;
-    const t = totals(d);
-    if (d.issueDate >= q.start && d.issueDate <= q.end) gstAccrual += t.gst;
-    if (t.total > 0) for (const p of d.payments) if (p.date >= q.start && p.date <= q.end) gstCash += Math.round(toCents(p.amount) * t.gst / t.total);
-  }
-  const goal = Math.max(1, toCents(st.monthlyGoal) || 1500000);
-  const recent = S.docs.slice().sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)).slice(0, 6);
-  const hour = new Date().getHours();
-  const hello = (hour < 12 ? 'Morning' : hour < 17 ? 'Arvo' : 'Evening') + (st.businessName ? `, ${esc(st.tradingName || st.businessName)}` : '');
+  let gst = 0;
+  for (const d of inv) if (d.status !== 'draft' && d.gstReg && d.issueDate >= q.start && d.issueDate <= q.end) gst += totals(d).gst;
+  const goal = Math.max(1, toCents(st.monthlyGoal) || 1500000), pct = paidMonth / goal;
+  const now = new Date(), dim = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate(), day = now.getDate();
+  const hr = now.getHours(), part = hr < 12 ? 'Morning' : hr < 17 ? 'Arvo' : 'Evening';
+  const who = st.tradingName || st.businessName;
+  const line = (href, tone, k, v) => `<${href ? `a href="${href}"` : 'div'} class="ln"><span class="p" style="color:var(--${tone})">›</span><span class="k">${esc(k)}</span><span class="dots"></span><span class="v">${esc(v)}</span></${href ? 'a' : 'div'}>`;
+  const pageLine = key => { const pg = PAGES.find(p => p.key === key), docs = S.docs.filter(pg.match), counted = key === 'quotes' ? docs.filter(d => d.status === 'sent') : docs;
+    return counted.length ? { n: counted.length, sum: counted.reduce((a, d) => a + (pg.kind === 'balance' ? totals(d).balance : totals(d).total), 0) } : null; };
+  const L = { overdue: pageLine('overdue'), tosend: pageLine('tosend'), waiting: pageLine('waiting'), quotes: pageLine('quotes') };
+  const logLines = [
+    L.overdue && line('#/invoices/overdue', 'bad', `${L.overdue.n} overdue`, money(L.overdue.sum)),
+    L.tosend && line('#/invoices/tosend', 'warn', `${L.tosend.n} ready to send`, money(L.tosend.sum)),
+    L.waiting && line('#/invoices/waiting', 'cy', `${L.waiting.n} waiting on payment`, money(L.waiting.sum)),
+    L.quotes && line('#/quotes', 'hv', `${plural(L.quotes.n, 'quote')} awaiting answer`, money(L.quotes.sum)),
+    st.gstRegistered ? line('', 'ink-3', `GST ${q.label}`, money(gst)) : '',
+    st.gstRegistered ? line('', 'ink-3', 'BAS due', q.due) : ''
+  ].filter(Boolean).join('');
 
-  return `
-  ${S.example ? `<div class="banner example"><div><b>You’re looking at example data</b><div class="small">Smithy’s Plumbing isn’t real. Have a play, then clear it out and add your own business.</div></div><button class="btn primary right" data-act="examples-clear">Clear examples & start</button></div>` : ''}
-  ${!st.businessName || !st.abn ? `<div class="banner"><div><b>Set up your business first</b><div class="small">Your business name, ABN and bank details go on every invoice.</div></div><a class="btn right" href="#/settings">Add details</a></div>` : ''}
-  <div class="page-head">
-    <div><div class="eyebrow">${longDate(today())}</div><h1>${hello}</h1></div>
-    <div class="row"><button class="btn ${st.focusHome ? '' : 'ghost'}" data-act="focus" aria-pressed="${!!st.focusHome}">${st.focusHome ? '◉ Focus on' : '◎ Focus'}</button><button class="btn" data-act="new" data-type="quote">${I.plus}New quote</button></div>
+  return `<div class="console">
+  ${S.example ? `<div class="strip"><b>Example data</b><span>Smithy’s Plumbing isn’t real. Have a play.</span><button class="link" data-act="examples-clear">Clear & start mine</button></div>`
+    : (!st.businessName || !st.abn) ? `<div class="strip"><b>Setup</b><span>Add your business name, ABN and bank details.</span><a class="link" href="#/settings">Add details</a></div>` : ''}
+  <div class="c-left">
+    <section class="frame clock" aria-label="Date and time"><span class="tag">${esc(part)}${who ? ' · ' + esc(who) : ''}</span>
+      <div class="time" id="clock">${clockText()}</div>
+      <div class="date">${now.toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' })}</div>
+      <div class="monthbar" role="img" aria-label="Day ${day} of ${dim}, ${plural(dim - day, 'day')} left this month"><span>${now.toLocaleDateString('en-AU', { month: 'short' })}</span>
+        <div class="cells">${Array.from({ length: dim }, (_, i) => `<i class="${i + 1 < day ? 'p' : i + 1 === day ? 't' : ''}"></i>`).join('')}</div><span>${dim - day}d left</span></div>
+    </section>
+    <section class="coreblock" aria-label="Next up">${coreHtml()}</section>
   </div>
-  ${st.focusHome ? `${missionHtml()}<p class="muted small mt">Focus is on, so everything else is hidden. Tap “Focus on” to see your numbers and paperwork again.</p>` : `
-  <div class="hud">${dialHtml(paidMonth, goal)}${missionHtml()}</div>
-  <div class="grid g3 mt">
-    <div class="card stat"><div class="lbl">Owed to you</div><div class="val">${money(outstanding)}</div><div class="foot">Sent, not paid yet</div></div>
-    <div class="card stat ${overdueN ? 'alert' : ''}"><div class="lbl">Overdue</div><div class="val">${money(overdueSum)}</div><div class="foot">${overdueN ? plural(overdueN, 'invoice') + ' past due' : 'Nothing late ✓'}</div></div>
-    <div class="card stat"><div class="lbl">GST · ${q.label}</div><div class="val">${money(gstAccrual)}</div><div class="foot">Cash basis ${money(gstCash)} · BAS due ${q.due}</div></div>
+  <div class="c-right">
+    <section class="frame"><span class="tag">Money</span><div class="gauges">
+      ${gaugeHtml('#/invoices/paid', 'This month', moneyShort(paidMonth), `${Math.round(pct * 100)}% of ${moneyShort(goal)} goal`, pct, 'hv')}
+      ${gaugeHtml('#/invoices/overdue', 'Overdue', moneyShort(overdueSum), overdueN ? plural(overdueN, 'invoice') : 'None ✓', outstanding ? overdueSum / outstanding : 0, 'bad')}
+      ${gaugeHtml('#/invoices/waiting', 'Owed', moneyShort(outstanding), plural(owedN, 'invoice'), 0, 'cy')}
+    </div></section>
+    <section class="frame log"><span class="tag">Status log</span>${logLines || '<div class="muted">All quiet. Nothing to report.</div>'}</section>
   </div>
-  <div class="card mt"><h2>Latest paperwork</h2>${recent.length ? `<div class="list">${recent.map(rowHtml).join('')}</div>` : `<div class="empty"><b>Nothing here yet</b>Tap “Log a job” to jot down your first one.<div class="mt"><button class="btn sm" data-act="examples-load">Or load example data to try it out</button></div></div>`}</div>`}`;
+</div>`;
 }
 
 function rowHtml(d) {
@@ -1324,7 +1354,6 @@ const ACT = {
   },
   accent(ds) { S.settings.accent = ds.val; save(); route(); },
   display(ds) { S.settings.display = ds.val; save(); route(); },
-  focus() { S.settings.focusHome = !S.settings.focusHome; save(); route(); },
   quick() {
     const st = S.settings;
     const opts = S.clients.slice().sort((a, b) => a.name.localeCompare(b.name)).map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join('');
