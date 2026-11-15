@@ -3,231 +3,382 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#1b2a3a">
+<meta name="theme-color" content="#090e1b">
 <title>Docket Invoicing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Chakra+Petch:wght@500;600;700&display=swap">
 <style>
+/* Layout: instrument rail (left) + one calm work column. "Night blueprint" HUD:
+   hi-vis amber = the one thing to press, cyan = readouts, clipped-corner panels on a blueprint grid. */
 :root{
-  --bg:#f3f1ec; --surface:#fff; --surface-2:#f8f7f3; --ink:#1a1f26; --ink-2:#5b6470; --line:#e0dcd3;
-  --accent:#c2410c; --accent-hover:#a3360a; --accent-ink:#fff; --accent-soft:#fdeadc;
-  --navy:#1b2a3a; --info:#1d4f91; --info-soft:#e3ecf8;
-  --ok:#1f7a4d; --ok-soft:#dff2e7; --warn:#9a4a06; --warn-soft:#fdf0cc; --bad:#b42318; --bad-soft:#fde6e3;
-  --muted-soft:#ebe8e1; --radius:12px; --shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
-  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --bg:#030508; --bg-2:#080c14; --panel:#0a0f19; --panel-2:#101726; --line:#1d2a40; --line-2:#2c3d5c;
+  --ink:#eef3ff; --ink-2:#9aa7c7; --ink-3:#6c7898;
+  --hv:#ffc21a; --hv-hover:#ffd257; --hv-ink:#1b1200; --hv-soft:rgba(255,194,26,.13); --hv-text:var(--hv);
+  --cy:#5ad8ff; --cy-soft:rgba(90,216,255,.12);
+  --ok:#43e2a3; --ok-soft:rgba(67,226,163,.13);
+  --warn:#ff9a4d; --warn-soft:rgba(255,154,77,.14);
+  --bad:#ff6680; --bad-soft:rgba(255,102,128,.14);
+  --muted-soft:rgba(154,167,199,.12);
+  --grid:rgba(90,216,255,.06); --halo:rgba(90,216,255,.10);
+  --glow:0 0 0 1px rgba(90,216,255,.22),0 0 30px rgba(90,216,255,.09);
+  --hv-glow:0 0 0 1px color-mix(in srgb,var(--hv) 55%,transparent),0 0 26px color-mix(in srgb,var(--hv) 30%,transparent);
+  --nav:#020306; --nav-ink:#c4cee6;
+  --f-display:"Chakra Petch",ui-sans-serif,system-ui,sans-serif;
+  --f-body:"Atkinson Hyperlegible",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --fs:16px; --cut:14px; --radius:4px;
+  color-scheme:dark;
 }
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    --bg:#12161b; --surface:#1b2128; --surface-2:#222932; --ink:#eef1f4; --ink-2:#a2acb8; --line:#2f3842;
-    --accent:#f0782f; --accent-hover:#ff8a45; --accent-ink:#1a1006; --accent-soft:#3a2416;
-    --navy:#0d1319; --info:#8fb6ec; --info-soft:#1c2a3d;
-    --ok:#6fd19c; --ok-soft:#173226; --warn:#f3c26b; --warn-soft:#3a2d12; --bad:#ff8f84; --bad-soft:#3d1a17;
-    --muted-soft:#2a323c; --shadow:0 1px 2px rgba(0,0,0,.3); color-scheme:dark;
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#edf1f8; --bg-2:#e4eaf4; --panel:#ffffff; --panel-2:#f4f7fc; --line:#d2dbea; --line-2:#b7c4dc;
+    --ink:#0c1426; --ink-2:#47557a; --ink-3:#6c7898;
+    --hv:#ffb020; --hv-hover:#ffbf45; --hv-ink:#1b1200; --hv-soft:color-mix(in srgb,var(--hv) 16%,transparent); --hv-text:color-mix(in srgb,var(--hv) 45%,#000);
+    --cy:#006f9e; --cy-soft:rgba(0,111,158,.09);
+    --ok:#08805a; --ok-soft:rgba(8,128,90,.1);
+    --warn:#b45400; --warn-soft:rgba(180,84,0,.1);
+    --bad:#c8213f; --bad-soft:rgba(200,33,63,.09);
+    --muted-soft:rgba(71,85,122,.09);
+    --grid:rgba(0,90,140,.07); --halo:rgba(0,111,158,.07);
+    --glow:0 0 0 1px rgba(0,111,158,.18),0 6px 24px rgba(12,20,38,.07);
+    --hv-glow:0 0 0 1px color-mix(in srgb,var(--hv) 60%,#000),0 6px 22px color-mix(in srgb,var(--hv) 25%,transparent);
+    --nav:#0c1426; --nav-ink:#c4cee6;
+    color-scheme:light;
   }
 }
-:root[data-theme="dark"]{
-  --bg:#12161b; --surface:#1b2128; --surface-2:#222932; --ink:#eef1f4; --ink-2:#a2acb8; --line:#2f3842;
-  --accent:#f0782f; --accent-hover:#ff8a45; --accent-ink:#1a1006; --accent-soft:#3a2416;
-  --navy:#0d1319; --info:#8fb6ec; --info-soft:#1c2a3d;
-  --ok:#6fd19c; --ok-soft:#173226; --warn:#f3c26b; --warn-soft:#3a2d12; --bad:#ff8f84; --bad-soft:#3d1a17;
-  --muted-soft:#2a323c; --shadow:0 1px 2px rgba(0,0,0,.3); color-scheme:dark;
+:root[data-theme="light"]{
+  --bg:#edf1f8; --bg-2:#e4eaf4; --panel:#ffffff; --panel-2:#f4f7fc; --line:#d2dbea; --line-2:#b7c4dc;
+  --ink:#0c1426; --ink-2:#47557a; --ink-3:#6c7898;
+  --hv:#ffb020; --hv-hover:#ffbf45; --hv-ink:#1b1200; --hv-soft:color-mix(in srgb,var(--hv) 16%,transparent); --hv-text:color-mix(in srgb,var(--hv) 45%,#000);
+  --cy:#006f9e; --cy-soft:rgba(0,111,158,.09);
+  --ok:#08805a; --ok-soft:rgba(8,128,90,.1);
+  --warn:#b45400; --warn-soft:rgba(180,84,0,.1);
+  --bad:#c8213f; --bad-soft:rgba(200,33,63,.09);
+  --muted-soft:rgba(71,85,122,.09);
+  --grid:rgba(0,90,140,.07); --halo:rgba(0,111,158,.07);
+  --glow:0 0 0 1px rgba(0,111,158,.18),0 6px 24px rgba(12,20,38,.07);
+  --hv-glow:0 0 0 1px color-mix(in srgb,var(--hv) 60%,#000),0 6px 22px color-mix(in srgb,var(--hv) 25%,transparent);
+  --nav:#0c1426; --nav-ink:#c4cee6;
+  color-scheme:light;
 }
+:root[data-big]{--fs:18px}
+:root[data-accent="cyan"]{--hv:#22e4ff;--hv-hover:#6aeeff;--hv-ink:#001a20}
+:root[data-accent="pink"]{--hv:#ff4fd8;--hv-hover:#ff86e4;--hv-ink:#22001b}
+:root[data-accent="green"]{--hv:#3dff8b;--hv-hover:#7affb0;--hv-ink:#00200c}
+:root[data-accent]{--hv-soft:color-mix(in srgb,var(--hv) 14%,transparent)}
 *{box-sizing:border-box}
 html,body{margin:0}
-body{background:var(--bg);color:var(--ink);font:15px/1.45 var(--font);-webkit-font-smoothing:antialiased}
+body{
+  background-color:var(--bg);
+  background-image:radial-gradient(ellipse 80% 50% at 70% -10%,var(--halo),transparent 70%),radial-gradient(var(--grid) 1px,transparent 1.2px);
+  background-size:100% 100%,22px 22px; background-attachment:fixed;
+  color:var(--ink);font:var(--fs)/1.5 var(--f-body);-webkit-font-smoothing:antialiased;
+}
 a{color:inherit}
-h1,h2,h3{margin:0;line-height:1.2}
+h1,h2,h3{margin:0;line-height:1.15;font-family:var(--f-display);font-weight:600;letter-spacing:.01em;text-wrap:balance}
 button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--cy);outline-offset:2px}
+.mono,.num,.amt,.val{font-family:var(--f-display);font-variant-numeric:tabular-nums}
 
 /* ---------- shell ---------- */
 .shell{display:flex;min-height:100vh}
-.nav{background:var(--navy);color:#fff;width:220px;flex:none;padding:20px 12px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:4px}
-.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;letter-spacing:-.02em;padding:4px 10px 18px}
-.brand-mark{width:30px;height:30px;border-radius:8px;background:#f0782f;display:grid;place-items:center;color:#1a1006}
-.nav a{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;text-decoration:none;color:#c9d3de;font-weight:600}
-.nav a:hover{background:rgba(255,255,255,.07);color:#fff}
-.nav a.on{background:rgba(240,120,47,.18);color:#fff}
-.nav a.on svg{color:#f0782f}
+.nav{background:var(--nav);color:var(--nav-ink);width:224px;flex:none;padding:22px 14px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:4px;border-right:1px solid rgba(90,216,255,.14)}
+.brand{display:flex;align-items:center;gap:10px;font:700 21px/1 var(--f-display);letter-spacing:.14em;padding:4px 10px 20px;color:#fff}
+.brand-mark{width:30px;height:30px;display:grid;place-items:center;color:var(--hv-ink);background:var(--hv);box-shadow:0 0 16px color-mix(in srgb,var(--hv) 50%,transparent);clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,0 100%)}
+.brand small{font-size:10px;letter-spacing:.2em;color:#5ad8ff;display:block;margin-top:4px}
+.nav a{display:flex;align-items:center;gap:12px;padding:11px 12px;text-decoration:none;color:#aab5d0;font-weight:700;border-left:3px solid transparent;border-radius:0 4px 4px 0}
+.nav a:hover{background:rgba(255,255,255,.05);color:#fff}
+.nav a.on{background:linear-gradient(90deg,rgba(90,216,255,.16),transparent);color:#fff;border-left-color:#5ad8ff}
+.nav a.on svg{color:#5ad8ff}
 .nav svg{width:20px;height:20px;flex:none}
+.nav .fab{background:var(--hv);color:var(--hv-ink);justify-content:center;margin:0 0 14px;border:0;border-radius:0;clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,0 100%);box-shadow:none}
+.nav .fab:hover{background:var(--hv-hover);color:var(--hv-ink)}
+.nav .fab svg{color:var(--hv-ink)!important}
 .nav .spacer{flex:1}
-.nav .small{font-size:12px;color:#8a97a6;padding:8px 12px}
-main{flex:1;min-width:0;padding-block:28px 120px;padding-left:max(32px,env(safe-area-inset-left,0px));padding-right:max(32px,env(safe-area-inset-right,0px));max-width:1100px}
+.nav .foot{font-size:12px;color:#7884a3;padding:8px 12px;display:flex;align-items:center;gap:8px}
+.dot{width:8px;height:8px;border-radius:50%;background:#43e2a3;box-shadow:0 0 8px #43e2a3;flex:none}
+main{flex:1;min-width:0;padding-block:30px 130px;padding-left:max(36px,env(safe-area-inset-left,0px));padding-right:max(36px,env(safe-area-inset-right,0px));max-width:1120px}
 
 @media (max-width:820px){
   .shell{display:block}
-  .nav{position:fixed;bottom:0;left:0;right:0;top:auto;height:auto;width:auto;flex-direction:row;justify-content:space-around;padding:6px max(4px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(4px,env(safe-area-inset-left,0px));z-index:20;gap:0}
-  .brand,.nav .spacer,.nav .small{display:none}
-  .nav a{flex-direction:column;gap:2px;font-size:11px;padding:6px 4px;flex:1;text-align:center;justify-content:center}
-  main{padding-block:16px 110px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  .nav{position:fixed;bottom:0;left:0;right:0;top:auto;height:auto;width:auto;flex-direction:row;justify-content:space-around;align-items:center;padding:6px max(4px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(4px,env(safe-area-inset-left,0px));z-index:20;gap:0;border-right:0;border-top:1px solid rgba(90,216,255,.18)}
+  .brand,.nav .spacer,.nav .foot,.nav .desk{display:none}
+  .nav a{flex-direction:column;gap:2px;font-size:11px;padding:6px 2px;flex:1;text-align:center;justify-content:center;border-left:0;border-top:2px solid transparent;border-radius:0}
+  .nav a.on{background:none;border-top-color:#5ad8ff}
+  .nav .fab{order:3;flex:0 0 58px;height:58px;margin:-26px 4px 0;padding:0;clip-path:none;border-radius:16px;box-shadow:0 0 0 4px var(--nav),0 0 24px color-mix(in srgb,var(--hv) 50%,transparent)}
+  .nav .fab span{display:none}
+  .nav .fab svg{width:26px;height:26px}
+  .nav .n-home{order:1}.nav .n-inv{order:2}.nav .n-cli{order:4}.nav .n-set{order:5}
+  main{padding-block:18px 120px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 }
 
-/* ---------- common ---------- */
-.page-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:20px}
-.page-head h1{font-size:26px;letter-spacing:-.02em}
-.sub{color:var(--ink-2)}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
+/* ---------- panels ---------- */
+.card{position:relative;background:var(--panel);border:1px solid var(--line);padding:20px;clip-path:polygon(0 0,calc(100% - var(--cut)) 0,100% var(--cut),100% 100%,0 100%)}
+.card::after{content:"";position:absolute;top:0;right:0;width:var(--cut);height:var(--cut);background:linear-gradient(to bottom left,transparent calc(50% - .8px),var(--line) 50%,transparent calc(50% + .8px));pointer-events:none}
+.card::before{content:"";position:absolute;left:-1px;bottom:-1px;width:16px;height:16px;border-left:2px solid var(--cy);border-bottom:2px solid var(--cy);opacity:.75;pointer-events:none}
 .card + .card{margin-top:16px}
 .grid > .card{margin-top:0}
-.card h2{font-size:16px;margin-bottom:12px}
+.card h2{font-size:15px;text-transform:uppercase;letter-spacing:.12em;color:var(--ink-2);margin-bottom:14px}
+.eyebrow{font:600 12px/1 var(--f-display);text-transform:uppercase;letter-spacing:.16em;color:var(--cy)}
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+.page-head h1{font-size:clamp(26px,4vw,34px)}
+.sub{color:var(--ink-2)}
 .grid{display:grid;gap:14px}
 .g2{grid-template-columns:repeat(2,minmax(0,1fr))}
 .g3{grid-template-columns:repeat(3,minmax(0,1fr))}
 .g4{grid-template-columns:repeat(4,minmax(0,1fr))}
-@media (max-width:820px){.g3,.g4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:900px){.g4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:820px){.g3{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:520px){.g2,.g3{grid-template-columns:minmax(0,1fr)}}
 .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .right{margin-left:auto}
 .muted{color:var(--ink-2)}
-.small{font-size:13px}
+.small{font-size:.85em}
 .mt{margin-top:16px}
 .hide{display:none!important}
 
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:42px;padding:0 16px;border-radius:10px;border:1px solid var(--line);background:var(--surface);font-weight:650;cursor:pointer;text-decoration:none;white-space:nowrap}
-.btn:hover{background:var(--surface-2)}
-.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
-.btn.primary:hover{background:var(--accent-hover)}
+/* ---------- controls ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border:1px solid var(--line-2);background:var(--panel-2);font-weight:700;cursor:pointer;text-decoration:none;white-space:nowrap;border-radius:var(--radius);transition:background .15s,box-shadow .15s,transform .1s}
+.btn:hover{border-color:var(--cy);box-shadow:0 0 0 1px var(--cy-soft)}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--hv);border-color:var(--hv);color:var(--hv-ink);box-shadow:var(--hv-glow);clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%);border-radius:0}
+.btn.primary:hover{background:var(--hv-hover)}
 .btn.ghost{background:transparent;border-color:transparent}
+.btn.ghost:hover{box-shadow:none;background:var(--muted-soft)}
 .btn.danger{color:var(--bad)}
-.btn.sm{min-height:34px;padding:0 12px;font-size:14px}
+.btn.sm{min-height:36px;padding:0 13px;font-size:.88em}
+.btn.big{min-height:54px;padding:0 26px;font-size:1.06em}
 .btn svg{width:18px;height:18px}
-.icon-btn{width:38px;height:38px;border-radius:9px;border:1px solid transparent;background:transparent;display:grid;place-items:center;cursor:pointer;color:var(--ink-2)}
-.icon-btn:hover{background:var(--surface-2);color:var(--bad)}
+.icon-btn{width:40px;height:40px;border-radius:var(--radius);border:1px solid transparent;background:transparent;display:grid;place-items:center;cursor:pointer;color:var(--ink-3)}
+.icon-btn:hover{background:var(--bad-soft);color:var(--bad)}
 
-label.f{display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:600;color:var(--ink-2)}
-.inp,select.inp,textarea.inp{width:100%;min-height:44px;padding:9px 12px;border-radius:9px;border:1px solid var(--line);background:var(--surface);font-size:16px;color:var(--ink);font-weight:400}
-textarea.inp{min-height:80px;resize:vertical}
-.inp:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:transparent}
-.hint{font-size:12px;font-weight:500}
+label.f{display:flex;flex-direction:column;gap:6px;font-size:.82em;font-weight:700;color:var(--ink-2);letter-spacing:.02em}
+.inp,select.inp,textarea.inp{width:100%;min-height:46px;padding:10px 12px;border-radius:var(--radius);border:1px solid var(--line-2);background:var(--bg-2);font-size:16px;color:var(--ink);font-weight:400;font-family:var(--f-body)}
+textarea.inp{min-height:84px;resize:vertical}
+.inp::placeholder{color:var(--ink-3)}
+.inp:focus{outline:none;border-color:var(--cy);box-shadow:0 0 0 3px var(--cy-soft)}
+.hint{font-size:12px;font-weight:700}
 .hint.ok{color:var(--ok)} .hint.bad{color:var(--bad)}
-.check{display:flex;align-items:center;gap:10px;font-weight:600;cursor:pointer;min-height:40px}
-.check input{width:20px;height:20px;accent-color:var(--accent)}
+.check{display:flex;align-items:center;gap:10px;font-weight:700;cursor:pointer;min-height:40px}
+.check input{width:20px;height:20px;accent-color:var(--hv)}
 
-.chip{display:inline-flex;align-items:center;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:700;text-transform:capitalize;white-space:nowrap}
-.st-draft{background:var(--muted-soft);color:var(--ink-2)}
-.st-sent{background:var(--info-soft);color:var(--info)}
-.st-part{background:var(--warn-soft);color:var(--warn)}
-.st-paid,.st-accepted{background:var(--ok-soft);color:var(--ok)}
-.st-overdue,.st-declined{background:var(--bad-soft);color:var(--bad)}
+/* status: colour + glyph + word, so state reads without colour too */
+.chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px 3px 8px;border-radius:3px;font:700 12px/1.2 var(--f-display);text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;border:1px solid currentColor}
+.chip i{font-style:normal;font-size:12px}
+.st-draft{color:var(--ink-2);background:var(--muted-soft);border-style:dashed}
+.st-sent{color:var(--cy);background:var(--cy-soft)}
+.st-part{color:var(--warn);background:var(--warn-soft)}
+.st-paid,.st-accepted{color:var(--ok);background:var(--ok-soft)}
+.st-overdue,.st-declined{color:var(--bad);background:var(--bad-soft)}
 
+.seg{display:inline-flex;border:1px solid var(--line-2);border-radius:var(--radius);overflow:hidden;background:var(--bg-2)}
+.seg a,.seg button{padding:8px 16px;font-weight:700;text-decoration:none;border:0;background:transparent;cursor:pointer;color:var(--ink-2)}
+.seg .on{background:var(--cy-soft);color:var(--ink);box-shadow:inset 0 -2px 0 var(--cy)}
 .filters{display:flex;gap:6px;flex-wrap:wrap}
-.filters button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 14px;font-weight:600;cursor:pointer;font-size:14px}
+.filters button{border:1px solid var(--line-2);background:transparent;border-radius:3px;padding:6px 14px;font-weight:700;cursor:pointer;font-size:.88em;color:var(--ink-2)}
 .filters button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 
-/* stats */
-.stat .lbl{font-size:13px;font-weight:600;color:var(--ink-2)}
-.stat .val{font-size:26px;font-weight:800;letter-spacing:-.02em;margin-top:4px;font-variant-numeric:tabular-nums}
-.stat .foot{font-size:12px;color:var(--ink-2);margin-top:4px}
+/* ---------- home ---------- */
+.mission{border-color:color-mix(in srgb,var(--hv) 55%,var(--line));box-shadow:var(--hv-glow);padding:24px 26px;background:linear-gradient(120deg,var(--hv-soft),transparent 55%),var(--panel)}
+.mission::after{background:linear-gradient(to bottom left,transparent calc(50% - .8px),var(--hv) 50%,transparent calc(50% + .8px))}
+.mission .eyebrow{color:var(--hv-text)}
+.mission h3{font-size:clamp(22px,3.4vw,30px);margin:10px 0 6px}
+.mission p{margin:0 0 18px;color:var(--ink-2);max-width:56ch}
+.mission.t-bad{border-color:color-mix(in srgb,var(--bad) 55%,var(--line));box-shadow:0 0 0 1px var(--bad-soft),0 0 28px var(--bad-soft);background:linear-gradient(120deg,var(--bad-soft),transparent 55%),var(--panel)}
+.mission.t-bad .eyebrow{color:var(--bad)}
+.mission.t-bad::after{background:linear-gradient(to bottom left,transparent calc(50% - .8px),var(--bad) 50%,transparent calc(50% + .8px))}
+.mission.t-cy{border-color:color-mix(in srgb,var(--cy) 50%,var(--line));box-shadow:var(--glow);background:linear-gradient(120deg,var(--cy-soft),transparent 55%),var(--panel)}
+.mission.t-ok{border-color:color-mix(in srgb,var(--ok) 50%,var(--line));background:linear-gradient(120deg,var(--ok-soft),transparent 55%),var(--panel);box-shadow:none}
+.mission.t-ok .eyebrow{color:var(--ok)}
+.pips{display:flex;gap:5px;margin-left:auto}
+.pips span{width:22px;height:4px;background:var(--line-2)}
+.pips span.on{background:var(--hv)}
+.queue{margin-top:14px;padding-top:12px;border-top:1px dashed var(--line-2);display:flex;flex-direction:column;gap:6px}
+.queue a{display:flex;gap:10px;align-items:center;text-decoration:none;color:var(--ink-2);font-size:.92em;padding:4px 0}
+.queue a:hover{color:var(--ink)}
+.queue b{color:var(--ink);font-weight:700}
+.stat .lbl{font:600 12px/1.2 var(--f-display);text-transform:uppercase;letter-spacing:.14em;color:var(--ink-2)}
+.stat .val{font-size:clamp(24px,2.6vw,30px);font-weight:600;margin-top:8px;color:var(--ink)}
+.stat .foot{font-size:.8em;color:var(--ink-2);margin-top:6px}
 .stat.alert .val{color:var(--bad)}
+.stat.alert{border-color:color-mix(in srgb,var(--bad) 40%,var(--line))}
+.goal{display:flex;gap:16px;align-items:center}
+.ring{width:78px;height:78px;flex:none}
+.ring circle{fill:none;stroke-width:8}
+.ring .track{stroke:var(--line)}
+.ring .bar{stroke:var(--ok);stroke-linecap:butt;transition:stroke-dashoffset .9s cubic-bezier(.2,.8,.2,1);filter:drop-shadow(0 0 4px var(--ok-soft))}
+.ring text{fill:var(--ink);font:600 17px var(--f-display);text-anchor:middle;dominant-baseline:central}
 
-/* list */
+/* ---------- HUD dial ---------- */
+.hud{display:grid;grid-template-columns:300px minmax(0,1fr);gap:20px;align-items:center}
+@media (max-width:900px){.hud{grid-template-columns:minmax(0,1fr)}.hud > section{order:-1}.dial{max-width:250px}}
+.dial{position:relative;width:100%;max-width:300px;margin:0 auto;aspect-ratio:1}
+.dial svg{width:100%;height:100%;display:block;overflow:visible}
+.dial .tick{stroke:var(--cy);opacity:.45}
+.dial .tick.major{opacity:.9}
+.dial .trk{fill:none;stroke:var(--line)}
+.dial .goalarc{fill:none;stroke:var(--hv);stroke-width:12;filter:drop-shadow(0 0 6px color-mix(in srgb,var(--hv) 70%,transparent));transition:stroke-dashoffset 1.2s cubic-bezier(.2,.8,.2,1)}
+.dial .dayarc{fill:none;stroke:var(--cy);stroke-width:4;opacity:.9}
+.dial .dash{fill:none;stroke:var(--cy);stroke-width:2;stroke-dasharray:2 7;opacity:.5}
+.dial .spin{transform-origin:150px 150px;animation:spin 90s linear infinite}
+.dial .spin-r{transform-origin:150px 150px;animation:spin 60s linear infinite reverse}
+@keyframes spin{to{transform:rotate(360deg)}}
+.dial .center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;pointer-events:none}
+.dial .center .lbl{font:600 11px var(--f-display);letter-spacing:.2em;color:var(--cy);text-transform:uppercase}
+.dial .center .amt{font:600 clamp(26px,7vw,32px)/1.1 var(--f-display);margin:6px 0 4px;color:var(--ink);text-shadow:0 0 18px color-mix(in srgb,var(--hv) 35%,transparent)}
+.dial .center .pct{font:700 13px var(--f-display);color:var(--hv-text);letter-spacing:.06em}
+.dial .center .left{font-size:12px;color:var(--ink-2);margin-top:2px}
+.dial-legend{display:flex;justify-content:center;gap:16px;font-size:12px;color:var(--ink-2);margin-top:8px}
+.dial-legend i{display:inline-block;width:10px;height:3px;vertical-align:middle;margin-right:6px}
+.swatches{display:flex;gap:10px;flex-wrap:wrap}
+.swatches button{display:flex;align-items:center;gap:8px;border:1px solid var(--line-2);background:var(--bg-2);padding:7px 12px;border-radius:var(--radius);cursor:pointer;font-weight:700;color:var(--ink-2)}
+.swatches button i{width:16px;height:16px;border-radius:50%;box-shadow:0 0 10px currentColor}
+.swatches button.on{border-color:var(--hv);color:var(--ink);box-shadow:0 0 0 1px var(--hv)}
+
+/* ---------- lists ---------- */
 .list{display:flex;flex-direction:column}
-.li{display:grid;grid-template-columns:110px 1fr auto auto;gap:12px;align-items:center;padding:12px 4px;border-top:1px solid var(--line);text-decoration:none;cursor:pointer}
+.li{display:grid;grid-template-columns:104px minmax(0,1fr) auto 130px;gap:14px;align-items:center;padding:13px 8px;border-top:1px solid var(--line);text-decoration:none;cursor:pointer;position:relative}
 .li:first-child{border-top:0}
-.li:hover{background:var(--surface-2)}
-.li .num{font-weight:700;font-variant-numeric:tabular-nums}
+.li:hover{background:var(--cy-soft)}
+.li .num{font-weight:600;color:var(--ink-2);letter-spacing:.04em}
 .li .who{min-width:0}
 .li .who b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.li .amt{font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
-@media (max-width:520px){
-  .li{grid-template-columns:1fr auto;row-gap:2px}
-  .li .num{grid-column:1}
+.li .when{font-size:.86em;color:var(--ink-2)}
+.li .when.bad{color:var(--bad);font-weight:700}
+.li .when.warn{color:var(--warn);font-weight:700}
+.li .amt{font-weight:600;text-align:right;font-size:1.05em}
+.li .amt small{display:block;font:400 11px var(--f-body);color:var(--ink-2)}
+@media (max-width:560px){
+  .li{grid-template-columns:minmax(0,1fr) auto;row-gap:4px}
+  .li .num{grid-column:1;font-size:.85em}
   .li .chip{grid-row:1;grid-column:2;justify-self:end}
   .li .who{grid-column:1}
   .li .amt{grid-column:2;grid-row:2}
 }
-.empty{text-align:center;padding:36px 16px;color:var(--ink-2)}
-.empty b{display:block;color:var(--ink);font-size:17px;margin-bottom:6px}
-.banner{display:flex;gap:14px;align-items:center;background:var(--accent-soft);border:1px solid color-mix(in srgb,var(--accent) 35%,transparent);padding:14px 16px;border-radius:var(--radius);margin-bottom:18px;flex-wrap:wrap}
+.empty{text-align:center;padding:38px 16px;color:var(--ink-2)}
+.empty b{display:block;color:var(--ink);font:600 19px var(--f-display);margin-bottom:6px}
+.banner{display:flex;gap:14px;align-items:center;background:var(--hv-soft);border:1px solid color-mix(in srgb,var(--hv) 45%,transparent);padding:14px 16px;border-radius:var(--radius);margin-bottom:18px;flex-wrap:wrap}
+.banner.example{background:var(--cy-soft);border-color:color-mix(in srgb,var(--cy) 40%,transparent)}
+.banner a{color:var(--cy);font-weight:700}
 
-/* editor lines */
-.lines-head,.line{display:grid;grid-template-columns:minmax(0,1fr) 80px 90px 110px 64px 100px 40px;gap:8px;align-items:center}
-.lines-head{font-size:12px;font-weight:700;color:var(--ink-2);text-transform:uppercase;letter-spacing:.04em;padding:0 0 6px}
+/* ---------- editor ---------- */
+.steps{position:sticky;top:0;z-index:5;display:flex;gap:6px;align-items:center;padding:12px 0;margin:-6px 0 14px;background:linear-gradient(var(--bg) 75%,transparent)}
+.steps .st{flex:1;display:flex;flex-direction:column;gap:6px;border:0;background:none;padding:0;cursor:pointer;text-align:left;font:600 12px/1 var(--f-display);text-transform:uppercase;letter-spacing:.1em;color:var(--ink-3);text-decoration:none}
+.steps .st i{display:block;height:4px;background:var(--line-2);font-style:normal}
+.steps .st.done{color:var(--ok)} .steps .st.done i{background:var(--ok);box-shadow:0 0 8px var(--ok-soft)}
+.steps .st.now{color:var(--hv-text)} .steps .st.now i{background:var(--hv)}
+.saved{font:600 12px var(--f-display);letter-spacing:.1em;text-transform:uppercase;color:var(--ok);display:inline-flex;align-items:center;gap:6px;opacity:.75;transition:opacity .3s}
+.saved.flash{opacity:1}
+.stepnum{display:inline-grid;place-items:center;width:28px;height:28px;margin-right:10px;font:700 14px var(--f-display);color:var(--hv-ink);background:var(--hv);clip-path:polygon(0 0,calc(100% - 7px) 0,100% 7px,100% 100%,0 100%);vertical-align:middle}
+.stephead{display:flex;align-items:center;margin-bottom:16px;font:600 20px/1.2 var(--f-display)}
+.stephead .muted{font:400 .8em var(--f-body);margin-left:10px}
+details.more{margin-top:14px;border-top:1px dashed var(--line-2);padding-top:12px}
+details.more summary{cursor:pointer;font-weight:700;color:var(--ink-2);list-style:none;display:flex;gap:10px;align-items:center}
+details.more summary::-webkit-details-marker{display:none}
+details.more summary::before{content:"▸";color:var(--cy);transition:transform .15s}
+details.more[open] summary::before{transform:rotate(90deg)}
+details.more .grid{margin-top:14px}
+.lines-head,.line{display:grid;grid-template-columns:minmax(0,1fr) 78px 92px 112px 56px 108px 40px;gap:8px;align-items:center}
+.lines-head{font:600 11px var(--f-display);color:var(--ink-3);text-transform:uppercase;letter-spacing:.12em;padding:0 0 8px}
 .line{padding:8px 0;border-top:1px solid var(--line)}
-.line .lt{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+.line .lt{text-align:right;font-weight:600;font-family:var(--f-display);font-variant-numeric:tabular-nums}
 .line .gst{display:flex;justify-content:center}
-.line .gst input{width:20px;height:20px;accent-color:var(--accent)}
+.line .gst input{width:20px;height:20px;accent-color:var(--hv)}
 .line .mlbl{display:none}
 .lines.no-gst .gstcol{display:none}
-.lines.no-gst .lines-head,.lines.no-gst .line{grid-template-columns:minmax(0,1fr) 80px 90px 110px 100px 40px}
+.lines.no-gst .lines-head,.lines.no-gst .line{grid-template-columns:minmax(0,1fr) 78px 92px 112px 108px 40px}
 @media (max-width:820px){
   .lines-head{display:none}
-  .line,.lines.no-gst .line{grid-template-columns:repeat(6,minmax(0,1fr));row-gap:8px;padding:12px 0}
+  .line,.lines.no-gst .line{grid-template-columns:repeat(6,minmax(0,1fr));row-gap:8px;padding:14px 0}
   .line .desc{grid-column:1/-1}
-  .line .q{grid-column:span 2}.line .u{grid-column:span 2}.line .p{grid-column:span 2}
-  .line .gst{grid-column:span 3;justify-content:flex-start}
+  .line .q,.line .u,.line .p{grid-column:span 2}
+  .line .gst{grid-column:span 3;justify-content:flex-start;align-items:center}
   .lines.no-gst .line .lt{grid-column:span 5}
-  .line .lt{grid-column:span 2;text-align:left}
+  .line .lt{grid-column:span 2;text-align:left;font-size:1.1em}
   .line .del{grid-column:span 1;justify-self:end}
-  .line .mlbl{display:block;font-size:11px;font-weight:700;color:var(--ink-2);text-transform:uppercase;margin-bottom:3px}
+  .line .mlbl{display:block;font:600 11px var(--f-display);color:var(--ink-3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px}
   .line .gst .mlbl{display:inline;margin:0 0 0 8px}
 }
-.totals{margin-left:auto;max-width:340px;font-variant-numeric:tabular-nums}
-.totals div{display:flex;justify-content:space-between;padding:5px 0}
-.totals .grand{border-top:2px solid var(--ink);margin-top:6px;padding-top:10px;font-size:20px;font-weight:800}
-.sticky-actions{position:sticky;bottom:0;background:linear-gradient(transparent,var(--bg) 30%);padding:20px 0 4px;display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
-@media (max-width:820px){.sticky-actions{bottom:64px}}
-.terms{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
-.terms button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:3px 10px;font-size:12px;font-weight:600;cursor:pointer}
-.terms button.on{border-color:var(--accent);color:var(--accent)}
+.totals{margin-left:auto;max-width:360px;font-variant-numeric:tabular-nums}
+.totals div{display:flex;justify-content:space-between;padding:5px 0;color:var(--ink-2)}
+.totals div span:last-child{font-family:var(--f-display);color:var(--ink)}
+.totals .grand{border-top:1px solid var(--line-2);margin-top:8px;padding-top:12px;font:600 24px var(--f-display);color:var(--ink)}
+.totals .grand span:last-child{color:var(--hv-text)}
+.sticky-actions{position:sticky;bottom:0;background:linear-gradient(transparent,var(--bg) 35%);padding:22px 0 6px;display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;z-index:4}
+@media (max-width:820px){.sticky-actions{bottom:70px}}
+.terms{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.terms button{border:1px solid var(--line-2);background:transparent;border-radius:3px;padding:4px 11px;font-size:.8em;font-weight:700;cursor:pointer;color:var(--ink-2)}
+.terms button.on{border-color:var(--hv);color:var(--hv-text);background:var(--hv-soft)}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;align-items:center}
+.docstate{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.docstate .big{font:600 22px var(--f-display)}
 
-/* toolbar */
-.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
-
-/* ---------- paper (always light) ---------- */
+/* ---------- paper (always light; it's what the client receives) ---------- */
 .paper-wrap{overflow-x:auto;padding-bottom:6px}
-.paper{background:#fff;color:#1a1f26;width:100%;max-width:820px;min-width:600px;margin:0 auto;padding:44px 48px;border-radius:6px;box-shadow:0 2px 20px rgba(0,0,0,.12);position:relative;font-size:13.5px;line-height:1.45}
-.paper .p-head{display:flex;justify-content:space-between;gap:24px;align-items:flex-start;padding-bottom:22px;border-bottom:3px solid #1b2a3a}
+.paper{background:#fff;color:#141a26;width:100%;max-width:820px;min-width:600px;margin:0 auto;padding:46px 50px;position:relative;font:13.5px/1.5 var(--f-body);box-shadow:0 0 0 1px rgba(90,216,255,.25),0 20px 60px rgba(0,0,0,.35)}
+.paper .p-head{display:flex;justify-content:space-between;gap:24px;align-items:flex-start;padding-bottom:22px;border-bottom:3px solid #0d1426;position:relative}
+.paper .p-head::after{content:"";position:absolute;left:0;bottom:-3px;width:90px;height:3px;background:#ffb020}
 .paper .logo{max-height:70px;max-width:200px;display:block;margin-bottom:10px}
-.paper .bizname{font-size:20px;font-weight:800;letter-spacing:-.01em}
-.paper .doc-title{font-size:28px;font-weight:800;letter-spacing:.04em;color:#1b2a3a;text-align:right;text-transform:uppercase}
+.paper .bizname{font:700 21px var(--f-display);letter-spacing:.01em}
+.paper .doc-title{font:700 28px var(--f-display);letter-spacing:.12em;color:#0d1426;text-align:right;text-transform:uppercase}
 .paper .meta{margin-top:10px;border-collapse:collapse;margin-left:auto}
 .paper .meta td{padding:2px 0 2px 16px;text-align:right}
-.paper .meta td:first-child{color:#5b6470}
+.paper .meta td:first-child{color:#5b6684}
 .paper .parties{display:flex;gap:28px;margin:24px 0}
 .paper .parties > div{flex:1}
-.paper .lbl{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#c2410c;margin-bottom:4px}
+.paper .lbl{font:700 11px var(--f-display);letter-spacing:.14em;text-transform:uppercase;color:#00658f;margin-bottom:4px}
 .paper table.items{width:100%;border-collapse:collapse;margin-top:6px}
-.paper table.items th{font-size:11px;letter-spacing:.06em;text-transform:uppercase;text-align:left;color:#5b6470;border-bottom:1.5px solid #1a1f26;padding:8px 6px}
-.paper table.items td{padding:9px 6px;border-bottom:1px solid #e6e2da;vertical-align:top}
+.paper table.items th{font:600 11px var(--f-display);letter-spacing:.1em;text-transform:uppercase;text-align:left;color:#5b6684;border-bottom:1.5px solid #141a26;padding:8px 6px}
+.paper table.items td{padding:9px 6px;border-bottom:1px solid #e3e8f1;vertical-align:top}
 .paper table.items .n{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
-.paper .free{font-size:11px;color:#5b6470}
+.paper .free{font-size:11px;color:#5b6684}
 .paper .ptotals{margin:14px 0 0 auto;width:300px;font-variant-numeric:tabular-nums}
 .paper .ptotals div{display:flex;justify-content:space-between;padding:4px 6px}
-.paper .ptotals .grand{background:#1b2a3a;color:#fff;font-weight:800;font-size:16px;padding:9px 10px;margin-top:6px;border-radius:4px}
-.paper .ptotals .due{font-weight:800;font-size:15px;border-top:1.5px solid #1a1f26;margin-top:6px;padding-top:8px}
-.paper .pay{margin-top:28px;background:#f6f4ef;border-radius:6px;padding:16px 18px;display:flex;gap:28px;flex-wrap:wrap}
+.paper .ptotals .grand{background:#0d1426;color:#fff;font:700 16px var(--f-display);padding:10px 12px;margin-top:6px;letter-spacing:.03em}
+.paper .ptotals .due{font-weight:800;font-size:15px;border-top:1.5px solid #141a26;margin-top:6px;padding-top:8px}
+.paper .pay{margin-top:28px;background:#f2f5fa;border-left:3px solid #ffb020;padding:16px 18px;display:flex;gap:28px;flex-wrap:wrap}
 .paper .pay table td{padding:1px 14px 1px 0}
-.paper .pay table td:first-child{color:#5b6470}
+.paper .pay table td:first-child{color:#5b6684}
 .paper .notes{margin-top:22px;white-space:pre-wrap}
-.paper .foot{margin-top:30px;padding-top:12px;border-top:1px solid #e6e2da;font-size:12px;color:#5b6470;text-align:center}
+.paper .foot{margin-top:30px;padding-top:12px;border-top:1px solid #e3e8f1;font-size:12px;color:#5b6684;text-align:center}
 .paper .sign{margin-top:34px;display:flex;gap:30px}
-.paper .sign div{flex:1;border-top:1px solid #1a1f26;padding-top:4px;font-size:12px;color:#5b6470}
-.paper .stamp{position:absolute;top:150px;right:60px;transform:rotate(-14deg);border:4px solid #1f7a4d;color:#1f7a4d;font-weight:900;font-size:34px;letter-spacing:.12em;padding:4px 18px;border-radius:8px;opacity:.85}
-.paper .stamp.over{border-color:#b42318;color:#b42318;font-size:26px}
+.paper .sign div{flex:1;border-top:1px solid #141a26;padding-top:4px;font-size:12px;color:#5b6684}
+.paper .stamp{position:absolute;top:150px;right:60px;transform:rotate(-12deg);border:4px solid #08805a;color:#08805a;font:700 34px var(--f-display);letter-spacing:.16em;padding:4px 18px;opacity:.85}
+.paper .stamp.over{border-color:#c8213f;color:#c8213f;font-size:26px}
 
-dialog{border:0;border-radius:16px;padding:0;width:min(520px,calc(100vw - 24px));background:var(--surface);color:var(--ink);box-shadow:0 20px 60px rgba(0,0,0,.3)}
-dialog::backdrop{background:rgba(10,15,20,.5)}
-dialog form{padding:22px}
-dialog h2{font-size:19px;margin-bottom:16px}
-dialog .actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
-
-#toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--bg);padding:11px 18px;border-radius:10px;font-weight:600;opacity:0;pointer-events:none;transition:.2s;z-index:50;max-width:calc(100vw - 32px)}
-#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-
-.banner.example{background:var(--info-soft);border-color:color-mix(in srgb,var(--info) 30%,transparent)}
+dialog{border:1px solid var(--line-2);border-radius:var(--radius);padding:0;width:min(540px,calc(100vw - 24px));background:var(--panel);color:var(--ink);box-shadow:var(--glow),0 30px 80px rgba(0,0,0,.45)}
+dialog::backdrop{background:rgba(4,8,18,.66);backdrop-filter:blur(3px)}
+dialog form{padding:24px}
+dialog h2{font-size:21px;margin-bottom:16px}
+dialog .actions{display:flex;justify-content:flex-end;gap:10px;margin-top:22px}
 .copybox{display:flex;flex-direction:column;gap:6px;margin-top:12px}
 .copybox .row{justify-content:space-between}
 .copybox textarea{font:13px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;min-height:120px}
-.pricelist .pl{display:grid;grid-template-columns:1fr auto auto auto;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+
+#toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(16px);background:var(--panel-2);color:var(--ink);border:1px solid var(--line-2);box-shadow:var(--glow);padding:10px 12px 10px 18px;border-radius:var(--radius);font-weight:700;opacity:0;pointer-events:none;transition:.2s;z-index:60;max-width:calc(100vw - 32px);display:flex;gap:14px;align-items:center}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
+#toast button{border:0;background:var(--hv);color:var(--hv-ink);font-weight:800;padding:6px 12px;border-radius:3px;cursor:pointer}
+#fx{position:fixed;inset:0;pointer-events:none;z-index:70}
+
+.pricelist .pl{display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
 .pricelist .pl:first-child{border-top:0}
+
+/* calm mode + reduced motion: no glow, no animation */
+:root[data-calm]{--glow:0 0 0 1px var(--line);--hv-glow:none}
+:root[data-calm] .mission{box-shadow:none}
+:root[data-calm] *,:root[data-calm] *::before{transition:none!important;animation:none!important}
+:root[data-calm] body{background-image:none}
+:root[data-calm] .dial .goalarc{filter:none}
+@media (prefers-reduced-motion:reduce){*,*::before{transition:none!important;animation:none!important}}
 
 @media print{
   @page{size:A4;margin:12mm}
   body{background:#fff}
-  .nav,.no-print,#toast{display:none!important}
+  .nav,.no-print,#toast,#fx{display:none!important}
   main{padding:0;max-width:none}
   .paper-wrap{overflow:visible}
-  .paper{box-shadow:none;border-radius:0;padding:0;min-width:0;max-width:none}
-  .paper .pay{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  .paper .ptotals .grand{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .paper{box-shadow:none;padding:0;min-width:0;max-width:none}
+  .paper .pay,.paper .ptotals .grand,.paper .p-head::after{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
 </style>
 </head>
@@ -254,7 +405,8 @@ const DEFAULT = {
     accountName: '', bsb: '', accountNumber: '', payId: '',
     paymentTermsDays: 14, quoteValidDays: 30, defaultRate: '95',
     invoicePrefix: 'INV-', nextInvoice: 1, quotePrefix: 'Q-', nextQuote: 1,
-    footerNote: 'Thanks for your business!', logo: ''
+    footerNote: 'Thanks for your business!', logo: '',
+    monthlyGoal: '15000', bigText: false, calm: false, celebrate: true, accent: 'gold'
   },
   clients: [],
   docs: [],
@@ -310,11 +462,16 @@ const abnFmt = a => { const s = abnClean(a); return s.length === 11 ? s.replace(
 const bsbFmt = b => { const s = String(b || '').replace(/\D/g, ''); return s.length === 6 ? s.slice(0, 3) + '-' + s.slice(3) : String(b || ''); };
 
 let toastTimer;
-function toast(msg) {
+function toast(msg, undo) {
   const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+  t.innerHTML = `<span>${esc(msg)}</span>${undo ? '<button type="button">Undo</button>' : ''}`;
+  if (undo) t.querySelector('button').onclick = () => { undo(); t.classList.remove('show'); };
+  t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), undo ? 6000 : 2600);
 }
+const daysBetween = (a, b) => { const [y1, m1, d1] = a.split('-').map(Number), [y2, m2, d2] = b.split('-').map(Number); return Math.round((Date.UTC(y2, m2 - 1, d2) - Date.UTC(y1, m1 - 1, d1)) / 864e5); };
+const ago = iso => { if (!iso) return ''; const n = daysBetween(iso, today()); return n <= 0 ? 'today' : n === 1 ? 'yesterday' : `${n} days ago`; };
+const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
 function download(name, text, type) {
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([text], { type }));
@@ -354,7 +511,24 @@ function status(d) {
   return 'sent';
 }
 const chipClass = s => ({ 'part paid': 'st-part' }[s] || 'st-' + s);
-const chip = d => { const s = status(d); return `<span class="chip ${chipClass(s)}">${esc(s)}</span>`; };
+const GLYPH = { draft: '◌', sent: '↗', 'part paid': '◐', paid: '✓', overdue: '!', accepted: '✓', declined: '✕' };
+const chip = d => { const s = status(d); return `<span class="chip ${chipClass(s)}"><i aria-hidden="true">${GLYPH[s] || ''}</i>${esc(s)}</span>`; };
+// Time-blindness helper: say how long, not just which date
+function dueInfo(d) {
+  const s = status(d), n = d.dueDate ? daysBetween(today(), d.dueDate) : 0;
+  if (d.type === 'quote') {
+    if (s === 'accepted') return { text: 'Won the job', tone: '' };
+    if (s === 'declined') return { text: 'Not this time', tone: '' };
+    if (s === 'draft') return { text: 'Not sent yet', tone: 'warn' };
+    if (n < 0) return { text: `Expired ${plural(-n, 'day')} ago`, tone: 'warn' };
+    return { text: n === 0 ? 'Expires today' : `Valid ${plural(n, 'more day')}`, tone: '' };
+  }
+  if (s === 'paid') return { text: 'Paid ' + ago(d.payments.map(p => p.date).sort().pop()), tone: '' };
+  if (s === 'draft') return { text: 'Not sent yet', tone: 'warn' };
+  if (n < 0) return { text: `${plural(-n, 'day')} overdue`, tone: 'bad' };
+  if (n === 0) return { text: 'Due today', tone: 'warn' };
+  return { text: `Due in ${plural(n, 'day')}`, tone: n <= 3 ? 'warn' : '' };
+}
 
 function nextNumber(type) {
   const st = S.settings;
@@ -416,6 +590,7 @@ const I = {
   quote: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="18" rx="2"/><path d="M9 2h6v4H9zM9 12h6M9 16h4"/></svg>',
   users: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="4"/><path d="M2 21c0-4 3-6 7-6s7 2 7 6M16 4a4 4 0 0 1 0 8M22 21c0-3-1.5-5-4-5.7"/></svg>',
   cog: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
+  bolt: '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>',
   plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
   x: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>',
   print: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>',
@@ -430,7 +605,14 @@ let listFilter = { invoices: 'all', quotes: 'all', q: '' };
 
 let path = '/';
 function go(p) { path = p; route(); }
+function applyComfort() {
+  const r = document.documentElement;
+  r.toggleAttribute('data-big', !!S.settings.bigText);
+  r.toggleAttribute('data-calm', !!S.settings.calm);
+  if (S.settings.accent && S.settings.accent !== 'gold') r.setAttribute('data-accent', S.settings.accent); else r.removeAttribute('data-accent');
+}
 function route() {
+  applyComfort();
   const parts = path.split('/').filter(Boolean);
   const view = parts[0] || 'home', id = parts[1] || '';
   if (current.view === 'edit' && current.id && !(view === 'edit' && id === current.id)) discardIfEmpty(current.id);
@@ -449,23 +631,86 @@ function afterRender() {
 }
 
 function renderNav() {
-  const active = { edit: null, view: null, client: 'clients' }[current.view];
   let on = current.view;
   if (current.view === 'edit' || current.view === 'view') { const d = getDoc(current.id); on = d && d.type === 'quote' ? 'quotes' : 'invoices'; }
-  else if (active) on = active;
-  const link = (key, href, icon, label) => `<a href="#/${href}" class="${on === key ? 'on' : ''}">${icon}<span>${label}</span></a>`;
+  else if (current.view === 'client') on = 'clients';
+  if (on === 'home' || !on) on = 'home';
+  const link = (key, href, icon, label, cls) => `<a href="#/${href}" class="${cls} ${on === key ? 'on' : ''}" ${on === key ? 'aria-current="page"' : ''}>${icon}<span>${label}</span></a>`;
   document.getElementById('nav').innerHTML = `
-    <div class="brand"><span class="brand-mark">${I.inv.replace('<svg', '<svg width="18" height="18"')}</span>Docket</div>
-    ${link('home', '', I.home, 'Home')}
-    ${link('invoices', 'invoices', I.inv, 'Invoices')}
-    ${link('quotes', 'quotes', I.quote, 'Quotes')}
-    ${link('clients', 'clients', I.users, 'Clients')}
-    ${link('settings', 'settings', I.cog, 'Settings')}
+    <div class="brand"><span class="brand-mark">${I.bolt}</span><div>DOCKET<small>TRADIE INVOICING</small></div></div>
+    <a href="#" class="fab" data-act="new" data-type="invoice" aria-label="Bill a job">${I.plus}<span>Bill a job</span></a>
+    ${link('home', '', I.home, 'Home', 'n-home')}
+    ${link('invoices', 'invoices', I.inv, 'Invoices', 'n-inv')}
+    ${link('quotes', 'quotes', I.quote, 'Quotes', 'desk')}
+    ${link('clients', 'clients', I.users, 'Clients', 'n-cli')}
+    ${link('settings', 'settings', I.cog, 'Settings', 'n-set')}
     <div class="spacer"></div>
-    <div class="small">${S.example ? 'Example data' : 'Saved on this device'}</div>`;
+    <div class="foot"><span class="dot"></span>${S.example ? 'Example data' : 'Autosaved on this device'}</div>`;
 }
 
 /* ---------- views: home ---------- */
+const skipped = new Set();
+// One thing at a time: the most useful next action, in priority order
+function nextUps() {
+  const out = [];
+  const name = d => (getClient(d.clientId) || {}).name || 'your client';
+  const byOld = (a, b) => (a.createdAt || 0) - (b.createdAt || 0);
+  S.docs.filter(d => d.type === 'invoice' && d.status === 'draft' && !isEmptyDoc(d)).sort(byOld).forEach(d => out.push({
+    id: d.id, tone: 'hv', tag: 'Unsent invoice', title: `Send ${d.number} to ${name(d)}`,
+    why: `${money(totals(d).total)} of finished work isn’t money until it’s sent. You made it ${ago(d.issueDate)}.`, btn: 'Check it & send', href: '#/view/' + d.id }));
+  S.docs.filter(d => d.type === 'invoice' && status(d) === 'overdue').sort((a, b) => a.dueDate.localeCompare(b.dueDate)).forEach(d => {
+    const n = daysBetween(d.dueDate, today());
+    out.push({ id: d.id, tone: 'bad', tag: `${plural(n, 'day')} overdue`, title: `Chase ${name(d)} for ${money(totals(d).balance)}`,
+      why: `${d.number} was due ${longDate(d.dueDate)}. The reminder is already written for you — about 30 seconds.`, btn: 'Send reminder', act: 'remind', href: '#/view/' + d.id });
+  });
+  S.docs.filter(d => d.type === 'quote' && d.status === 'draft' && !isEmptyDoc(d)).sort(byOld).forEach(d => out.push({
+    id: d.id, tone: 'cy', tag: 'Unsent quote', title: `Send quote ${d.number} to ${name(d)}`,
+    why: `A ${money(totals(d).total)} job is waiting on your price.`, btn: 'Check it & send', href: '#/view/' + d.id }));
+  S.docs.filter(d => d.type === 'quote' && d.status === 'sent' && daysBetween(d.issueDate, today()) >= 3).sort(byOld).forEach(d => out.push({
+    id: d.id, tone: 'cy', tag: 'Follow up', title: `Check in with ${name(d)} about ${d.number}`,
+    why: `You quoted ${money(totals(d).total)} ${ago(d.issueDate)}. A quick call often wins the job.`, btn: 'Open quote', href: '#/view/' + d.id }));
+  return out;
+}
+function missionHtml() {
+  const all = nextUps(), list = all.filter(x => !skipped.has(x.id));
+  if (!all.length) return `<section class="card mission t-ok"><span class="eyebrow">✓ All clear</span><h3>Nothing needs you right now</h3><p>No unsent invoices, nothing overdue, no quotes to chase. Go do the work — then bill it while it’s fresh.</p><button class="btn primary big" data-act="new" data-type="invoice">${I.plus}Bill a job</button></section>`;
+  if (!list.length) return `<section class="card mission t-cy"><span class="eyebrow">Paused</span><h3>You’ve skipped everything for now</h3><p>That’s fine. ${plural(all.length, 'thing')} will still be here when you’re ready.</p><button class="btn" data-act="unskip">Show them again</button></section>`;
+  const m = list[0], pos = all.indexOf(m);
+  const go = m.act ? `<button class="btn primary big" data-act="${m.act}" data-id="${m.id}">${esc(m.btn)} →</button>` : `<a class="btn primary big" href="${m.href}">${esc(m.btn)} →</a>`;
+  return `<section class="card mission t-${m.tone}" aria-live="polite">
+    <div class="row"><span class="eyebrow">Next up · ${esc(m.tag)}</span>
+      ${all.length > 1 ? '' : '<!--'}<span class="pips" aria-label="${pos + 1} of ${all.length}">${all.slice(0, 6).map((_, i) => `<span class="${i <= pos ? 'on' : ''}"></span>`).join('')}</span>${all.length > 1 ? '' : '-->'}</div>
+    <h3>${esc(m.title)}</h3><p>${esc(m.why)}</p>
+    <div class="row">${go}<button class="btn ghost" data-act="skip" data-id="${m.id}">Skip for now</button>
+      <span class="muted small right">${list.length > 1 ? `then ${plural(list.length - 1, 'more thing')}` : 'Last one — nearly there'}</span></div>
+    ${list.length > 1 ? `<div class="queue">${list.slice(1, 4).map(x => `<a href="${x.href}"><span class="muted">›</span><span><b>${esc(x.title)}</b> · ${esc(x.tag)}</span></a>`).join('')}</div>` : ''}
+  </section>`;
+}
+
+function dialHtml(paidMonth, goal) {
+  const pct = Math.min(1, paidMonth / goal);
+  const now = new Date(), dim = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate(), day = now.getDate();
+  const R1 = 112, C1 = 2 * Math.PI * R1, R2 = 92, C2 = 2 * Math.PI * R2;
+  let ticks = '';
+  for (let i = 0; i < 72; i++) {
+    const a = i / 72 * Math.PI * 2, major = i % 6 === 0, r1 = major ? 128 : 132, r2 = 140;
+    ticks += `<line class="tick ${major ? 'major' : ''}" x1="${(150 + r1 * Math.sin(a)).toFixed(1)}" y1="${(150 - r1 * Math.cos(a)).toFixed(1)}" x2="${(150 + r2 * Math.sin(a)).toFixed(1)}" y2="${(150 - r2 * Math.cos(a)).toFixed(1)}" stroke-width="${major ? 2 : 1}"/>`;
+  }
+  const left = dim - day;
+  return `<div><div class="dial" role="img" aria-label="${money(paidMonth)} paid this month, ${Math.round(pct * 100)}% of your ${money(goal)} goal. Day ${day} of ${dim}.">
+    <svg viewBox="0 0 300 300" aria-hidden="true">
+      <g class="spin">${ticks}</g>
+      <circle class="trk" cx="150" cy="150" r="${R1}" stroke-width="12"/>
+      <circle class="goalarc" cx="150" cy="150" r="${R1}" stroke-dasharray="${C1.toFixed(1)}" stroke-dashoffset="${(C1 * (1 - pct)).toFixed(1)}" transform="rotate(-90 150 150)"/>
+      <circle class="trk" cx="150" cy="150" r="${R2}" stroke-width="4"/>
+      <circle class="dayarc" cx="150" cy="150" r="${R2}" stroke-dasharray="${C2.toFixed(1)}" stroke-dashoffset="${(C2 * (1 - day / dim)).toFixed(1)}" transform="rotate(-90 150 150)"/>
+      <circle class="dash spin-r" cx="150" cy="150" r="80"/>
+    </svg>
+    <div class="center"><span class="lbl">Paid this month</span><span class="amt">${money(paidMonth)}</span><span class="pct">${Math.round(pct * 100)}% of ${money(goal)}</span><span class="left">${left ? plural(left, 'day') + ' left in the month' : 'Last day of the month'}</span></div>
+  </div>
+  <div class="dial-legend"><span><i style="background:var(--hv)"></i>Goal</span><span><i style="background:var(--cy)"></i>Month so far</span></div></div>`;
+}
+
 function viewHome() {
   const st = S.settings;
   const inv = S.docs.filter(d => d.type === 'invoice');
@@ -485,39 +730,35 @@ function viewHome() {
     if (d.issueDate >= q.start && d.issueDate <= q.end) gstAccrual += t.gst;
     if (t.total > 0) for (const p of d.payments) if (p.date >= q.start && p.date <= q.end) gstCash += Math.round(toCents(p.amount) * t.gst / t.total);
   }
-  const openQuotes = S.docs.filter(d => d.type === 'quote' && d.status === 'sent');
-  const overdue = inv.filter(d => status(d) === 'overdue').sort((a, b) => a.dueDate.localeCompare(b.dueDate));
+  const goal = Math.max(1, toCents(st.monthlyGoal) || 1500000);
   const recent = S.docs.slice().sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)).slice(0, 6);
-  const hello = st.businessName ? `G’day, ${esc(st.tradingName || st.businessName)}` : 'G’day';
+  const hour = new Date().getHours();
+  const hello = (hour < 12 ? 'Morning' : hour < 17 ? 'Arvo' : 'Evening') + (st.businessName ? `, ${esc(st.tradingName || st.businessName)}` : '');
 
   return `
-  ${S.example ? `<div class="banner example"><div><b>You’re looking at example data</b><div class="small">Smithy’s Plumbing isn’t real. Have a play — then clear it out and add your own business.</div></div><button class="btn primary right" data-act="examples-clear">Clear examples & start</button></div>` : ''}
-  ${!st.businessName || !st.abn ? `<div class="banner"><div><b>Set up your business first</b><div class="small">Your business name, ABN and bank details go on every invoice.</div></div><a class="btn primary right" href="#/settings">Add details</a></div>` : ''}
+  ${S.example ? `<div class="banner example"><div><b>You’re looking at example data</b><div class="small">Smithy’s Plumbing isn’t real. Have a play, then clear it out and add your own business.</div></div><button class="btn primary right" data-act="examples-clear">Clear examples & start</button></div>` : ''}
+  ${!st.businessName || !st.abn ? `<div class="banner"><div><b>Set up your business first</b><div class="small">Your business name, ABN and bank details go on every invoice.</div></div><a class="btn right" href="#/settings">Add details</a></div>` : ''}
   <div class="page-head">
-    <div><h1>${hello}</h1><div class="sub">${longDate(today())}</div></div>
-    <div class="row"><button class="btn" data-act="new" data-type="quote">${I.plus}New quote</button><button class="btn primary" data-act="new" data-type="invoice">${I.plus}New invoice</button></div>
+    <div><div class="eyebrow">${longDate(today())}</div><h1>${hello}</h1></div>
+    <button class="btn" data-act="new" data-type="quote">${I.plus}New quote</button>
   </div>
-  <div class="grid g4">
-    <div class="card stat"><div class="lbl">Owed to you</div><div class="val">${money(outstanding)}</div><div class="foot">Sent and unpaid</div></div>
-    <div class="card stat ${overdueN ? 'alert' : ''}"><div class="lbl">Overdue</div><div class="val">${money(overdueSum)}</div><div class="foot">${overdueN} invoice${overdueN === 1 ? '' : 's'} past due</div></div>
-    <div class="card stat"><div class="lbl">Paid this month</div><div class="val">${money(paidMonth)}</div><div class="foot">Payments recorded</div></div>
+  <div class="hud">${dialHtml(paidMonth, goal)}${missionHtml()}</div>
+  <div class="grid g3 mt">
+    <div class="card stat"><div class="lbl">Owed to you</div><div class="val">${money(outstanding)}</div><div class="foot">Sent, not paid yet</div></div>
+    <div class="card stat ${overdueN ? 'alert' : ''}"><div class="lbl">Overdue</div><div class="val">${money(overdueSum)}</div><div class="foot">${overdueN ? plural(overdueN, 'invoice') + ' past due' : 'Nothing late ✓'}</div></div>
     <div class="card stat"><div class="lbl">GST · ${q.label}</div><div class="val">${money(gstAccrual)}</div><div class="foot">Cash basis ${money(gstCash)} · BAS due ${q.due}</div></div>
   </div>
-  ${overdue.length ? `<div class="card mt"><h2>Chase these up</h2><div class="list">${overdue.map(rowHtml).join('')}</div></div>` : ''}
-  ${openQuotes.length ? `<div class="card mt"><h2>Quotes waiting on an answer</h2><div class="list">${openQuotes.map(rowHtml).join('')}</div></div>` : ''}
-  <div class="card mt"><h2>Recent</h2>${recent.length ? `<div class="list">${recent.map(rowHtml).join('')}</div>` : `<div class="empty"><b>Nothing here yet</b>Create your first quote or invoice to get started.<div class="mt"><button class="btn sm" data-act="examples-load">Or load example data to try it out</button></div></div>`}</div>`;
+  <div class="card mt"><h2>Latest paperwork</h2>${recent.length ? `<div class="list">${recent.map(rowHtml).join('')}</div>` : `<div class="empty"><b>Nothing here yet</b>Tap “Bill a job” to make your first invoice.<div class="mt"><button class="btn sm" data-act="examples-load">Or load example data to try it out</button></div></div>`}</div>`;
 }
 
 function rowHtml(d) {
-  const c = getClient(d.clientId);
-  const t = totals(d);
-  const s = status(d);
-  const showBal = d.type === 'invoice' && (s === 'part paid' || s === 'overdue') && t.paid > 0;
+  const c = getClient(d.clientId), t = totals(d), due = dueInfo(d);
+  const showBal = d.type === 'invoice' && t.paid > 0 && t.balance > 0;
   return `<a class="li" href="#/view/${d.id}">
     <span class="num">${esc(d.number)}</span>
-    <span class="who"><b>${esc(c ? c.name : 'No client')}</b><span class="muted small">${auDate(d.issueDate)}${d.site ? ' · ' + esc(d.site) : ''}</span></span>
+    <span class="who"><b>${esc(c ? c.name : 'No client yet')}</b><span class="when ${due.tone}">${esc(due.text)}${d.site ? ' · ' + esc(d.site) : ''}</span></span>
     ${chip(d)}
-    <span class="amt">${money(showBal ? t.balance : t.total)}${showBal ? '<div class="muted small">left to pay</div>' : ''}</span>
+    <span class="amt">${money(showBal ? t.balance : t.total)}${showBal ? '<small>left to pay</small>' : ''}</span>
   </a>`;
 }
 
@@ -530,9 +771,10 @@ function viewList(type) {
     : [['all', 'All'], ['unpaid', 'Unpaid'], ['overdue', 'Overdue'], ['paid', 'Paid'], ['draft', 'Draft']];
   return `
   <div class="page-head">
-    <h1>${type === 'quote' ? 'Quotes' : 'Invoices'}</h1>
+    <div><div class="eyebrow">Paperwork</div><h1>${type === 'quote' ? 'Quotes' : 'Invoices'}</h1></div>
     <button class="btn primary" data-act="new" data-type="${type}">${I.plus}New ${type}</button>
   </div>
+  <div class="seg" style="margin-bottom:14px"><a href="#/invoices" class="${type === 'invoice' ? 'on' : ''}">Invoices</a><a href="#/quotes" class="${type === 'quote' ? 'on' : ''}">Quotes</a></div>
   <div class="row" style="margin-bottom:14px">
     <div class="filters">${filters.map(([k, l]) => `<button class="${f === k ? 'on' : ''}" data-act="filter" data-key="${key}" data-val="${k}">${l}</button>`).join('')}</div>
     <input class="inp right" style="max-width:260px" type="search" placeholder="Search client, number, site…" value="${esc(listFilter.q)}" data-bind="search" data-type="${type}">
@@ -647,6 +889,18 @@ function viewSettings() {
     <label class="f mt">Footer note on every document<input class="inp" data-bind="set" data-key="footerNote" value="${esc(s.footerNote)}"></label>
   </div>
 
+  <div class="card"><h2>Comfort & focus</h2>
+    <div class="row">
+      <label class="check"><input type="checkbox" data-bind="set" data-key="bigText" ${s.bigText ? 'checked' : ''}>Bigger text</label>
+      <label class="check"><input type="checkbox" data-bind="set" data-key="calm" ${s.calm ? 'checked' : ''}>Calm mode (no glow or motion)</label>
+      <label class="check"><input type="checkbox" data-bind="set" data-key="celebrate" ${s.celebrate ? 'checked' : ''}>Celebrate when I get paid</label>
+    </div>
+    <div class="f mt" style="font-size:13px;font-weight:700;color:var(--ink-2)">Colour</div>
+    <div class="swatches mt" style="margin-top:8px">${[['gold', 'Gold', '#ffc21a'], ['cyan', 'Cyan', '#22e4ff'], ['pink', 'Neon pink', '#ff4fd8'], ['green', 'Toxic green', '#3dff8b']].map(([k, l, c]) => `<button type="button" class="${(s.accent || 'gold') === k ? 'on' : ''}" data-act="accent" data-val="${k}"><i style="background:${c};color:${c}"></i>${l}</button>`).join('')}</div>
+    <div class="grid g3 mt">${field('monthlyGoal', 'Monthly income goal ($)', 'inputmode="decimal"')}</div>
+    <div class="muted small mt">The goal fills the ring on your home screen. Set it to what a good month looks like for you.</div>
+  </div>
+
   <div class="card pricelist"><div class="row" style="margin-bottom:10px"><h2 style="margin:0">Price list</h2><button class="btn sm right" data-act="item-new">${I.plus}Add item</button></div>
     <div class="muted small" style="margin-bottom:8px">Save things you charge for often — call-out fee, standard labour, common parts.</div>
     ${S.items.length ? S.items.map(it => `<div class="pl"><span>${esc(it.desc)}</span><span class="muted small">${esc(it.unit)}</span><b>${money(toCents(it.price))}</b><button class="icon-btn" title="Remove" data-act="item-del" data-id="${it.id}">${I.x}</button></div>`).join('') : '<div class="muted">No items yet.</div>'}
@@ -674,6 +928,25 @@ function updateAbnHint(input) {
 }
 
 /* ---------- views: editor ---------- */
+function stepsHtml(d) {
+  const hasClient = !!d.clientId, hasWork = d.lines.some(l => l.desc && num(l.price));
+  const st = (done, now, label, target) => `<button type="button" class="st ${done ? 'done' : now ? 'now' : ''}" data-act="jump" data-target="${target}"><i></i>${done ? '✓ ' : ''}${label}</button>`;
+  return st(hasClient, !hasClient, '1 · Who', 'step1') + st(hasWork, hasClient && !hasWork, '2 · The work', 'step2') + st(false, hasClient && hasWork, '3 · Send', 'step3');
+}
+function dateSummary(d) {
+  const isQ = d.type === 'quote', n = daysBetween(d.issueDate, d.dueDate);
+  return `${d.number} · ${isQ ? `valid ${plural(n, 'day')}` : n <= 0 ? 'due on receipt' : `due in ${plural(n, 'day')}`} (${auDate(d.dueDate)})`;
+}
+function readyHtml(d) {
+  const st = S.settings, c = getClient(d.clientId);
+  const items = [
+    [!!c, c ? `Going to ${c.name}${c.email ? '' : ' (no email saved)'}` : 'Pick a client in step 1'],
+    [d.lines.some(l => l.desc && num(l.price)), 'At least one priced line'],
+    [!!(st.businessName && st.abn), 'Your business name & ABN are set'],
+  ];
+  if (d.type === 'invoice') items.push([!!(st.bsb || st.payId), 'Bank details or PayID so they can pay']);
+  return items.map(([ok, t]) => `<div class="row" style="gap:8px"><span style="color:var(--${ok ? 'ok' : 'warn'});font-weight:700;width:18px">${ok ? '✓' : '○'}</span><span class="${ok ? '' : 'muted'}">${esc(t)}</span></div>`).join('');
+}
 function viewEdit(id) {
   const d = getDoc(id);
   if (!d) return `<div class="empty"><b>Not found</b><a href="#/">Go home</a></div>`;
@@ -683,52 +956,58 @@ function viewEdit(id) {
   const termOpts = isQ ? [[7, '7 days'], [14, '14 days'], [30, '30 days'], [60, '60 days']] : [[0, 'On receipt'], [7, '7 days'], [14, '14 days'], [30, '30 days']];
   return `
   <div class="page-head">
-    <div class="row"><a class="btn ghost sm" href="#/${isQ ? 'quotes' : 'invoices'}">${I.back}${isQ ? 'Quotes' : 'Invoices'}</a></div>
+    <div><a class="btn ghost sm" href="#/${isQ ? 'quotes' : 'invoices'}" style="margin-left:-12px">${I.back}${isQ ? 'Quotes' : 'Invoices'}</a>
+    <h1>${docLabel(d)} ${esc(d.number)}</h1></div>
+    <div class="row">${chip(d)}<span class="saved" id="saved">✓ Saved</span></div>
   </div>
-  <div class="page-head"><h1>${docLabel(d)} ${esc(d.number)} ${chip(d)}</h1>
-    <button class="btn primary" data-act="preview">Preview & send</button></div>
+  <div class="steps no-print" id="steps">${stepsHtml(d)}</div>
 
-  <div class="card"><h2>Who’s it for?</h2>
+  <section class="card" id="step1" style="scroll-margin-top:70px">
+    <div class="stephead"><span class="stepnum">1</span>Who’s it for?</div>
     <div class="grid g2">
       <label class="f">Client
-        <select class="inp" data-bind="doc" data-key="clientId">
+        <select class="inp" data-bind="doc" data-key="clientId" id="f-client">
           <option value="">— Choose client —</option>${clientOpts}<option value="__new">+ Add new client…</option>
         </select></label>
-      <label class="f">Job site address<input class="inp" data-bind="doc" data-key="site" value="${esc(d.site)}" placeholder="Where the work was done"></label>
+      <label class="f">Job site address<input class="inp" data-bind="doc" data-key="site" id="f-site" value="${esc(d.site)}" placeholder="Where the work was done"></label>
     </div>
-  </div>
+    <details class="more"><summary>Dates & numbers <span class="muted small" id="datesum">${esc(dateSummary(d))}</span></summary>
+      <div class="grid g4">
+        <label class="f">${docLabel(d)} no.<input class="inp" data-bind="doc" data-key="number" id="f-number" value="${esc(d.number)}"></label>
+        <label class="f">Date<input class="inp" type="date" data-bind="doc" data-key="issueDate" id="f-issue" value="${esc(d.issueDate)}"></label>
+        <label class="f">${isQ ? 'Valid until' : 'Due date'}<input class="inp" type="date" data-bind="doc" data-key="dueDate" value="${esc(d.dueDate)}" id="duedate"></label>
+        <label class="f">Their ref / PO no.<input class="inp" data-bind="doc" data-key="reference" id="f-ref" value="${esc(d.reference)}"></label>
+      </div>
+      <div class="terms" id="terms">${termOpts.map(([n, l]) => `<button type="button" data-act="terms" data-days="${n}" class="${d.terms === n ? 'on' : ''}">${l}</button>`).join('')}</div>
+    </details>
+  </section>
 
-  <div class="card"><h2>Details</h2>
-    <div class="grid g4">
-      <label class="f">${docLabel(d)} no.<input class="inp" data-bind="doc" data-key="number" value="${esc(d.number)}"></label>
-      <label class="f">Date<input class="inp" type="date" data-bind="doc" data-key="issueDate" value="${esc(d.issueDate)}"></label>
-      <label class="f">${isQ ? 'Valid until' : 'Due date'}<input class="inp" type="date" data-bind="doc" data-key="dueDate" value="${esc(d.dueDate)}" id="duedate"></label>
-      <label class="f">Your ref / PO no.<input class="inp" data-bind="doc" data-key="reference" value="${esc(d.reference)}"></label>
-    </div>
-    <div class="terms" id="terms">${termOpts.map(([n, l]) => `<button type="button" data-act="terms" data-days="${n}" class="${d.terms === n ? 'on' : ''}">${l}</button>`).join('')}</div>
-  </div>
-
-  <div class="card"><div class="row" style="margin-bottom:12px"><h2 style="margin:0">Work & materials</h2>
-    ${d.gstReg ? `<label class="check right small"><input type="checkbox" data-bind="doc" data-key="incGst" ${d.incGst ? 'checked' : ''}>Prices include GST</label>` : '<span class="muted small right">Not registered for GST</span>'}</div>
+  <section class="card" id="step2" style="scroll-margin-top:70px">
+    <div class="row" style="margin-bottom:6px"><div class="stephead" style="margin:0"><span class="stepnum">2</span>What did you do?</div>
+    ${d.gstReg ? `<label class="check right small"><input type="checkbox" data-bind="doc" data-key="incGst" id="f-incgst" ${d.incGst ? 'checked' : ''}>Prices include GST</label>` : '<span class="muted small right">Not registered for GST</span>'}</div>
+    <div class="muted small" style="margin-bottom:12px">One line per thing — labour, parts, call-out. Totals add up as you type.</div>
     <div class="lines ${d.gstReg ? '' : 'no-gst'}" id="lines">
       <div class="lines-head"><span>Description</span><span>Qty</span><span>Unit</span><span id="pricehdr">Price ${d.gstReg ? (d.incGst ? 'inc' : 'ex') + ' GST' : ''}</span><span class="gstcol" style="text-align:center">GST</span><span style="text-align:right">Amount</span><span></span></div>
       ${d.lines.map(lineHtml).join('')}
     </div>
     <div class="row mt">
       <button class="btn sm" data-act="line-add">${I.plus}Line</button>
-      <button class="btn sm" data-act="line-labour">${I.plus}Labour</button>
-      ${S.items.length ? `<select class="inp" style="width:auto;min-height:34px;padding:4px 10px;font-size:14px" data-bind="additem"><option value="">+ From price list…</option>${S.items.map(it => `<option value="${it.id}">${esc(it.desc)} — ${money(toCents(it.price))}</option>`).join('')}</select>` : ''}
+      <button class="btn sm" data-act="line-labour">${I.plus}Labour ${S.settings.defaultRate ? `<span class="muted">$${esc(S.settings.defaultRate)}/hr</span>` : ''}</button>
+      ${S.items.length ? `<select class="inp" style="width:auto;min-height:36px;padding:4px 10px;font-size:14px" data-bind="additem" id="f-additem"><option value="">+ From price list…</option>${S.items.map(it => `<option value="${it.id}">${esc(it.desc)} — ${money(toCents(it.price))}</option>`).join('')}</select>` : ''}
     </div>
     <div class="totals mt" id="totals">${editorTotals(d)}</div>
-  </div>
+  </section>
 
-  <div class="card"><h2>Notes</h2>
-    <textarea class="inp" rows="3" data-bind="doc" data-key="notes" placeholder="${isQ ? 'Inclusions, exclusions, assumptions…' : 'Anything the client should know — warranty, next service, etc.'}">${esc(d.notes)}</textarea>
-  </div>
+  <section class="card" id="step3" style="scroll-margin-top:70px">
+    <div class="stephead"><span class="stepnum">3</span>Wrap up & send</div>
+    <label class="f">Notes for the client (optional)
+    <textarea class="inp" rows="3" data-bind="doc" data-key="notes" id="f-notes" placeholder="${isQ ? 'Inclusions, exclusions, assumptions…' : 'Warranty, next service due, anything they should know'}">${esc(d.notes)}</textarea></label>
+    <div class="mt" id="ready" style="display:flex;flex-direction:column;gap:4px">${readyHtml(d)}</div>
+  </section>
 
   <div class="sticky-actions no-print">
-    <button class="btn danger" data-act="delete">Delete</button>
-    <button class="btn primary" data-act="preview">Preview & send →</button>
+    <button class="btn ghost danger" data-act="delete">Delete</button>
+    <button class="btn primary big" data-act="preview">Preview & send →</button>
   </div>`;
 }
 
@@ -767,7 +1046,7 @@ function viewDoc(id) {
   if (!isQ && s !== 'paid' && s !== 'draft') actions.push(`<button class="btn primary" data-act="pay">${I.cash}Record payment</button>`);
   if (isQ && d.status !== 'accepted') actions.push(`<button class="btn" data-act="quote-status" data-val="accepted">Mark accepted</button>`);
   if (isQ && d.status !== 'declined' && d.status !== 'accepted') actions.push(`<button class="btn" data-act="quote-status" data-val="declined">Declined</button>`);
-  if (isQ) actions.push(`<button class="btn primary" data-act="convert">Turn into invoice →</button>`);
+  if (isQ) actions.push(`<button class="btn ${s !== 'draft' ? 'primary' : ''}" data-act="convert">Turn into invoice →</button>`);
   actions.push(`<button class="btn ghost" data-act="duplicate">Duplicate</button>`);
 
   const warnings = [];
@@ -776,7 +1055,10 @@ function viewDoc(id) {
   if (!isQ && d.gstReg && t.total >= 100000 && c && !c.address && !c.abn) warnings.push('Tax invoices of $1,000 or more must show the buyer’s identity or ABN — add the client’s address or ABN.');
   if (!isQ && !S.settings.bsb && !S.settings.payId) warnings.push('No bank details or PayID — your client won’t know how to pay. <a href="#/settings">Add them</a>.');
 
+  const due = dueInfo(d);
   return `
+  <div class="docstate no-print"><span class="eyebrow">${docLabel(d)} ${esc(d.number)}</span>${chip(d)}<span class="${due.tone === 'bad' ? 'hint bad' : 'muted'}" style="font-size:15px">${esc(due.text)}</span>
+    <span class="big right">${money(isQ ? t.total : t.balance)} <span class="muted small" style="font-family:var(--f-body)">${isQ ? 'quoted' : t.balance > 0 ? 'to collect' : 'collected'}</span></span></div>
   <div class="toolbar no-print">${actions.join('')}</div>
   ${warnings.length ? `<div class="banner no-print"><div class="small">${warnings.join('<br>')}</div></div>` : ''}
   <div class="paper-wrap">${paperHtml(d)}</div>
@@ -938,10 +1220,26 @@ const ACT = {
   },
   'line-del'(ds) {
     const d = getDoc(current.id);
-    d.lines = d.lines.filter(l => l.id !== ds.id);
+    const i = d.lines.findIndex(l => l.id === ds.id);
+    const [gone] = d.lines.splice(i, 1);
     if (!d.lines.length) d.lines.push(blankLine());
     save(); rerenderEditor();
+    if (gone.desc || num(gone.price)) toast('Line removed', () => {
+      const dd = getDoc(d.id); if (!dd) return;
+      if (dd.lines.length === 1 && !dd.lines[0].desc && !num(dd.lines[0].price)) dd.lines = [];
+      dd.lines.splice(Math.min(i, dd.lines.length), 0, gone); save();
+      if (current.view === 'edit' && current.id === dd.id) rerenderEditor();
+    });
   },
+  jump(ds) {
+    const el = document.getElementById(ds.target); if (!el) return;
+    el.scrollIntoView({ behavior: S.settings.calm ? 'auto' : 'smooth', block: 'start' });
+    const f = el.querySelector('select,input,textarea'); if (f) setTimeout(() => f.focus({ preventScroll: true }), 300);
+  },
+  accent(ds) { S.settings.accent = ds.val; save(); route(); },
+  skip(ds) { skipped.add(ds.id); route(); },
+  unskip() { skipped.clear(); route(); },
+  remind(ds) { go('/view/' + ds.id); ACT.email(); },
   preview() {
     const d = getDoc(current.id);
     d.lines = d.lines.filter(l => l.desc || num(l.price));
@@ -1005,15 +1303,16 @@ const ACT = {
         d.payments.push({ id: uid(), amount: num(data.amount).toFixed(2), date: data.date, method: data.method });
         if (d.status === 'draft') d.status = 'sent';
         save(); route();
-        toast(status(d) === 'paid' ? 'Paid in full 🎉' : 'Payment recorded');
+        if (status(d) === 'paid') { toast('Paid in full. Nice work.'); celebrate(); }
+        else toast(`Payment recorded · ${money(totals(d).balance)} to go`);
       });
   },
   'pay-del'(ds) {
-    ask('Remove payment?', 'The invoice balance will go back up by this amount.', 'Remove', () => {
-      const d = getDoc(current.id); d.payments = d.payments.filter(p => p.id !== ds.id); save(); route();
-    });
+    const d = getDoc(current.id), i = d.payments.findIndex(p => p.id === ds.id);
+    const [gone] = d.payments.splice(i, 1); save(); route();
+    toast('Payment removed', () => { d.payments.splice(i, 0, gone); save(); route(); });
   },
-  'quote-status'(ds) { const d = getDoc(current.id); d.status = ds.val; save(); route(); toast(`Quote marked ${ds.val}`); },
+  'quote-status'(ds) { const d = getDoc(current.id); d.status = ds.val; save(); route(); if (ds.val === 'accepted') { toast('Job won!'); celebrate(); } else toast('Quote marked declined'); },
   convert() {
     const q = getDoc(current.id);
     const inv = newDoc('invoice', {
@@ -1077,6 +1376,37 @@ document.addEventListener('click', e => {
   if (fn) { e.preventDefault(); fn(el.dataset, el, e); }
 });
 
+/* ---------- feedback ---------- */
+let savedTimer;
+function flashSaved() {
+  const el = document.getElementById('saved'); if (!el) return;
+  el.classList.add('flash'); clearTimeout(savedTimer); savedTimer = setTimeout(() => el.classList.remove('flash'), 700);
+}
+function afterEdit(d) {
+  flashSaved();
+  const st = document.getElementById('steps'); if (st) st.innerHTML = stepsHtml(d);
+  const ds = document.getElementById('datesum'); if (ds) ds.textContent = dateSummary(d);
+  const r = document.getElementById('ready'); if (r) r.innerHTML = readyHtml(d);
+}
+function celebrate() {
+  if (!S.settings.celebrate || S.settings.calm || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const cv = document.createElement('canvas'); cv.id = 'fx'; document.body.appendChild(cv);
+  const W = innerWidth, H = innerHeight, dpr = Math.min(2, devicePixelRatio || 1);
+  cv.width = W * dpr; cv.height = H * dpr; cv.style.width = W + 'px'; cv.style.height = H + 'px';
+  const g = cv.getContext('2d'); g.scale(dpr, dpr);
+  const cols = ['#ffb627', '#5ad8ff', '#43e2a3', '#ffffff'];
+  const ps = Array.from({ length: 110 }, () => ({ x: W / 2, y: H * .42, vx: (Math.random() - .5) * 15, vy: -Math.random() * 13 - 3, s: Math.random() * 7 + 3, c: cols[Math.random() * 4 | 0], r: Math.random() * 6, vr: (Math.random() - .5) * .4 }));
+  let f = 0;
+  (function frame() {
+    f++; g.clearRect(0, 0, W, H);
+    for (const p of ps) {
+      p.vy += .38; p.vx *= .985; p.x += p.vx; p.y += p.vy; p.r += p.vr;
+      g.save(); g.translate(p.x, p.y); g.rotate(p.r); g.globalAlpha = Math.max(0, 1 - f / 90); g.fillStyle = p.c; g.fillRect(-p.s / 2, -p.s / 4, p.s, p.s / 2); g.restore();
+    }
+    if (f < 90) requestAnimationFrame(frame); else cv.remove();
+  })();
+}
+
 /* ---------- live binding ---------- */
 function rerenderEditor(focusLast) {
   const y = window.scrollY;
@@ -1091,6 +1421,7 @@ document.addEventListener('input', e => {
   const val = t.type === 'checkbox' ? t.checked : t.value;
 
   if (b === 'set') {
+    flashSaved();
     const k = t.dataset.key;
     let v = val;
     if (k === 'abn') v = abnClean(val);
@@ -1099,6 +1430,7 @@ document.addEventListener('input', e => {
     S.settings[k] = v; save();
     if (k === 'abn') updateAbnHint(t);
     if (t.type === 'checkbox') route();
+    if (k === 'monthlyGoal') S.settings.monthlyGoal = String(num(val));
     return;
   }
   if (b === 'search') { listFilter.q = val; document.getElementById('listbox').innerHTML = listBody(t.dataset.type); return; }
@@ -1118,6 +1450,7 @@ document.addEventListener('input', e => {
     save();
     if (k === 'incGst') { rerenderEditor(); return; }
     document.getElementById('totals').innerHTML = editorTotals(d);
+    afterEdit(d);
     return;
   }
   if (b === 'line') {
@@ -1126,6 +1459,7 @@ document.addEventListener('input', e => {
     l[t.dataset.key] = val; save();
     document.getElementById('lt-' + id).textContent = money(lineCents(l));
     document.getElementById('totals').innerHTML = editorTotals(d);
+    afterEdit(d);
     return;
   }
   if (b === 'additem') {
@@ -1196,7 +1530,8 @@ function loadExamples() {
   add('invoice', { clientId: tom, site: '3 Banksia Ct, Sunnybank', issueDate: addDays(t, -26), dueDate: addDays(t, -12), status: 'sent', lines: [L('Call-out fee', '1', 'ea', '120'), L('Clear blocked drain – jet & CCTV', '1', 'ea', '260')], payments: [{ id: uid(), date: addDays(t, -14), amount: '418.00', method: 'Bank transfer' }] });
   const q = add('quote', { clientId: jane, site: '5 Gum Tree Rd, Paddington', issueDate: addDays(t, -6), dueDate: addDays(t, 24), status: 'accepted', lines: [L('Call-out fee', '1', 'ea', '120'), L('Labour', '3.5', 'hr', '95'), L('Rheem 315L hot water system', '1', 'ea', '1849.50'), L('Council permit fee', '1', 'ea', '85', false)] });
   add('invoice', { clientId: jane, site: q.site, fromQuote: q.number, issueDate: addDays(t, -1), terms: 7, dueDate: addDays(t, 6), status: 'sent', lines: q.lines.map(l => ({ ...l, id: uid() })), payments: [{ id: uid(), date: t, amount: '1000.00', method: 'PayID / Osko' }] });
-  add('quote', { clientId: bld, site: 'Lot 22, Kippa-Ring', status: 'sent', lines: [L('Rough-in & fit-off, 3 bed home', '1', 'lot', '8900')] });
+  add('invoice', { clientId: tom, site: '3 Banksia Ct, Sunnybank', issueDate: addDays(t, -2), createdAt: Date.now() - 2 * 864e5, lines: [L('Replace kitchen mixer tap', '1', 'ea', '289'), L('Labour', '1.5', 'hr', '95')] });
+  add('quote', { clientId: bld, site: 'Lot 22, Kippa-Ring', issueDate: addDays(t, -5), dueDate: addDays(t, 25), status: 'sent', lines: [L('Rough-in & fit-off, 3 bed home', '1', 'lot', '8900')] });
   save();
 }
 ACT['examples-clear'] = () => ask('Start fresh?', 'This removes the example business, clients, quotes and invoices so you can enter your own.', 'Clear examples', () => { S = structuredClone(DEFAULT); save(); go('/settings'); toast('Examples cleared — add your business details'); });
