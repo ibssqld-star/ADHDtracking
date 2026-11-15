@@ -135,7 +135,7 @@ main{flex:1;min-width:0;padding-block:30px 130px;padding-left:max(36px,env(safe-
 .muted{color:var(--ink-2)}
 .small{font-size:.85em}
 .mt{margin-top:16px}
-.hide{display:none!important}
+.hide,[hidden]{display:none!important}
 
 /* ---------- controls ---------- */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border:1px solid var(--line-2);background:var(--panel-2);font-weight:700;cursor:pointer;text-decoration:none;white-space:nowrap;border-radius:var(--radius);transition:background .15s,box-shadow .15s,transform .1s}
@@ -436,7 +436,7 @@ const DEFAULT = {
     businessName: '', tradingName: '', abn: '', gstRegistered: true, pricesIncGst: false,
     licence: '', phone: '', email: '', address: '',
     accountName: '', bsb: '', accountNumber: '', payId: '',
-    paymentTermsDays: 14, quoteValidDays: 30, defaultRate: '95',
+    paymentTermsDays: 14, quoteValidDays: 30, defaultRate: '95', chargeBy: 'hour',
     invoicePrefix: 'INV-', nextInvoice: 1, quotePrefix: 'Q-', nextQuote: 1,
     footerNote: 'Thanks for your business!', logo: '',
     monthlyGoal: '15000', bigText: false, calm: false, celebrate: true, accent: 'gold', display: 'auto', focusHome: false, reminderTone: 'friendly'
@@ -991,11 +991,17 @@ function viewSettings() {
     </div>
   </div>
 
+  <div class="card"><h2>How you charge</h2>
+    <div class="seg">${[['hour', 'By the hour'], ['job', 'Per job (fixed price)']].map(([k, l]) => `<button type="button" class="${(s.chargeBy || 'hour') === k ? 'on' : ''}" data-act="charge" data-val="${k}" aria-pressed="${(s.chargeBy || 'hour') === k}">${l}</button>`).join('')}</div>
+    <div class="muted small" style="margin-top:8px">${(s.chargeBy || 'hour') === 'job' ? 'Logging a job asks for one price for the whole job. You can still switch to hours on any job.' : 'Logging a job asks for your hours and works out the labour. You can still switch to a fixed price on any job.'}</div>
+    <div class="grid g3 mt">${field('defaultRate', `Hourly rate $${s.gstRegistered ? ' (ex GST)' : ''}`, 'inputmode="decimal" placeholder="e.g. 95"')}</div>
+    <div class="muted small mt">Used for “+ Labour” and when you log hours. You can change it on any job, e.g. for after-hours work.</div>
+  </div>
+
   <div class="card"><h2>Numbering & defaults</h2>
     <div class="grid g3">
       ${field('invoicePrefix', 'Invoice prefix')}
       ${field('nextInvoice', 'Next invoice no.', 'inputmode="numeric"')}
-      ${field('defaultRate', 'Labour rate ($/hr)', 'inputmode="decimal"')}
       ${field('quotePrefix', 'Quote prefix')}
       ${field('nextQuote', 'Next quote no.', 'inputmode="numeric"')}
     </div>
@@ -1108,7 +1114,9 @@ function viewEdit(id) {
     </div>
     <div class="row mt">
       <button class="btn sm" data-act="line-add">${I.plus}Line</button>
-      <button class="btn sm" data-act="line-labour">${I.plus}Labour ${S.settings.defaultRate ? `<span class="muted">$${esc(S.settings.defaultRate)}/hr</span>` : ''}</button>
+      ${S.settings.chargeBy === 'job'
+        ? `<button class="btn sm" data-act="line-job">${I.plus}Job price</button>`
+        : `<button class="btn sm" data-act="line-labour">${I.plus}Labour ${S.settings.defaultRate ? `<span class="muted">$${esc(S.settings.defaultRate)}/hr</span>` : ''}</button>`}
       ${S.items.length ? `<select class="inp" style="width:auto;min-height:36px;padding:4px 10px;font-size:14px" data-bind="additem" id="f-additem"><option value="">+ From price list…</option>${S.items.map(it => `<option value="${it.id}">${esc(it.desc)} — ${money(toCents(it.price))}</option>`).join('')}</select>` : ''}
     </div>
     <div class="totals mt" id="totals">${editorTotals(d)}</div>
@@ -1327,6 +1335,7 @@ const ACT = {
     document.querySelectorAll('#terms button').forEach(b => b.classList.toggle('on', Number(b.dataset.days) === n));
   },
   'line-add'() { const d = getDoc(current.id); d.lines.push(blankLine()); save(); rerenderEditor(true); },
+  'line-job'() { const d = getDoc(current.id); d.lines.push(blankLine({ unit: 'lot' })); save(); rerenderEditor(true); },
   'line-labour'() {
     const d = getDoc(current.id);
     let rate = num(S.settings.defaultRate);
@@ -1353,31 +1362,61 @@ const ACT = {
     const f = el.querySelector('select,input,textarea'); if (f) setTimeout(() => f.focus({ preventScroll: true }), 300);
   },
   accent(ds) { S.settings.accent = ds.val; save(); route(); },
+  charge(ds) { S.settings.chargeBy = ds.val; save(); route(); toast(ds.val === 'job' ? 'Set to fixed price per job' : 'Set to charge by the hour'); },
   display(ds) { S.settings.display = ds.val; save(); route(); },
   quick() {
-    const st = S.settings;
+    const st = S.settings, gstNote = st.gstRegistered ? (st.pricesIncGst ? ' (inc GST)' : ' (ex GST)') : '';
+    let rate = num(st.defaultRate);
+    if (st.gstRegistered && st.pricesIncGst) rate = Math.round(rate * 110) / 100;
+    const mode0 = st.chargeBy === 'job' ? 'job' : 'hour';
     const opts = S.clients.slice().sort((a, b) => a.name.localeCompare(b.name)).map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join('');
-    openModal('Log a job', `
+    const m = openModal('Log a job', `
       <p class="muted small" style="margin:0 0 14px">Jot it down while it’s fresh. It becomes a draft invoice you can tidy up and send later.</p>
       <label class="f">What did you do?<textarea class="inp" name="what" id="q-what" rows="2" required placeholder="e.g. Replaced hot water system"></textarea></label>
       <div class="grid g2 mt">
         <label class="f">Who for<select class="inp" name="client" id="q-client"><option value="">— Pick a client —</option>${opts}</select></label>
         <label class="f">…or a new client<input class="inp" name="newname" id="q-new" placeholder="Name"></label>
+      </div>
+      <div class="f mt" style="font-size:13px;font-weight:700;color:var(--ink-2)">How are you charging for this one?</div>
+      <input type="hidden" name="mode" id="q-mode" value="${mode0}">
+      <div class="seg" style="margin-top:6px">${[['hour', 'Hourly'], ['job', 'Fixed price']].map(([k, l]) => `<button type="button" data-mode="${k}" class="${mode0 === k ? 'on' : ''}" aria-pressed="${mode0 === k}">${l}</button>`).join('')}</div>
+      <div class="grid g2 mt" id="q-hourly" ${mode0 === 'hour' ? '' : 'hidden'}>
         <label class="f">Hours on site<input class="inp" name="hours" id="q-hours" inputmode="decimal" placeholder="e.g. 2.5"></label>
-        <label class="f">Materials $ ${st.gstRegistered ? (st.pricesIncGst ? '(inc GST)' : '(ex GST)') : ''}<input class="inp" name="mat" id="q-mat" inputmode="decimal" placeholder="0"></label>
-      </div>`, 'Save job', data => {
+        <label class="f">Rate $/hr${gstNote}<input class="inp" name="rate" id="q-rate" inputmode="decimal" value="${rate ? rate.toFixed(2) : ''}" placeholder="e.g. 95"></label>
+      </div>
+      <div class="grid g2 mt" id="q-fixed" ${mode0 === 'job' ? '' : 'hidden'}>
+        <label class="f">Job price $${gstNote}<input class="inp" name="price" id="q-price" inputmode="decimal" placeholder="e.g. 450"></label>
+      </div>
+      <div class="grid g2 mt">
+        <label class="f">Materials $${gstNote}<input class="inp" name="mat" id="q-mat" inputmode="decimal" placeholder="0"></label>
+      </div>
+      <div class="muted small mt" id="q-total" aria-live="polite"></div>`, 'Save job', data => {
       let cid = data.client;
       if (!cid && data.newname.trim()) { const c = { id: uid(), name: data.newname.trim(), contact: '', email: '', phone: '', address: '', abn: '' }; S.clients.push(c); cid = c.id; }
-      let rate = num(st.defaultRate);
-      if (st.gstRegistered && st.pricesIncGst) rate = Math.round(rate * 110) / 100;
       const what = data.what.trim(), lines = [];
-      if (num(data.hours)) lines.push(blankLine({ desc: what, qty: String(num(data.hours)), unit: 'hr', price: rate ? rate.toFixed(2) : '' }));
+      if (data.mode === 'job') lines.push(blankLine({ desc: what, qty: '1', unit: 'lot', price: num(data.price) ? num(data.price).toFixed(2) : '' }));
+      else if (num(data.hours)) lines.push(blankLine({ desc: what, qty: String(num(data.hours)), unit: 'hr', price: num(data.rate) ? num(data.rate).toFixed(2) : '' }));
       else lines.push(blankLine({ desc: what }));
       if (num(data.mat)) lines.push(blankLine({ desc: 'Materials', qty: '1', unit: 'lot', price: num(data.mat).toFixed(2) }));
       const d = newDoc('invoice', { clientId: cid, lines }); delete d.isNew; save();
       skipped.delete(d.id); go('/');
       toast(`${d.number} saved as a draft. It’s in Next up.`, () => go('/edit/' + d.id), 'Open');
     });
+    // live running total so the number is never a surprise
+    const f = m.querySelector('form');
+    const calc = () => {
+      const work = f.mode.value === 'job' ? num(f.price.value) : num(f.hours.value) * num(f.rate.value);
+      const sum = Math.round((work + num(f.mat.value)) * 100);
+      document.getElementById('q-total').textContent = sum ? `Comes to ${money(sum)}${gstNote ? (st.pricesIncGst ? ' inc GST' : ' + GST') : ''}` : '';
+    };
+    m.querySelectorAll('[data-mode]').forEach(b => b.addEventListener('click', () => {
+      f.mode.value = b.dataset.mode;
+      m.querySelectorAll('[data-mode]').forEach(x => { x.classList.toggle('on', x === b); x.setAttribute('aria-pressed', x === b); });
+      document.getElementById('q-hourly').hidden = b.dataset.mode !== 'hour';
+      document.getElementById('q-fixed').hidden = b.dataset.mode !== 'job';
+      calc();
+    }));
+    f.addEventListener('input', calc);
   },
   skip(ds) { skipped.add(ds.id); route(); },
   unskip() { skipped.clear(); route(); },
