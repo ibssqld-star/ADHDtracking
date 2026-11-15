@@ -1,0 +1,1132 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1b2a3a">
+<title>Docket – Tradie Invoices</title>
+<style>
+:root{
+  --bg:#f3f1ec; --surface:#fff; --surface-2:#f8f7f3; --ink:#1a1f26; --ink-2:#5b6470; --line:#e0dcd3;
+  --accent:#c2410c; --accent-hover:#a3360a; --accent-ink:#fff; --accent-soft:#fdeadc;
+  --navy:#1b2a3a; --info:#1d4f91; --info-soft:#e3ecf8;
+  --ok:#1f7a4d; --ok-soft:#dff2e7; --warn:#9a4a06; --warn-soft:#fdf0cc; --bad:#b42318; --bad-soft:#fde6e3;
+  --muted-soft:#ebe8e1; --radius:12px; --shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#12161b; --surface:#1b2128; --surface-2:#222932; --ink:#eef1f4; --ink-2:#a2acb8; --line:#2f3842;
+    --accent:#f0782f; --accent-hover:#ff8a45; --accent-ink:#1a1006; --accent-soft:#3a2416;
+    --navy:#0d1319; --info:#8fb6ec; --info-soft:#1c2a3d;
+    --ok:#6fd19c; --ok-soft:#173226; --warn:#f3c26b; --warn-soft:#3a2d12; --bad:#ff8f84; --bad-soft:#3d1a17;
+    --muted-soft:#2a323c; --shadow:0 1px 2px rgba(0,0,0,.3);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#12161b; --surface:#1b2128; --surface-2:#222932; --ink:#eef1f4; --ink-2:#a2acb8; --line:#2f3842;
+  --accent:#f0782f; --accent-hover:#ff8a45; --accent-ink:#1a1006; --accent-soft:#3a2416;
+  --navy:#0d1319; --info:#8fb6ec; --info-soft:#1c2a3d;
+  --ok:#6fd19c; --ok-soft:#173226; --warn:#f3c26b; --warn-soft:#3a2d12; --bad:#ff8f84; --bad-soft:#3d1a17;
+  --muted-soft:#2a323c; --shadow:0 1px 2px rgba(0,0,0,.3);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.45 var(--font);-webkit-font-smoothing:antialiased}
+a{color:inherit}
+h1,h2,h3{margin:0;line-height:1.2}
+button,input,select,textarea{font:inherit;color:inherit}
+
+/* ---------- shell ---------- */
+.shell{display:flex;min-height:100vh}
+.nav{background:var(--navy);color:#fff;width:220px;flex:none;padding:20px 12px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:4px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;letter-spacing:-.02em;padding:4px 10px 18px}
+.brand-mark{width:30px;height:30px;border-radius:8px;background:#f0782f;display:grid;place-items:center;color:#1a1006}
+.nav a{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;text-decoration:none;color:#c9d3de;font-weight:600}
+.nav a:hover{background:rgba(255,255,255,.07);color:#fff}
+.nav a.on{background:rgba(240,120,47,.18);color:#fff}
+.nav a.on svg{color:#f0782f}
+.nav svg{width:20px;height:20px;flex:none}
+.nav .spacer{flex:1}
+.nav .small{font-size:12px;color:#8a97a6;padding:8px 12px}
+main{flex:1;min-width:0;padding:28px 32px 120px;max-width:1100px}
+
+@media (max-width:820px){
+  .shell{display:block}
+  .nav{position:fixed;bottom:0;left:0;right:0;top:auto;height:auto;width:auto;flex-direction:row;justify-content:space-around;padding:6px 4px calc(6px + env(safe-area-inset-bottom));z-index:20;gap:0}
+  .brand,.nav .spacer,.nav .small{display:none}
+  .nav a{flex-direction:column;gap:2px;font-size:11px;padding:6px 4px;flex:1;text-align:center;justify-content:center}
+  main{padding:16px 16px 110px}
+}
+
+/* ---------- common ---------- */
+.page-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+.page-head h1{font-size:26px;letter-spacing:-.02em}
+.sub{color:var(--ink-2)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
+.card + .card{margin-top:16px}
+.grid > .card{margin-top:0}
+.card h2{font-size:16px;margin-bottom:12px}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:820px){.g3,.g4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:520px){.g2,.g3{grid-template-columns:minmax(0,1fr)}}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.right{margin-left:auto}
+.muted{color:var(--ink-2)}
+.small{font-size:13px}
+.mt{margin-top:16px}
+.hide{display:none!important}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:42px;padding:0 16px;border-radius:10px;border:1px solid var(--line);background:var(--surface);font-weight:650;cursor:pointer;text-decoration:none;white-space:nowrap}
+.btn:hover{background:var(--surface-2)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{background:var(--accent-hover)}
+.btn.ghost{background:transparent;border-color:transparent}
+.btn.danger{color:var(--bad)}
+.btn.sm{min-height:34px;padding:0 12px;font-size:14px}
+.btn svg{width:18px;height:18px}
+.icon-btn{width:38px;height:38px;border-radius:9px;border:1px solid transparent;background:transparent;display:grid;place-items:center;cursor:pointer;color:var(--ink-2)}
+.icon-btn:hover{background:var(--surface-2);color:var(--bad)}
+
+label.f{display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:600;color:var(--ink-2)}
+.inp,select.inp,textarea.inp{width:100%;min-height:44px;padding:9px 12px;border-radius:9px;border:1px solid var(--line);background:var(--surface);font-size:16px;color:var(--ink);font-weight:400}
+textarea.inp{min-height:80px;resize:vertical}
+.inp:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:transparent}
+.hint{font-size:12px;font-weight:500}
+.hint.ok{color:var(--ok)} .hint.bad{color:var(--bad)}
+.check{display:flex;align-items:center;gap:10px;font-weight:600;cursor:pointer;min-height:40px}
+.check input{width:20px;height:20px;accent-color:var(--accent)}
+
+.chip{display:inline-flex;align-items:center;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:700;text-transform:capitalize;white-space:nowrap}
+.st-draft{background:var(--muted-soft);color:var(--ink-2)}
+.st-sent{background:var(--info-soft);color:var(--info)}
+.st-part{background:var(--warn-soft);color:var(--warn)}
+.st-paid,.st-accepted{background:var(--ok-soft);color:var(--ok)}
+.st-overdue,.st-declined{background:var(--bad-soft);color:var(--bad)}
+
+.filters{display:flex;gap:6px;flex-wrap:wrap}
+.filters button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 14px;font-weight:600;cursor:pointer;font-size:14px}
+.filters button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+
+/* stats */
+.stat .lbl{font-size:13px;font-weight:600;color:var(--ink-2)}
+.stat .val{font-size:26px;font-weight:800;letter-spacing:-.02em;margin-top:4px;font-variant-numeric:tabular-nums}
+.stat .foot{font-size:12px;color:var(--ink-2);margin-top:4px}
+.stat.alert .val{color:var(--bad)}
+
+/* list */
+.list{display:flex;flex-direction:column}
+.li{display:grid;grid-template-columns:110px 1fr auto auto;gap:12px;align-items:center;padding:12px 4px;border-top:1px solid var(--line);text-decoration:none;cursor:pointer}
+.li:first-child{border-top:0}
+.li:hover{background:var(--surface-2)}
+.li .num{font-weight:700;font-variant-numeric:tabular-nums}
+.li .who{min-width:0}
+.li .who b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.li .amt{font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
+@media (max-width:520px){
+  .li{grid-template-columns:1fr auto;row-gap:2px}
+  .li .num{grid-column:1}
+  .li .chip{grid-row:1;grid-column:2;justify-self:end}
+  .li .who{grid-column:1}
+  .li .amt{grid-column:2;grid-row:2}
+}
+.empty{text-align:center;padding:36px 16px;color:var(--ink-2)}
+.empty b{display:block;color:var(--ink);font-size:17px;margin-bottom:6px}
+.banner{display:flex;gap:14px;align-items:center;background:var(--accent-soft);border:1px solid color-mix(in srgb,var(--accent) 35%,transparent);padding:14px 16px;border-radius:var(--radius);margin-bottom:18px;flex-wrap:wrap}
+
+/* editor lines */
+.lines-head,.line{display:grid;grid-template-columns:minmax(0,1fr) 80px 90px 110px 64px 100px 40px;gap:8px;align-items:center}
+.lines-head{font-size:12px;font-weight:700;color:var(--ink-2);text-transform:uppercase;letter-spacing:.04em;padding:0 0 6px}
+.line{padding:8px 0;border-top:1px solid var(--line)}
+.line .lt{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+.line .gst{display:flex;justify-content:center}
+.line .gst input{width:20px;height:20px;accent-color:var(--accent)}
+.line .mlbl{display:none}
+.lines.no-gst .gstcol{display:none}
+.lines.no-gst .lines-head,.lines.no-gst .line{grid-template-columns:minmax(0,1fr) 80px 90px 110px 100px 40px}
+@media (max-width:820px){
+  .lines-head{display:none}
+  .line,.lines.no-gst .line{grid-template-columns:repeat(6,minmax(0,1fr));row-gap:8px;padding:12px 0}
+  .line .desc{grid-column:1/-1}
+  .line .q{grid-column:span 2}.line .u{grid-column:span 2}.line .p{grid-column:span 2}
+  .line .gst{grid-column:span 3;justify-content:flex-start}
+  .lines.no-gst .line .lt{grid-column:span 5}
+  .line .lt{grid-column:span 2;text-align:left}
+  .line .del{grid-column:span 1;justify-self:end}
+  .line .mlbl{display:block;font-size:11px;font-weight:700;color:var(--ink-2);text-transform:uppercase;margin-bottom:3px}
+  .line .gst .mlbl{display:inline;margin:0 0 0 8px}
+}
+.totals{margin-left:auto;max-width:340px;font-variant-numeric:tabular-nums}
+.totals div{display:flex;justify-content:space-between;padding:5px 0}
+.totals .grand{border-top:2px solid var(--ink);margin-top:6px;padding-top:10px;font-size:20px;font-weight:800}
+.sticky-actions{position:sticky;bottom:0;background:linear-gradient(transparent,var(--bg) 30%);padding:20px 0 4px;display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+@media (max-width:820px){.sticky-actions{bottom:64px}}
+.terms{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.terms button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:3px 10px;font-size:12px;font-weight:600;cursor:pointer}
+.terms button.on{border-color:var(--accent);color:var(--accent)}
+
+/* toolbar */
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+
+/* ---------- paper (always light) ---------- */
+.paper-wrap{overflow-x:auto;padding-bottom:6px}
+.paper{background:#fff;color:#1a1f26;width:100%;max-width:820px;min-width:600px;margin:0 auto;padding:44px 48px;border-radius:6px;box-shadow:0 2px 20px rgba(0,0,0,.12);position:relative;font-size:13.5px;line-height:1.45}
+.paper .p-head{display:flex;justify-content:space-between;gap:24px;align-items:flex-start;padding-bottom:22px;border-bottom:3px solid #1b2a3a}
+.paper .logo{max-height:70px;max-width:200px;display:block;margin-bottom:10px}
+.paper .bizname{font-size:20px;font-weight:800;letter-spacing:-.01em}
+.paper .doc-title{font-size:28px;font-weight:800;letter-spacing:.04em;color:#1b2a3a;text-align:right;text-transform:uppercase}
+.paper .meta{margin-top:10px;border-collapse:collapse;margin-left:auto}
+.paper .meta td{padding:2px 0 2px 16px;text-align:right}
+.paper .meta td:first-child{color:#5b6470}
+.paper .parties{display:flex;gap:28px;margin:24px 0}
+.paper .parties > div{flex:1}
+.paper .lbl{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#c2410c;margin-bottom:4px}
+.paper table.items{width:100%;border-collapse:collapse;margin-top:6px}
+.paper table.items th{font-size:11px;letter-spacing:.06em;text-transform:uppercase;text-align:left;color:#5b6470;border-bottom:1.5px solid #1a1f26;padding:8px 6px}
+.paper table.items td{padding:9px 6px;border-bottom:1px solid #e6e2da;vertical-align:top}
+.paper table.items .n{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.paper .free{font-size:11px;color:#5b6470}
+.paper .ptotals{margin:14px 0 0 auto;width:300px;font-variant-numeric:tabular-nums}
+.paper .ptotals div{display:flex;justify-content:space-between;padding:4px 6px}
+.paper .ptotals .grand{background:#1b2a3a;color:#fff;font-weight:800;font-size:16px;padding:9px 10px;margin-top:6px;border-radius:4px}
+.paper .ptotals .due{font-weight:800;font-size:15px;border-top:1.5px solid #1a1f26;margin-top:6px;padding-top:8px}
+.paper .pay{margin-top:28px;background:#f6f4ef;border-radius:6px;padding:16px 18px;display:flex;gap:28px;flex-wrap:wrap}
+.paper .pay table td{padding:1px 14px 1px 0}
+.paper .pay table td:first-child{color:#5b6470}
+.paper .notes{margin-top:22px;white-space:pre-wrap}
+.paper .foot{margin-top:30px;padding-top:12px;border-top:1px solid #e6e2da;font-size:12px;color:#5b6470;text-align:center}
+.paper .sign{margin-top:34px;display:flex;gap:30px}
+.paper .sign div{flex:1;border-top:1px solid #1a1f26;padding-top:4px;font-size:12px;color:#5b6470}
+.paper .stamp{position:absolute;top:150px;right:60px;transform:rotate(-14deg);border:4px solid #1f7a4d;color:#1f7a4d;font-weight:900;font-size:34px;letter-spacing:.12em;padding:4px 18px;border-radius:8px;opacity:.85}
+.paper .stamp.over{border-color:#b42318;color:#b42318;font-size:26px}
+
+dialog{border:0;border-radius:16px;padding:0;width:min(520px,calc(100vw - 24px));background:var(--surface);color:var(--ink);box-shadow:0 20px 60px rgba(0,0,0,.3)}
+dialog::backdrop{background:rgba(10,15,20,.5)}
+dialog form{padding:22px}
+dialog h2{font-size:19px;margin-bottom:16px}
+dialog .actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
+
+#toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--bg);padding:11px 18px;border-radius:10px;font-weight:600;opacity:0;pointer-events:none;transition:.2s;z-index:50;max-width:calc(100vw - 32px)}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+.pricelist .pl{display:grid;grid-template-columns:1fr auto auto auto;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.pricelist .pl:first-child{border-top:0}
+
+@media print{
+  @page{size:A4;margin:12mm}
+  body{background:#fff}
+  .nav,.no-print,#toast{display:none!important}
+  main{padding:0;max-width:none}
+  .paper-wrap{overflow:visible}
+  .paper{box-shadow:none;border-radius:0;padding:0;min-width:0;max-width:none}
+  .paper .pay{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .paper .ptotals .grand{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <nav class="nav" id="nav"></nav>
+  <main id="view"></main>
+</div>
+<dialog id="modal"></dialog>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+'use strict';
+/* =========================================================
+   Docket — invoicing for Australian tradies
+   Local-first: everything is stored in this browser.
+   ========================================================= */
+
+const KEY = 'docket.v1';
+const DEFAULT = {
+  settings: {
+    businessName: '', tradingName: '', abn: '', gstRegistered: true, pricesIncGst: false,
+    licence: '', phone: '', email: '', address: '',
+    accountName: '', bsb: '', accountNumber: '', payId: '',
+    paymentTermsDays: 14, quoteValidDays: 30, defaultRate: '95',
+    invoicePrefix: 'INV-', nextInvoice: 1, quotePrefix: 'Q-', nextQuote: 1,
+    footerNote: 'Thanks for your business!', logo: ''
+  },
+  clients: [],
+  docs: [],
+  items: []
+};
+const UNITS = ['hr', 'ea', 'day', 'm', 'm²', 'lot', 'km'];
+
+/* ---------- storage ---------- */
+function load() {
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (raw) return migrate(JSON.parse(raw));
+  } catch (e) { /* fall through */ }
+  return structuredClone(DEFAULT);
+}
+function migrate(d) {
+  return {
+    ...structuredClone(DEFAULT), ...d,
+    settings: { ...DEFAULT.settings, ...(d.settings || {}) },
+    clients: d.clients || [], docs: d.docs || [], items: d.items || []
+  };
+}
+let S = load();
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(S)); }
+  catch (e) { toast('Couldn’t save — browser storage is full. Try a smaller logo.'); }
+}
+
+/* ---------- helpers ---------- */
+const uid = () => Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-4);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const num = s => { const n = parseFloat(String(s ?? '').replace(/[$,\s]/g, '')); return isFinite(n) ? n : 0; };
+const toCents = s => Math.round(num(s) * 100);
+const money = c => (c < 0 ? '-' : '') + '$' + (Math.abs(c) / 100).toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const pad = n => String(n).padStart(2, '0');
+const isoOf = dt => `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}`;
+const today = () => isoOf(new Date());
+const addDays = (s, n) => { const [y, m, d] = s.split('-').map(Number); return isoOf(new Date(y, m - 1, d + Number(n))); };
+const auDate = s => { if (!s) return ''; const [y, m, d] = s.split('-'); return `${d}/${m}/${y}`; };
+const longDate = s => { if (!s) return ''; const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' }); };
+const nl2br = s => esc(s).replace(/\n/g, '<br>');
+
+function abnClean(a) { return String(a || '').replace(/\D/g, ''); }
+function abnValid(a) {
+  const s = abnClean(a);
+  if (!/^\d{11}$/.test(s)) return false;
+  const w = [10, 1, 3, 5, 7, 9, 11, 13, 15, 17, 19];
+  let sum = 0;
+  for (let i = 0; i < 11; i++) sum += (Number(s[i]) - (i === 0 ? 1 : 0)) * w[i];
+  return sum % 89 === 0;
+}
+const abnFmt = a => { const s = abnClean(a); return s.length === 11 ? s.replace(/^(\d{2})(\d{3})(\d{3})(\d{3})$/, '$1 $2 $3 $4') : String(a || ''); };
+const bsbFmt = b => { const s = String(b || '').replace(/\D/g, ''); return s.length === 6 ? s.slice(0, 3) + '-' + s.slice(3) : String(b || ''); };
+
+let toastTimer;
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+}
+function download(name, text, type) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], { type }));
+  a.download = name; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+}
+
+/* ---------- domain ---------- */
+const getDoc = id => S.docs.find(d => d.id === id);
+const getClient = id => S.clients.find(c => c.id === id);
+const docLabel = d => d.type === 'quote' ? 'Quote' : 'Invoice';
+const lineCents = l => Math.round(num(l.qty) * num(l.price) * 100);
+
+function totals(d) {
+  let lines = 0, taxable = 0;
+  for (const l of d.lines) {
+    const c = lineCents(l);
+    lines += c;
+    if (d.gstReg && l.gst) taxable += c;
+  }
+  let sub, gst, total;
+  if (!d.gstReg) { sub = lines; gst = 0; total = lines; }
+  else if (d.incGst) { total = lines; gst = Math.round(taxable / 11); sub = total - gst; }
+  else { sub = lines; gst = Math.round(taxable * 0.1); total = sub + gst; }
+  const paid = (d.payments || []).reduce((a, p) => a + toCents(p.amount), 0);
+  const hasFree = d.gstReg && d.lines.some(l => !l.gst && lineCents(l) !== 0);
+  return { sub, gst, total, paid, balance: total - paid, hasFree };
+}
+
+function status(d) {
+  if (d.type === 'quote') return d.status === 'draft' ? 'draft' : d.status;
+  const t = totals(d);
+  if (t.total > 0 && t.balance <= 0 && t.paid > 0) return 'paid';
+  if (d.status === 'draft') return 'draft';
+  if (d.dueDate && d.dueDate < today()) return 'overdue';
+  if (t.paid > 0) return 'part paid';
+  return 'sent';
+}
+const chipClass = s => ({ 'part paid': 'st-part' }[s] || 'st-' + s);
+const chip = d => { const s = status(d); return `<span class="chip ${chipClass(s)}">${esc(s)}</span>`; };
+
+function nextNumber(type) {
+  const st = S.settings;
+  if (type === 'quote') return st.quotePrefix + String(st.nextQuote++).padStart(4, '0');
+  return st.invoicePrefix + String(st.nextInvoice++).padStart(4, '0');
+}
+
+function newDoc(type, extra = {}) {
+  const st = S.settings;
+  const issue = today();
+  const days = type === 'quote' ? st.quoteValidDays : st.paymentTermsDays;
+  const d = {
+    id: uid(), type, number: nextNumber(type), clientId: '',
+    issueDate: issue, terms: Number(days), dueDate: addDays(issue, days),
+    reference: '', site: '', notes: '',
+    lines: [blankLine()], payments: [], status: 'draft',
+    gstReg: !!st.gstRegistered, incGst: !!st.pricesIncGst,
+    createdAt: Date.now(), isNew: true, ...extra
+  };
+  S.docs.unshift(d); save();
+  return d;
+}
+function blankLine(over = {}) { return { id: uid(), desc: '', qty: '1', unit: 'ea', price: '', gst: true, ...over }; }
+
+function isEmptyDoc(d) {
+  return !d.clientId && !d.notes && !d.site && !d.reference && d.lines.every(l => !l.desc && !num(l.price));
+}
+function removeDoc(d) {
+  S.docs = S.docs.filter(x => x.id !== d.id);
+  // give the number back if it was the last one handed out
+  const st = S.settings;
+  if (d.type === 'invoice' && d.number === st.invoicePrefix + String(st.nextInvoice - 1).padStart(4, '0')) st.nextInvoice--;
+  if (d.type === 'quote' && d.number === st.quotePrefix + String(st.nextQuote - 1).padStart(4, '0')) st.nextQuote--;
+  save();
+}
+function discardIfEmpty(id) {
+  const d = getDoc(id);
+  if (!d) return;
+  if (d.isNew && isEmptyDoc(d)) removeDoc(d);
+  else { delete d.isNew; save(); }
+}
+
+function basQuarter(iso) {
+  const [y, m] = iso.split('-').map(Number);
+  const sm = Math.floor((m - 1) / 3) * 3 + 1;
+  const start = `${y}-${pad(sm)}-01`;
+  const end = isoOf(new Date(y, sm - 1 + 3, 0));
+  const names = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const label = `${names[sm - 1]}–${names[sm + 1]} ${y}`;
+  // standard (non-agent) quarterly BAS lodgement dates
+  const due = { 1: `28 Apr ${y}`, 4: `28 Jul ${y}`, 7: `28 Oct ${y}`, 10: `28 Feb ${y + 1}` }[sm];
+  return { start, end, label, due };
+}
+
+/* ---------- icons ---------- */
+const I = {
+  home: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>',
+  inv: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h8M9 17h5"/></svg>',
+  quote: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="18" rx="2"/><path d="M9 2h6v4H9zM9 12h6M9 16h4"/></svg>',
+  users: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="4"/><path d="M2 21c0-4 3-6 7-6s7 2 7 6M16 4a4 4 0 0 1 0 8M22 21c0-3-1.5-5-4-5.7"/></svg>',
+  cog: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
+  plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  x: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>',
+  print: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>',
+  mail: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 6-10 7L2 6"/></svg>',
+  back: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>',
+  cash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/></svg>'
+};
+
+/* ---------- router ---------- */
+let current = { view: '', id: '' };
+let listFilter = { invoices: 'all', quotes: 'all', q: '' };
+
+function go(hash) { location.hash = hash; }
+function route() {
+  const parts = (location.hash.slice(1) || '/').split('/').filter(Boolean);
+  const view = parts[0] || 'home', id = parts[1] || '';
+  if (current.view === 'edit' && current.id && !(view === 'edit' && id === current.id)) discardIfEmpty(current.id);
+  current = { view, id };
+  renderNav();
+  const v = document.getElementById('view');
+  const r = { home: viewHome, invoices: () => viewList('invoice'), quotes: () => viewList('quote'), clients: viewClients, client: viewClient, settings: viewSettings, edit: viewEdit, view: viewDoc }[view] || viewHome;
+  v.innerHTML = r(id);
+  if (view !== 'edit') window.scrollTo(0, 0);
+  afterRender();
+}
+window.addEventListener('hashchange', route);
+
+function afterRender() {
+  const abnInput = document.querySelector('[data-abn-hint]');
+  if (abnInput) updateAbnHint(abnInput);
+}
+
+function renderNav() {
+  const active = { edit: null, view: null, client: 'clients' }[current.view];
+  let on = current.view;
+  if (current.view === 'edit' || current.view === 'view') { const d = getDoc(current.id); on = d && d.type === 'quote' ? 'quotes' : 'invoices'; }
+  else if (active) on = active;
+  const link = (key, href, icon, label) => `<a href="#/${href}" class="${on === key ? 'on' : ''}">${icon}<span>${label}</span></a>`;
+  document.getElementById('nav').innerHTML = `
+    <div class="brand"><span class="brand-mark">${I.inv.replace('<svg', '<svg width="18" height="18"')}</span>Docket</div>
+    ${link('home', '', I.home, 'Home')}
+    ${link('invoices', 'invoices', I.inv, 'Invoices')}
+    ${link('quotes', 'quotes', I.quote, 'Quotes')}
+    ${link('clients', 'clients', I.users, 'Clients')}
+    ${link('settings', 'settings', I.cog, 'Settings')}
+    <div class="spacer"></div>
+    <div class="small">Saved on this device</div>`;
+}
+
+/* ---------- views: home ---------- */
+function viewHome() {
+  const st = S.settings;
+  const inv = S.docs.filter(d => d.type === 'invoice');
+  let outstanding = 0, overdueSum = 0, overdueN = 0, paidMonth = 0;
+  const month = today().slice(0, 7);
+  for (const d of inv) {
+    const s = status(d), t = totals(d);
+    if (s === 'sent' || s === 'part paid' || s === 'overdue') outstanding += t.balance;
+    if (s === 'overdue') { overdueSum += t.balance; overdueN++; }
+    for (const p of d.payments) if ((p.date || '').slice(0, 7) === month) paidMonth += toCents(p.amount);
+  }
+  const q = basQuarter(today());
+  let gstAccrual = 0, gstCash = 0;
+  for (const d of inv) {
+    if (d.status === 'draft' || !d.gstReg) continue;
+    const t = totals(d);
+    if (d.issueDate >= q.start && d.issueDate <= q.end) gstAccrual += t.gst;
+    if (t.total > 0) for (const p of d.payments) if (p.date >= q.start && p.date <= q.end) gstCash += Math.round(toCents(p.amount) * t.gst / t.total);
+  }
+  const openQuotes = S.docs.filter(d => d.type === 'quote' && d.status === 'sent');
+  const overdue = inv.filter(d => status(d) === 'overdue').sort((a, b) => a.dueDate.localeCompare(b.dueDate));
+  const recent = S.docs.slice().sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)).slice(0, 6);
+  const hello = st.businessName ? `G’day, ${esc(st.tradingName || st.businessName)}` : 'G’day';
+
+  return `
+  ${!st.businessName || !st.abn ? `<div class="banner"><div><b>Set up your business first</b><div class="small">Your business name, ABN and bank details go on every invoice.</div></div><a class="btn primary right" href="#/settings">Add details</a></div>` : ''}
+  <div class="page-head">
+    <div><h1>${hello}</h1><div class="sub">${longDate(today())}</div></div>
+    <div class="row"><button class="btn" data-act="new" data-type="quote">${I.plus}New quote</button><button class="btn primary" data-act="new" data-type="invoice">${I.plus}New invoice</button></div>
+  </div>
+  <div class="grid g4">
+    <div class="card stat"><div class="lbl">Owed to you</div><div class="val">${money(outstanding)}</div><div class="foot">Sent and unpaid</div></div>
+    <div class="card stat ${overdueN ? 'alert' : ''}"><div class="lbl">Overdue</div><div class="val">${money(overdueSum)}</div><div class="foot">${overdueN} invoice${overdueN === 1 ? '' : 's'} past due</div></div>
+    <div class="card stat"><div class="lbl">Paid this month</div><div class="val">${money(paidMonth)}</div><div class="foot">Payments recorded</div></div>
+    <div class="card stat"><div class="lbl">GST · ${q.label}</div><div class="val">${money(gstAccrual)}</div><div class="foot">Cash basis ${money(gstCash)} · BAS due ${q.due}</div></div>
+  </div>
+  ${overdue.length ? `<div class="card mt"><h2>Chase these up</h2><div class="list">${overdue.map(rowHtml).join('')}</div></div>` : ''}
+  ${openQuotes.length ? `<div class="card mt"><h2>Quotes waiting on an answer</h2><div class="list">${openQuotes.map(rowHtml).join('')}</div></div>` : ''}
+  <div class="card mt"><h2>Recent</h2>${recent.length ? `<div class="list">${recent.map(rowHtml).join('')}</div>` : `<div class="empty"><b>Nothing here yet</b>Create your first quote or invoice to get started.</div>`}</div>`;
+}
+
+function rowHtml(d) {
+  const c = getClient(d.clientId);
+  const t = totals(d);
+  const s = status(d);
+  const showBal = d.type === 'invoice' && (s === 'part paid' || s === 'overdue') && t.paid > 0;
+  return `<a class="li" href="#/view/${d.id}">
+    <span class="num">${esc(d.number)}</span>
+    <span class="who"><b>${esc(c ? c.name : 'No client')}</b><span class="muted small">${auDate(d.issueDate)}${d.site ? ' · ' + esc(d.site) : ''}</span></span>
+    ${chip(d)}
+    <span class="amt">${money(showBal ? t.balance : t.total)}${showBal ? '<div class="muted small">left to pay</div>' : ''}</span>
+  </a>`;
+}
+
+/* ---------- views: list ---------- */
+function viewList(type) {
+  const key = type === 'quote' ? 'quotes' : 'invoices';
+  const f = listFilter[key];
+  const filters = type === 'quote'
+    ? [['all', 'All'], ['draft', 'Draft'], ['sent', 'Sent'], ['accepted', 'Accepted'], ['declined', 'Declined']]
+    : [['all', 'All'], ['unpaid', 'Unpaid'], ['overdue', 'Overdue'], ['paid', 'Paid'], ['draft', 'Draft']];
+  return `
+  <div class="page-head">
+    <h1>${type === 'quote' ? 'Quotes' : 'Invoices'}</h1>
+    <button class="btn primary" data-act="new" data-type="${type}">${I.plus}New ${type}</button>
+  </div>
+  <div class="row" style="margin-bottom:14px">
+    <div class="filters">${filters.map(([k, l]) => `<button class="${f === k ? 'on' : ''}" data-act="filter" data-key="${key}" data-val="${k}">${l}</button>`).join('')}</div>
+    <input class="inp right" style="max-width:260px" type="search" placeholder="Search client, number, site…" value="${esc(listFilter.q)}" data-bind="search" data-type="${type}">
+  </div>
+  <div class="card" id="listbox">${listBody(type)}</div>`;
+}
+function listBody(type) {
+  const key = type === 'quote' ? 'quotes' : 'invoices';
+  const f = listFilter[key], q = listFilter.q.trim().toLowerCase();
+  let docs = S.docs.filter(d => d.type === type);
+  docs = docs.filter(d => {
+    const s = status(d);
+    if (f === 'all') return true;
+    if (f === 'unpaid') return s === 'sent' || s === 'part paid' || s === 'overdue';
+    return s === f;
+  });
+  if (q) docs = docs.filter(d => {
+    const c = getClient(d.clientId);
+    return [d.number, d.site, d.reference, c && c.name, c && c.contact].some(x => String(x || '').toLowerCase().includes(q));
+  });
+  docs.sort((a, b) => (b.issueDate || '').localeCompare(a.issueDate || '') || (b.createdAt || 0) - (a.createdAt || 0));
+  if (!docs.length) return `<div class="empty"><b>No ${type}s ${f !== 'all' || q ? 'match' : 'yet'}</b>${f === 'all' && !q ? `Tap “New ${type}” to make one.` : 'Try a different filter.'}</div>`;
+  const sum = docs.reduce((a, d) => a + totals(d).total, 0);
+  return `<div class="list">${docs.map(rowHtml).join('')}</div><div class="row muted small" style="padding-top:10px;border-top:1px solid var(--line)"><span>${docs.length} shown</span><span class="right">Total ${money(sum)}</span></div>`;
+}
+
+/* ---------- views: clients ---------- */
+function viewClients() {
+  const cl = S.clients.slice().sort((a, b) => a.name.localeCompare(b.name));
+  return `
+  <div class="page-head"><h1>Clients</h1><button class="btn primary" data-act="client-new">${I.plus}New client</button></div>
+  <div class="card">${cl.length ? `<div class="list">${cl.map(c => {
+    const docs = S.docs.filter(d => d.clientId === c.id && d.type === 'invoice');
+    const owing = docs.reduce((a, d) => { const s = status(d); return a + (['sent', 'part paid', 'overdue'].includes(s) ? totals(d).balance : 0); }, 0);
+    return `<a class="li" style="grid-template-columns:1fr auto" href="#/client/${c.id}">
+      <span class="who"><b>${esc(c.name)}</b><span class="muted small">${esc([c.contact, c.phone, c.email].filter(Boolean).join(' · ')) || '&nbsp;'}</span></span>
+      <span class="amt">${owing ? money(owing) + '<div class="muted small">owing</div>' : `<span class="muted small">${docs.length} invoice${docs.length === 1 ? '' : 's'}</span>`}</span></a>`;
+  }).join('')}</div>` : `<div class="empty"><b>No clients yet</b>Add the people and builders you work for.</div>`}</div>`;
+}
+
+function clientFields(c = {}) {
+  return `<div class="grid g2">
+    <label class="f">Name / company *<input class="inp" name="name" required value="${esc(c.name)}" autocomplete="off"></label>
+    <label class="f">Contact person<input class="inp" name="contact" value="${esc(c.contact)}"></label>
+    <label class="f">Email<input class="inp" name="email" type="email" value="${esc(c.email)}"></label>
+    <label class="f">Phone<input class="inp" name="phone" type="tel" value="${esc(c.phone)}"></label>
+  </div>
+  <label class="f mt">Billing address<textarea class="inp" name="address" rows="2">${esc(c.address)}</textarea></label>
+  <label class="f mt">ABN (optional – needed on tax invoices of $1,000+ for businesses)<input class="inp" name="abn" inputmode="numeric" value="${esc(abnFmt(c.abn))}"></label>`;
+}
+
+function viewClient(id) {
+  const c = getClient(id);
+  if (!c) return `<div class="empty"><b>Client not found</b><a href="#/clients">Back to clients</a></div>`;
+  const docs = S.docs.filter(d => d.clientId === id).sort((a, b) => (b.issueDate || '').localeCompare(a.issueDate || ''));
+  return `
+  <div class="page-head"><div class="row"><a class="btn ghost sm" href="#/clients">${I.back}Clients</a></div></div>
+  <div class="page-head"><h1>${esc(c.name)}</h1>
+    <div class="row"><button class="btn danger" data-act="client-del" data-id="${c.id}">Delete</button><button class="btn primary" data-act="new" data-type="invoice" data-client="${c.id}">${I.plus}Invoice</button></div></div>
+  <form class="card" id="clientform" data-id="${c.id}">${clientFields(c)}
+    <div class="row mt"><span class="muted small">Changes save automatically.</span></div></form>
+  <div class="card"><h2>Jobs</h2>${docs.length ? `<div class="list">${docs.map(rowHtml).join('')}</div>` : '<div class="muted">No quotes or invoices yet.</div>'}</div>`;
+}
+
+/* ---------- views: settings ---------- */
+function viewSettings() {
+  const s = S.settings;
+  const field = (key, label, attrs = '') => `<label class="f">${label}<input class="inp" data-bind="set" data-key="${key}" value="${esc(s[key])}" ${attrs}></label>`;
+  return `
+  <div class="page-head"><h1>Settings</h1><span class="muted small">Saves as you type</span></div>
+  <div class="card"><h2>Your business</h2>
+    <div class="grid g2">
+      ${field('businessName', 'Business / legal name *', 'autocomplete="organization"')}
+      ${field('tradingName', 'Trading name (if different)')}
+      <label class="f">ABN *<input class="inp" data-bind="set" data-key="abn" data-abn-hint inputmode="numeric" value="${esc(abnFmt(s.abn))}" placeholder="12 345 678 901"><span class="hint" id="abnhint"></span></label>
+      ${field('licence', 'Contractor licence no.', 'placeholder="e.g. QBCC 1234567"')}
+      ${field('phone', 'Phone', 'type="tel"')}
+      ${field('email', 'Email', 'type="email"')}
+    </div>
+    <label class="f mt">Business address<textarea class="inp" rows="2" data-bind="set" data-key="address">${esc(s.address)}</textarea></label>
+    <div class="row mt">
+      <label class="check"><input type="checkbox" data-bind="set" data-key="gstRegistered" ${s.gstRegistered ? 'checked' : ''}>Registered for GST</label>
+      <label class="check ${s.gstRegistered ? '' : 'hide'}"><input type="checkbox" data-bind="set" data-key="pricesIncGst" ${s.pricesIncGst ? 'checked' : ''}>I type prices including GST</label>
+    </div>
+    <div class="muted small">${s.gstRegistered ? 'Invoices are titled “Tax Invoice” and show 10% GST.' : 'Invoices are titled “Invoice” and no GST is charged. You must register once turnover hits $75,000.'} Changing this only affects new documents.</div>
+    <div class="row mt">
+      ${s.logo ? `<img src="${s.logo}" alt="Logo" style="max-height:56px;max-width:160px;border-radius:6px;background:#fff;padding:4px">` : ''}
+      <label class="btn sm">${s.logo ? 'Change logo' : 'Upload logo'}<input type="file" accept="image/*" data-act-change="logo" hidden></label>
+      ${s.logo ? '<button class="btn sm ghost danger" data-act="logo-clear">Remove</button>' : ''}
+    </div>
+  </div>
+
+  <div class="card"><h2>How you get paid</h2>
+    <div class="grid g2">
+      ${field('accountName', 'Account name')}
+      ${field('bsb', 'BSB', 'inputmode="numeric" placeholder="000-000"')}
+      ${field('accountNumber', 'Account number', 'inputmode="numeric"')}
+      ${field('payId', 'PayID (phone, email or ABN)')}
+      ${field('paymentTermsDays', 'Default payment terms (days)', 'inputmode="numeric"')}
+      ${field('quoteValidDays', 'Quotes valid for (days)', 'inputmode="numeric"')}
+    </div>
+  </div>
+
+  <div class="card"><h2>Numbering & defaults</h2>
+    <div class="grid g3">
+      ${field('invoicePrefix', 'Invoice prefix')}
+      ${field('nextInvoice', 'Next invoice no.', 'inputmode="numeric"')}
+      ${field('defaultRate', 'Labour rate ($/hr)', 'inputmode="decimal"')}
+      ${field('quotePrefix', 'Quote prefix')}
+      ${field('nextQuote', 'Next quote no.', 'inputmode="numeric"')}
+    </div>
+    <label class="f mt">Footer note on every document<input class="inp" data-bind="set" data-key="footerNote" value="${esc(s.footerNote)}"></label>
+  </div>
+
+  <div class="card pricelist"><div class="row" style="margin-bottom:10px"><h2 style="margin:0">Price list</h2><button class="btn sm right" data-act="item-new">${I.plus}Add item</button></div>
+    <div class="muted small" style="margin-bottom:8px">Save things you charge for often — call-out fee, standard labour, common parts.</div>
+    ${S.items.length ? S.items.map(it => `<div class="pl"><span>${esc(it.desc)}</span><span class="muted small">${esc(it.unit)}</span><b>${money(toCents(it.price))}</b><button class="icon-btn" title="Remove" data-act="item-del" data-id="${it.id}">${I.x}</button></div>`).join('') : '<div class="muted">No items yet.</div>'}
+  </div>
+
+  <div class="card"><h2>Your data</h2>
+    <div class="muted small" style="margin-bottom:12px">Everything is stored in this browser only. Download a backup regularly, and before switching phones or clearing your browser.</div>
+    <div class="row">
+      <button class="btn" data-act="backup">Download backup</button>
+      <label class="btn">Restore backup<input type="file" accept="application/json,.json" data-act-change="restore" hidden></label>
+      <button class="btn" data-act="csv">Export invoices (CSV) for your accountant</button>
+      <button class="btn ghost danger right" data-act="wipe">Erase everything</button>
+    </div>
+  </div>`;
+}
+function updateAbnHint(input) {
+  const h = document.getElementById('abnhint'); if (!h) return;
+  const v = abnClean(input.value);
+  if (!v) { h.textContent = ''; h.className = 'hint'; return; }
+  if (v.length !== 11) { h.textContent = `${v.length}/11 digits`; h.className = 'hint'; return; }
+  const ok = abnValid(v);
+  h.textContent = ok ? '✓ Valid ABN' : '✗ That ABN doesn’t check out — double-check the digits';
+  h.className = 'hint ' + (ok ? 'ok' : 'bad');
+}
+
+/* ---------- views: editor ---------- */
+function viewEdit(id) {
+  const d = getDoc(id);
+  if (!d) return `<div class="empty"><b>Not found</b><a href="#/">Go home</a></div>`;
+  const isQ = d.type === 'quote';
+  const clientOpts = S.clients.slice().sort((a, b) => a.name.localeCompare(b.name))
+    .map(c => `<option value="${c.id}" ${c.id === d.clientId ? 'selected' : ''}>${esc(c.name)}</option>`).join('');
+  const termOpts = isQ ? [[7, '7 days'], [14, '14 days'], [30, '30 days'], [60, '60 days']] : [[0, 'On receipt'], [7, '7 days'], [14, '14 days'], [30, '30 days']];
+  return `
+  <div class="page-head">
+    <div class="row"><a class="btn ghost sm" href="#/${isQ ? 'quotes' : 'invoices'}">${I.back}${isQ ? 'Quotes' : 'Invoices'}</a></div>
+  </div>
+  <div class="page-head"><h1>${docLabel(d)} ${esc(d.number)} ${chip(d)}</h1>
+    <button class="btn primary" data-act="preview">Preview & send</button></div>
+
+  <div class="card"><h2>Who’s it for?</h2>
+    <div class="grid g2">
+      <label class="f">Client
+        <select class="inp" data-bind="doc" data-key="clientId">
+          <option value="">— Choose client —</option>${clientOpts}<option value="__new">+ Add new client…</option>
+        </select></label>
+      <label class="f">Job site address<input class="inp" data-bind="doc" data-key="site" value="${esc(d.site)}" placeholder="Where the work was done"></label>
+    </div>
+  </div>
+
+  <div class="card"><h2>Details</h2>
+    <div class="grid g4">
+      <label class="f">${docLabel(d)} no.<input class="inp" data-bind="doc" data-key="number" value="${esc(d.number)}"></label>
+      <label class="f">Date<input class="inp" type="date" data-bind="doc" data-key="issueDate" value="${esc(d.issueDate)}"></label>
+      <label class="f">${isQ ? 'Valid until' : 'Due date'}<input class="inp" type="date" data-bind="doc" data-key="dueDate" value="${esc(d.dueDate)}" id="duedate"></label>
+      <label class="f">Your ref / PO no.<input class="inp" data-bind="doc" data-key="reference" value="${esc(d.reference)}"></label>
+    </div>
+    <div class="terms" id="terms">${termOpts.map(([n, l]) => `<button type="button" data-act="terms" data-days="${n}" class="${d.terms === n ? 'on' : ''}">${l}</button>`).join('')}</div>
+  </div>
+
+  <div class="card"><div class="row" style="margin-bottom:12px"><h2 style="margin:0">Work & materials</h2>
+    ${d.gstReg ? `<label class="check right small"><input type="checkbox" data-bind="doc" data-key="incGst" ${d.incGst ? 'checked' : ''}>Prices include GST</label>` : '<span class="muted small right">Not registered for GST</span>'}</div>
+    <div class="lines ${d.gstReg ? '' : 'no-gst'}" id="lines">
+      <div class="lines-head"><span>Description</span><span>Qty</span><span>Unit</span><span id="pricehdr">Price ${d.gstReg ? (d.incGst ? 'inc' : 'ex') + ' GST' : ''}</span><span class="gstcol" style="text-align:center">GST</span><span style="text-align:right">Amount</span><span></span></div>
+      ${d.lines.map(lineHtml).join('')}
+    </div>
+    <div class="row mt">
+      <button class="btn sm" data-act="line-add">${I.plus}Line</button>
+      <button class="btn sm" data-act="line-labour">${I.plus}Labour</button>
+      ${S.items.length ? `<select class="inp" style="width:auto;min-height:34px;padding:4px 10px;font-size:14px" data-bind="additem"><option value="">+ From price list…</option>${S.items.map(it => `<option value="${it.id}">${esc(it.desc)} — ${money(toCents(it.price))}</option>`).join('')}</select>` : ''}
+    </div>
+    <div class="totals mt" id="totals">${editorTotals(d)}</div>
+  </div>
+
+  <div class="card"><h2>Notes</h2>
+    <textarea class="inp" rows="3" data-bind="doc" data-key="notes" placeholder="${isQ ? 'Inclusions, exclusions, assumptions…' : 'Anything the client should know — warranty, next service, etc.'}">${esc(d.notes)}</textarea>
+  </div>
+
+  <div class="sticky-actions no-print">
+    <button class="btn danger" data-act="delete">Delete</button>
+    <button class="btn primary" data-act="preview">Preview & send →</button>
+  </div>`;
+}
+
+function lineHtml(l) {
+  return `<div class="line" data-line="${l.id}">
+    <div class="desc"><span class="mlbl">Description</span><input class="inp" data-bind="line" data-key="desc" value="${esc(l.desc)}" placeholder="e.g. Replace hot water system"></div>
+    <div class="q"><span class="mlbl">Qty</span><input class="inp" inputmode="decimal" data-bind="line" data-key="qty" value="${esc(l.qty)}"></div>
+    <div class="u"><span class="mlbl">Unit</span><select class="inp" data-bind="line" data-key="unit">${UNITS.map(u => `<option ${u === l.unit ? 'selected' : ''}>${u}</option>`).join('')}</select></div>
+    <div class="p"><span class="mlbl">Price</span><input class="inp" inputmode="decimal" data-bind="line" data-key="price" value="${esc(l.price)}" placeholder="0.00"></div>
+    <label class="gst gstcol"><input type="checkbox" data-bind="line" data-key="gst" ${l.gst ? 'checked' : ''} title="Charge GST on this line"><span class="mlbl">GST applies</span></label>
+    <div class="lt" id="lt-${l.id}">${money(lineCents(l))}</div>
+    <button class="icon-btn del" title="Remove line" data-act="line-del" data-id="${l.id}">${I.x}</button>
+  </div>`;
+}
+
+function editorTotals(d) {
+  const t = totals(d);
+  if (!d.gstReg) return `<div class="grand"><span>Total</span><span>${money(t.total)}</span></div>`;
+  return `<div><span>Subtotal (ex GST)</span><span>${money(t.sub)}</span></div>
+    <div><span>GST 10%</span><span>${money(t.gst)}</span></div>
+    <div class="grand"><span>Total inc GST</span><span>${money(t.total)}</span></div>`;
+}
+
+/* ---------- views: document ---------- */
+function viewDoc(id) {
+  const d = getDoc(id);
+  if (!d) return `<div class="empty"><b>Not found</b><a href="#/">Go home</a></div>`;
+  const isQ = d.type === 'quote', s = status(d), t = totals(d);
+  const c = getClient(d.clientId);
+  const actions = [];
+  actions.push(`<a class="btn ghost" href="#/${isQ ? 'quotes' : 'invoices'}">${I.back}Back</a>`);
+  actions.push(`<a class="btn" href="#/edit/${d.id}">Edit</a>`);
+  actions.push(`<button class="btn" data-act="print">${I.print}Print / PDF</button>`);
+  actions.push(`<button class="btn ${s === 'draft' ? 'primary' : ''}" data-act="email">${I.mail}${s === 'overdue' ? 'Send reminder' : 'Email'}</button>`);
+  if (s === 'draft') actions.push(`<button class="btn" data-act="mark-sent">Mark as sent</button>`);
+  if (!isQ && s !== 'paid' && s !== 'draft') actions.push(`<button class="btn primary" data-act="pay">${I.cash}Record payment</button>`);
+  if (isQ && d.status !== 'accepted') actions.push(`<button class="btn" data-act="quote-status" data-val="accepted">Mark accepted</button>`);
+  if (isQ && d.status !== 'declined' && d.status !== 'accepted') actions.push(`<button class="btn" data-act="quote-status" data-val="declined">Declined</button>`);
+  if (isQ) actions.push(`<button class="btn primary" data-act="convert">Turn into invoice →</button>`);
+  actions.push(`<button class="btn ghost" data-act="duplicate">Duplicate</button>`);
+
+  const warnings = [];
+  if (!S.settings.businessName || !S.settings.abn) warnings.push(`Your business name and ABN aren’t set — <a href="#/settings">add them in Settings</a>.`);
+  if (!c) warnings.push(`No client selected — <a href="#/edit/${d.id}">pick one</a>.`);
+  if (!isQ && d.gstReg && t.total >= 100000 && c && !c.address && !c.abn) warnings.push('Tax invoices of $1,000 or more must show the buyer’s identity or ABN — add the client’s address or ABN.');
+  if (!isQ && !S.settings.bsb && !S.settings.payId) warnings.push('No bank details or PayID — your client won’t know how to pay. <a href="#/settings">Add them</a>.');
+
+  return `
+  <div class="toolbar no-print">${actions.join('')}</div>
+  ${warnings.length ? `<div class="banner no-print"><div class="small">${warnings.join('<br>')}</div></div>` : ''}
+  <div class="paper-wrap">${paperHtml(d)}</div>
+  ${!isQ && d.payments.length ? `<div class="card mt no-print"><h2>Payments</h2>${d.payments.map(p => `<div class="row" style="padding:6px 0;border-top:1px solid var(--line)"><span>${auDate(p.date)}</span><span class="muted">${esc(p.method)}</span><b class="right">${money(toCents(p.amount))}</b><button class="icon-btn" title="Remove payment" data-act="pay-del" data-id="${p.id}">${I.x}</button></div>`).join('')}<div class="row" style="padding-top:8px;border-top:1px solid var(--line)"><b>Balance</b><b class="right">${money(t.balance)}</b></div></div>` : ''}
+  ${d.fromQuote ? `<div class="muted small mt no-print">Created from quote ${esc(d.fromQuote)}.</div>` : ''}`;
+}
+
+function paperHtml(d) {
+  const st = S.settings, c = getClient(d.clientId) || {};
+  const isQ = d.type === 'quote', t = totals(d), s = status(d);
+  const title = isQ ? 'Quote' : (d.gstReg ? 'Tax Invoice' : 'Invoice');
+  const ref = d.number;
+  const priceCol = d.gstReg ? (d.incGst ? 'inc GST' : 'ex GST') : '';
+  const bizLines = [
+    st.tradingName && st.businessName && st.tradingName !== st.businessName ? `Trading as ${esc(st.tradingName)}` : '',
+    st.abn ? `<b>ABN ${esc(abnFmt(st.abn))}</b>` : '',
+    st.licence ? `Licence ${esc(st.licence)}` : '',
+    st.address ? nl2br(st.address) : '',
+    [st.phone, st.email].filter(Boolean).map(esc).join(' · ')
+  ].filter(Boolean).join('<br>');
+  const rows = d.lines.filter(l => l.desc || num(l.price)).map(l => `
+    <tr><td>${esc(l.desc) || '<span style="color:#999">—</span>'}${d.gstReg && !l.gst ? ' <span class="free">(GST-free)</span>' : ''}</td>
+    <td class="n">${esc(String(num(l.qty)))} ${esc(l.unit)}</td><td class="n">${money(toCents(l.price))}</td><td class="n">${money(lineCents(l))}</td></tr>`).join('');
+  let totalsRows;
+  if (!d.gstReg) totalsRows = `<div class="grand"><span>Total</span><span>${money(t.total)}</span></div>`;
+  else totalsRows = `<div><span>Subtotal (ex GST)</span><span>${money(t.sub)}</span></div>
+      <div><span>GST</span><span>${money(t.gst)}</span></div>
+      <div class="grand"><span>Total inc GST</span><span>${money(t.total)}</span></div>`;
+  if (!isQ && t.paid > 0) totalsRows += `<div><span>Paid</span><span>-${money(t.paid)}</span></div><div class="due"><span>Balance due</span><span>${money(t.balance)}</span></div>`;
+
+  const payRows = [
+    st.accountName ? `<tr><td>Account name</td><td><b>${esc(st.accountName)}</b></td></tr>` : '',
+    st.bsb ? `<tr><td>BSB</td><td><b>${esc(bsbFmt(st.bsb))}</b></td></tr>` : '',
+    st.accountNumber ? `<tr><td>Account no.</td><td><b>${esc(st.accountNumber)}</b></td></tr>` : '',
+    st.payId ? `<tr><td>PayID</td><td><b>${esc(st.payId)}</b></td></tr>` : '',
+    `<tr><td>Reference</td><td><b>${esc(ref)}</b></td></tr>`
+  ].join('');
+
+  return `<article class="paper">
+    ${!isQ && s === 'paid' ? '<div class="stamp">PAID</div>' : ''}
+    ${!isQ && s === 'overdue' ? '<div class="stamp over">OVERDUE</div>' : ''}
+    <div class="p-head">
+      <div>
+        ${st.logo ? `<img class="logo" src="${st.logo}" alt="">` : ''}
+        <div class="bizname">${esc(st.businessName || 'Your Business Name')}</div>
+        <div>${bizLines}</div>
+      </div>
+      <div>
+        <div class="doc-title">${title}</div>
+        <table class="meta">
+          <tr><td>${isQ ? 'Quote' : 'Invoice'} no.</td><td><b>${esc(d.number)}</b></td></tr>
+          <tr><td>Date</td><td>${auDate(d.issueDate)}</td></tr>
+          <tr><td>${isQ ? 'Valid until' : 'Due'}</td><td><b>${d.dueDate === d.issueDate && !isQ ? 'On receipt' : auDate(d.dueDate)}</b></td></tr>
+          ${d.reference ? `<tr><td>Your ref</td><td>${esc(d.reference)}</td></tr>` : ''}
+        </table>
+      </div>
+    </div>
+    <div class="parties">
+      <div><div class="lbl">${isQ ? 'Prepared for' : 'Bill to'}</div>
+        <b>${esc(c.name || '—')}</b>${c.contact ? `<br>Attn: ${esc(c.contact)}` : ''}${c.address ? `<br>${nl2br(c.address)}` : ''}${c.abn ? `<br>ABN ${esc(abnFmt(c.abn))}` : ''}
+      </div>
+      ${d.site ? `<div><div class="lbl">Job site</div>${nl2br(d.site)}</div>` : ''}
+    </div>
+    <table class="items">
+      <thead><tr><th>Description</th><th class="n">Qty</th><th class="n">Unit price${priceCol ? ' ' + priceCol : ''}</th><th class="n">Amount</th></tr></thead>
+      <tbody>${rows || '<tr><td colspan="4" style="color:#999">No items</td></tr>'}</tbody>
+    </table>
+    <div class="ptotals">${totalsRows}</div>
+    ${!isQ && d.gstReg && t.hasFree ? '<div class="free" style="text-align:right;margin-top:4px">Items marked GST-free have no GST included.</div>' : ''}
+    ${!d.gstReg ? '<div class="free" style="text-align:right;margin-top:4px">No GST has been charged. Supplier is not registered for GST.</div>' : ''}
+    ${d.notes ? `<div class="notes"><div class="lbl">Notes</div>${esc(d.notes)}</div>` : ''}
+    ${isQ
+      ? `<div class="pay"><div><div class="lbl">To accept</div>Reply to this quote or sign below. This quote is valid until ${auDate(d.dueDate)}.</div></div>
+         <div class="sign"><div>Signed</div><div>Name</div><div>Date</div></div>`
+      : `<div class="pay"><div><div class="lbl">How to pay</div><table>${payRows}</table></div>
+         <div><div class="lbl">Amount due</div><div style="font-size:22px;font-weight:800">${money(t.balance)}</div><div>${d.dueDate === d.issueDate ? 'Due on receipt' : 'by ' + longDate(d.dueDate)}</div></div></div>`}
+    ${st.footerNote ? `<div class="foot">${esc(st.footerNote)}</div>` : ''}
+  </article>`;
+}
+
+/* ---------- modal ---------- */
+function openModal(title, body, submitLabel, onSubmit) {
+  const m = document.getElementById('modal');
+  m.innerHTML = `<form method="dialog"><h2>${title}</h2>${body}<div class="actions"><button class="btn" value="cancel" formnovalidate>Cancel</button><button class="btn primary" value="ok">${submitLabel}</button></div></form>`;
+  const form = m.querySelector('form');
+  form.addEventListener('submit', e => {
+    if (e.submitter && e.submitter.value === 'cancel') return;
+    e.preventDefault();
+    if (!form.reportValidity()) return;
+    const data = Object.fromEntries(new FormData(form).entries());
+    if (onSubmit(data, form) !== false) m.close();
+  });
+  m.showModal();
+  const first = form.querySelector('input,select,textarea'); if (first) first.focus();
+  return m;
+}
+function clientModal(onDone) {
+  openModal('New client', clientFields(), 'Add client', data => {
+    const c = { id: uid(), name: data.name.trim(), contact: data.contact.trim(), email: data.email.trim(), phone: data.phone.trim(), address: data.address.trim(), abn: abnClean(data.abn) };
+    if (c.abn && !abnValid(c.abn) && !confirm('That ABN doesn’t look valid. Save anyway?')) return false;
+    S.clients.push(c); save(); toast('Client added');
+    onDone && onDone(c);
+  });
+}
+
+/* ---------- actions ---------- */
+const ACT = {
+  new(ds) {
+    const d = newDoc(ds.type, ds.client ? { clientId: ds.client } : {});
+    go('/edit/' + d.id);
+  },
+  filter(ds) { listFilter[ds.key] = ds.val; route(); },
+  'client-new'() { clientModal(c => go('/client/' + c.id)); },
+  'client-del'(ds) {
+    const n = S.docs.filter(d => d.clientId === ds.id).length;
+    if (!confirm(n ? `This client has ${n} quote/invoice(s). They’ll be kept but show “No client”. Delete client?` : 'Delete this client?')) return;
+    S.clients = S.clients.filter(c => c.id !== ds.id); save(); go('/clients');
+  },
+  terms(ds) {
+    const d = getDoc(current.id); const n = Number(ds.days);
+    d.terms = n; d.dueDate = addDays(d.issueDate, n); save();
+    document.getElementById('duedate').value = d.dueDate;
+    document.querySelectorAll('#terms button').forEach(b => b.classList.toggle('on', Number(b.dataset.days) === n));
+  },
+  'line-add'() { const d = getDoc(current.id); d.lines.push(blankLine()); save(); rerenderEditor(true); },
+  'line-labour'() {
+    const d = getDoc(current.id);
+    let rate = num(S.settings.defaultRate);
+    if (d.gstReg && d.incGst) rate = Math.round(rate * 110) / 100;
+    d.lines.push(blankLine({ desc: 'Labour', qty: '1', unit: 'hr', price: rate ? rate.toFixed(2) : '' }));
+    save(); rerenderEditor(true);
+  },
+  'line-del'(ds) {
+    const d = getDoc(current.id);
+    d.lines = d.lines.filter(l => l.id !== ds.id);
+    if (!d.lines.length) d.lines.push(blankLine());
+    save(); rerenderEditor();
+  },
+  preview() {
+    const d = getDoc(current.id);
+    d.lines = d.lines.filter(l => l.desc || num(l.price));
+    if (!d.lines.length) d.lines.push(blankLine());
+    delete d.isNew; save(); go('/view/' + d.id);
+  },
+  delete() {
+    const d = getDoc(current.id);
+    if (!isEmptyDoc(d) && !confirm(`Delete ${docLabel(d).toLowerCase()} ${d.number}? This can’t be undone.`)) return;
+    removeDoc(d); current = { view: '', id: '' };
+    go(d.type === 'quote' ? '/quotes' : '/invoices'); toast('Deleted');
+  },
+  print() { window.print(); },
+  'mark-sent'() { const d = getDoc(current.id); d.status = 'sent'; save(); route(); toast('Marked as sent'); },
+  email() {
+    const d = getDoc(current.id), c = getClient(d.clientId) || {}, st = S.settings, t = totals(d), s = status(d);
+    const isQ = d.type === 'quote';
+    const who = c.contact ? c.contact.split(' ')[0] : (c.name || 'there');
+    const from = st.tradingName || st.businessName || '';
+    let subject, body;
+    if (isQ) {
+      subject = `Quote ${d.number}${d.site ? ' – ' + d.site : ''} from ${from}`;
+      body = `Hi ${who},\n\nThanks for the opportunity to quote. Please find quote ${d.number} attached for ${money(t.total)}${d.gstReg ? ' (inc GST)' : ''}.\n\nThe quote is valid until ${auDate(d.dueDate)}. Just reply to this email to go ahead.\n\nCheers,\n${from}${st.phone ? '\n' + st.phone : ''}`;
+    } else {
+      const pay = [st.accountName && `Account name: ${st.accountName}`, st.bsb && `BSB: ${bsbFmt(st.bsb)}`, st.accountNumber && `Account: ${st.accountNumber}`, st.payId && `PayID: ${st.payId}`, `Reference: ${d.number}`].filter(Boolean).join('\n');
+      if (s === 'overdue') {
+        subject = `Reminder: invoice ${d.number} is overdue`;
+        body = `Hi ${who},\n\nJust a friendly reminder that invoice ${d.number} for ${money(t.balance)} was due on ${auDate(d.dueDate)}. If you’ve already paid, thanks and please ignore this.\n\n${pay}\n\nCheers,\n${from}${st.phone ? '\n' + st.phone : ''}`;
+      } else {
+        subject = `${d.gstReg ? 'Tax invoice' : 'Invoice'} ${d.number}${d.site ? ' – ' + d.site : ''} from ${from}`;
+        body = `Hi ${who},\n\nPlease find invoice ${d.number} attached for ${money(t.balance)}, due ${d.dueDate === d.issueDate ? 'on receipt' : auDate(d.dueDate)}.\n\n${pay}\n\nThanks for your business.\n\nCheers,\n${from}${st.phone ? '\n' + st.phone : ''}`;
+      }
+    }
+    if (d.status === 'draft') { d.status = 'sent'; save(); }
+    location.href = `mailto:${encodeURIComponent(c.email || '')}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    toast('Email opened — attach the PDF from “Print / PDF”');
+    setTimeout(route, 300);
+  },
+  pay() {
+    const d = getDoc(current.id), t = totals(d);
+    openModal(`Record payment · ${esc(d.number)}`, `
+      <div class="grid g2">
+        <label class="f">Amount<input class="inp" name="amount" inputmode="decimal" required value="${(t.balance / 100).toFixed(2)}"></label>
+        <label class="f">Date received<input class="inp" type="date" name="date" required value="${today()}"></label>
+      </div>
+      <label class="f mt">Method<select class="inp" name="method"><option>Bank transfer</option><option>PayID / Osko</option><option>Card</option><option>Cash</option><option>Cheque</option><option>Other</option></select></label>`,
+      'Save payment', data => {
+        if (num(data.amount) <= 0) { toast('Enter an amount'); return false; }
+        d.payments.push({ id: uid(), amount: num(data.amount).toFixed(2), date: data.date, method: data.method });
+        if (d.status === 'draft') d.status = 'sent';
+        save(); route();
+        toast(status(d) === 'paid' ? 'Paid in full 🎉' : 'Payment recorded');
+      });
+  },
+  'pay-del'(ds) {
+    if (!confirm('Remove this payment?')) return;
+    const d = getDoc(current.id); d.payments = d.payments.filter(p => p.id !== ds.id); save(); route();
+  },
+  'quote-status'(ds) { const d = getDoc(current.id); d.status = ds.val; save(); route(); toast(`Quote marked ${ds.val}`); },
+  convert() {
+    const q = getDoc(current.id);
+    const inv = newDoc('invoice', {
+      clientId: q.clientId, site: q.site, reference: q.reference, notes: q.notes,
+      lines: q.lines.map(l => ({ ...l, id: uid() })), gstReg: q.gstReg, incGst: q.incGst, fromQuote: q.number
+    });
+    delete inv.isNew;
+    q.status = 'accepted'; save();
+    toast(`Invoice ${inv.number} created`); go('/edit/' + inv.id);
+  },
+  duplicate() {
+    const o = getDoc(current.id);
+    const d = newDoc(o.type, { clientId: o.clientId, site: o.site, notes: o.notes, lines: o.lines.map(l => ({ ...l, id: uid() })), gstReg: o.gstReg, incGst: o.incGst });
+    delete d.isNew; save(); toast(`Copied to ${d.number}`); go('/edit/' + d.id);
+  },
+  'logo-clear'() { S.settings.logo = ''; save(); route(); },
+  'item-new'() {
+    openModal('Price list item', `
+      <label class="f">Description<input class="inp" name="desc" required placeholder="e.g. Call-out fee"></label>
+      <div class="grid g2 mt">
+        <label class="f">Price ${S.settings.gstRegistered ? (S.settings.pricesIncGst ? '(inc GST)' : '(ex GST)') : ''}<input class="inp" name="price" inputmode="decimal" required></label>
+        <label class="f">Unit<select class="inp" name="unit">${UNITS.map(u => `<option ${u === 'ea' ? 'selected' : ''}>${u}</option>`).join('')}</select></label>
+      </div>
+      <label class="check mt"><input type="checkbox" name="gst" checked> GST applies</label>`,
+      'Add item', data => {
+        S.items.push({ id: uid(), desc: data.desc.trim(), price: num(data.price).toFixed(2), unit: data.unit, gst: data.gst === 'on' });
+        save(); route();
+      });
+  },
+  'item-del'(ds) { S.items = S.items.filter(i => i.id !== ds.id); save(); route(); },
+  backup() { download(`docket-backup-${today()}.json`, JSON.stringify(S, null, 2), 'application/json'); toast('Backup downloaded'); },
+  csv() {
+    const q = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const rows = [['Number', 'Issue date', 'Due date', 'Client', 'Client ABN', 'Job site', 'Subtotal ex GST', 'GST', 'Total', 'Paid', 'Balance', 'Status', 'Last payment date']];
+    for (const d of S.docs.filter(d => d.type === 'invoice').sort((a, b) => a.issueDate.localeCompare(b.issueDate))) {
+      const t = totals(d), c = getClient(d.clientId) || {};
+      const last = d.payments.map(p => p.date).sort().pop() || '';
+      rows.push([d.number, auDate(d.issueDate), auDate(d.dueDate), c.name, abnFmt(c.abn), d.site, (t.sub / 100).toFixed(2), (t.gst / 100).toFixed(2), (t.total / 100).toFixed(2), (t.paid / 100).toFixed(2), (t.balance / 100).toFixed(2), status(d), auDate(last)]);
+    }
+    download(`invoices-${today()}.csv`, rows.map(r => r.map(q).join(',')).join('\r\n'), 'text/csv');
+  },
+  wipe() {
+    if (!confirm('Erase ALL clients, quotes, invoices and settings from this device?')) return;
+    if (prompt('Type ERASE to confirm') !== 'ERASE') return;
+    S = structuredClone(DEFAULT); save(); go('/'); route(); toast('Everything erased');
+  }
+};
+
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]');
+  if (!el) return;
+  const fn = ACT[el.dataset.act];
+  if (fn) { e.preventDefault(); fn(el.dataset, el, e); }
+});
+
+/* ---------- live binding ---------- */
+function rerenderEditor(focusLast) {
+  const y = window.scrollY;
+  document.getElementById('view').innerHTML = viewEdit(current.id);
+  window.scrollTo(0, y);
+  if (focusLast) { const ins = document.querySelectorAll('#lines .line'); const last = ins[ins.length - 1]; last && last.querySelector('input').focus(); }
+}
+
+document.addEventListener('input', e => {
+  const t = e.target, b = t.dataset.bind;
+  if (!b) return;
+  const val = t.type === 'checkbox' ? t.checked : t.value;
+
+  if (b === 'set') {
+    const k = t.dataset.key;
+    let v = val;
+    if (k === 'abn') v = abnClean(val);
+    if (k === 'nextInvoice' || k === 'nextQuote') v = Math.max(1, parseInt(val, 10) || 1);
+    if (k === 'paymentTermsDays' || k === 'quoteValidDays') v = Math.max(0, parseInt(val, 10) || 0);
+    S.settings[k] = v; save();
+    if (k === 'abn') updateAbnHint(t);
+    if (t.type === 'checkbox') route();
+    return;
+  }
+  if (b === 'search') { listFilter.q = val; document.getElementById('listbox').innerHTML = listBody(t.dataset.type); return; }
+
+  const d = getDoc(current.id);
+  if (!d) return;
+  if (b === 'doc') {
+    const k = t.dataset.key;
+    if (k === 'clientId' && val === '__new') {
+      t.value = d.clientId;
+      clientModal(c => { d.clientId = c.id; save(); rerenderEditor(); });
+      return;
+    }
+    d[k] = val;
+    if (k === 'issueDate' && d.terms != null && val) { d.dueDate = addDays(val, d.terms); document.getElementById('duedate').value = d.dueDate; }
+    if (k === 'dueDate') { d.terms = null; document.querySelectorAll('#terms button').forEach(x => x.classList.remove('on')); }
+    save();
+    if (k === 'incGst') { rerenderEditor(); return; }
+    document.getElementById('totals').innerHTML = editorTotals(d);
+    return;
+  }
+  if (b === 'line') {
+    const id = t.closest('[data-line]').dataset.line;
+    const l = d.lines.find(x => x.id === id);
+    l[t.dataset.key] = val; save();
+    document.getElementById('lt-' + id).textContent = money(lineCents(l));
+    document.getElementById('totals').innerHTML = editorTotals(d);
+    return;
+  }
+  if (b === 'additem') {
+    const it = S.items.find(i => i.id === val); if (!it) return;
+    let price = num(it.price);
+    if (d.gstReg && it.gst && d.incGst !== !!S.settings.pricesIncGst) price = d.incGst ? price * 1.1 : price / 1.1;
+    const empty = d.lines.length === 1 && !d.lines[0].desc && !num(d.lines[0].price);
+    const line = blankLine({ desc: it.desc, unit: it.unit, price: price.toFixed(2), gst: it.gst });
+    if (empty) d.lines = [line]; else d.lines.push(line);
+    save(); rerenderEditor();
+  }
+});
+
+// client detail form autosave
+document.addEventListener('input', e => {
+  const form = e.target.closest('#clientform');
+  if (!form) return;
+  const c = getClient(form.dataset.id); if (!c) return;
+  const k = e.target.name; if (!k) return;
+  c[k] = k === 'abn' ? abnClean(e.target.value) : e.target.value;
+  save();
+});
+
+// file inputs
+document.addEventListener('change', e => {
+  const t = e.target, act = t.dataset.actChange;
+  if (!act || !t.files || !t.files[0]) return;
+  const file = t.files[0];
+  if (act === 'logo') {
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(1, 400 / img.width, 160 / img.height);
+      const cv = document.createElement('canvas');
+      cv.width = Math.round(img.width * scale); cv.height = Math.round(img.height * scale);
+      cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+      S.settings.logo = cv.toDataURL('image/png'); save(); route(); toast('Logo saved');
+      URL.revokeObjectURL(img.src);
+    };
+    img.onerror = () => toast('Couldn’t read that image');
+    img.src = URL.createObjectURL(file);
+  }
+  if (act === 'restore') {
+    file.text().then(txt => {
+      const data = JSON.parse(txt);
+      if (!data.settings || !Array.isArray(data.docs)) throw new Error('bad');
+      if (!confirm(`Restore backup with ${data.docs.length} documents and ${(data.clients || []).length} clients? This replaces what’s on this device.`)) return;
+      S = migrate(data); save(); route(); toast('Backup restored');
+    }).catch(() => toast('That file isn’t a Docket backup'));
+  }
+  t.value = '';
+});
+
+window.addEventListener('beforeunload', () => { if (current.view === 'edit') { const d = getDoc(current.id); if (d && d.isNew && isEmptyDoc(d)) discardIfEmpty(d.id); } });
+
+route();
+</script>
+</body>
+</html>
