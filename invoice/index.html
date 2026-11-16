@@ -1085,6 +1085,7 @@ dialog::backdrop{background:rgba(4,6,20,.62);-webkit-backdrop-filter:blur(6px);b
 :root[data-theme="dark"]:not([data-hud]) .li::before{box-shadow:0 0 12px currentColor;}
 :root[data-theme="dark"]:not([data-hud]) .bar i{box-shadow:0 0 14px rgba(255,79,216,.6);}
 :root[data-theme="dark"]:not([data-hud]) .frame .tag{box-shadow:0 0 14px rgba(63,198,239,.5)!important;}
+#fromquote{scroll-margin-top:150px}
 /* calm mode + reduced motion: no glow, no animation */
 :root[data-calm]{--glow:0 0 0 1px var(--line);--hv-glow:none}
 :root[data-calm] .core-btn{box-shadow:0 0 0 2px color-mix(in srgb,var(--tone) 25%,transparent)}
@@ -2375,7 +2376,16 @@ const ACT = {
     if (ms) ms.textContent = `★ Saved to ${KINDS.find(k => k[0] === kind)[1]}`;
     toast(`Saved to your ${KINDS.find(k => k[0] === kind)[1]}`);
   },
-  'pick-client'(ds) { const d = getDoc(current.id); d.clientId = ds.id; save(); refreshWho(d); },
+  'pick-client'(ds) {
+    const d = getDoc(current.id); d.clientId = ds.id; save(); refreshWho(d);
+    // if this client has an open quote, bring "Start from a quote" into view
+    const fq = document.getElementById('fromquote');
+    if (fq && fq.querySelector('.qcard')) setTimeout(() => {
+      // scroll the page itself (the slide container clips vertical overflow, so scrollIntoView would not move the page)
+      const top = fq.getBoundingClientRect().top + window.scrollY - 150;
+      window.scrollTo({ top, behavior: S.settings.calm || matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    }, 80);
+  },
   'new-client'() { const d = getDoc(current.id); clientModal(c => { d.clientId = c.id; save(); refreshWho(d); }); },
   'from-quote'(ds) {
     const d = getDoc(current.id), q = getDoc(ds.id); if (!q) return;
