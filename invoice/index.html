@@ -912,6 +912,35 @@ dialog::backdrop{background:rgba(4,6,20,.62);-webkit-backdrop-filter:blur(6px);b
 :root:not([data-hud]) .nav .fab{background:linear-gradient(180deg,#9d6dff,#5b5dff);box-shadow:0 0 22px rgba(255,79,216,.35)}
 :root:not([data-hud]) .nav .fab svg{color:#fff}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]):not([data-hud]) .nav .fab svg{color:#fff}}
+/* =================== GLASS (dark default) =================== */
+@media (prefers-color-scheme: dark){
+:root:not([data-theme="light"]):not([data-hud]) body{background:radial-gradient(90% 60% at 50% 0%,#1a2a44 0%,transparent 65%),linear-gradient(180deg,#0c1424,#070b14) fixed;}
+:root:not([data-theme="light"]):not([data-hud]) :is(.card,:root:not([data-theme="light"]):not([data-hud]) .frame,:root:not([data-theme="light"]):not([data-hud]) dialog,:root:not([data-theme="light"]):not([data-hud]) .stile,:root:not([data-theme="light"]):not([data-hud]) .ccard,:root:not([data-theme="light"]):not([data-hud]) .esum,:root:not([data-theme="light"]):not([data-hud]) .slot){--c:0px;clip-path:none;border:1px solid rgba(120,200,255,.26);border-image:none;border-radius:20px;background:linear-gradient(160deg,rgba(150,210,255,.14),rgba(20,34,58,.52));-webkit-backdrop-filter:blur(14px) saturate(140%);backdrop-filter:blur(14px) saturate(140%);box-shadow:0 18px 36px rgba(0,0,0,.4),0 0 20px rgba(63,198,239,.12),inset 0 1px 0 rgba(255,255,255,.18),inset 0 1.5px 0 rgba(190,235,255,.45);}
+:root:not([data-theme="light"]):not([data-hud]) :is(.card,:root:not([data-theme="light"]):not([data-hud]) .frame,:root:not([data-theme="light"]):not([data-hud]) dialog)::before,:root:not([data-theme="light"]):not([data-hud]) :is(.card,:root:not([data-theme="light"]):not([data-hud]) .frame,:root:not([data-theme="light"]):not([data-hud]) dialog)::after{content:none;}
+:root:not([data-theme="light"]):not([data-hud]) :is(.btn,:root:not([data-theme="light"]):not([data-hud]) .seg,:root:not([data-theme="light"]):not([data-hud]) .inp,:root:not([data-theme="light"]):not([data-hud]) select.inp,:root:not([data-theme="light"]):not([data-hud]) textarea.inp){clip-path:none;border-image:none;border-radius:14px;border:1px solid rgba(120,200,255,.26);}
+:root:not([data-theme="light"]):not([data-hud]) .inp,:root:not([data-theme="light"]):not([data-hud]) select.inp,:root:not([data-theme="light"]):not([data-hud]) textarea.inp{background:rgba(8,16,30,.55);}
+:root:not([data-theme="light"]):not([data-hud]) .btn{background:rgba(255,255,255,.05);color:#eef5ff;box-shadow:none;}
+:root:not([data-theme="light"]):not([data-hud]) .btn.primary{background:linear-gradient(90deg,#ff6b8a,#ffab5e);color:#170812;border-color:transparent;box-shadow:0 0 18px rgba(255,107,138,.3);}
+:root:not([data-theme="light"]):not([data-hud]) .btn.primary::before,:root:not([data-theme="light"]):not([data-hud]) .btn.primary::after{content:none;}
+:root:not([data-theme="light"]):not([data-hud]) .btn.ghost{background:transparent;border-color:transparent;}
+:root:not([data-theme="light"]):not([data-hud]) .nav .fab{background:linear-gradient(135deg,#ff6b8a,#ffab5e);clip-path:none;border-radius:18px;box-shadow:0 0 18px rgba(255,107,138,.35);}
+:root:not([data-theme="light"]):not([data-hud]) .nav .fab svg{color:#170812;}
+:root:not([data-theme="light"]):not([data-hud]) .nav a.on svg{color:#3fc6ef;}
+:root:not([data-theme="light"]):not([data-hud]) .card > h2::before,:root:not([data-theme="light"]):not([data-hud]) .frame .tag{background:linear-gradient(90deg,#3fc6ef,#ff6b8a);}
+}
+:root[data-theme="dark"]:not([data-hud]) body{background:radial-gradient(90% 60% at 50% 0%,#1a2a44 0%,transparent 65%),linear-gradient(180deg,#0c1424,#070b14) fixed;}
+:root[data-theme="dark"]:not([data-hud]) :is(.card,:root[data-theme="dark"]:not([data-hud]) .frame,:root[data-theme="dark"]:not([data-hud]) dialog,:root[data-theme="dark"]:not([data-hud]) .stile,:root[data-theme="dark"]:not([data-hud]) .ccard,:root[data-theme="dark"]:not([data-hud]) .esum,:root[data-theme="dark"]:not([data-hud]) .slot){--c:0px;clip-path:none;border:1px solid rgba(120,200,255,.26);border-image:none;border-radius:20px;background:linear-gradient(160deg,rgba(150,210,255,.14),rgba(20,34,58,.52));-webkit-backdrop-filter:blur(14px) saturate(140%);backdrop-filter:blur(14px) saturate(140%);box-shadow:0 18px 36px rgba(0,0,0,.4),0 0 20px rgba(63,198,239,.12),inset 0 1px 0 rgba(255,255,255,.18),inset 0 1.5px 0 rgba(190,235,255,.45);}
+:root[data-theme="dark"]:not([data-hud]) :is(.card,:root[data-theme="dark"]:not([data-hud]) .frame,:root[data-theme="dark"]:not([data-hud]) dialog)::before,:root[data-theme="dark"]:not([data-hud]) :is(.card,:root[data-theme="dark"]:not([data-hud]) .frame,:root[data-theme="dark"]:not([data-hud]) dialog)::after{content:none;}
+:root[data-theme="dark"]:not([data-hud]) :is(.btn,:root[data-theme="dark"]:not([data-hud]) .seg,:root[data-theme="dark"]:not([data-hud]) .inp,:root[data-theme="dark"]:not([data-hud]) select.inp,:root[data-theme="dark"]:not([data-hud]) textarea.inp){clip-path:none;border-image:none;border-radius:14px;border:1px solid rgba(120,200,255,.26);}
+:root[data-theme="dark"]:not([data-hud]) .inp,:root[data-theme="dark"]:not([data-hud]) select.inp,:root[data-theme="dark"]:not([data-hud]) textarea.inp{background:rgba(8,16,30,.55);}
+:root[data-theme="dark"]:not([data-hud]) .btn{background:rgba(255,255,255,.05);color:#eef5ff;box-shadow:none;}
+:root[data-theme="dark"]:not([data-hud]) .btn.primary{background:linear-gradient(90deg,#ff6b8a,#ffab5e);color:#170812;border-color:transparent;box-shadow:0 0 18px rgba(255,107,138,.3);}
+:root[data-theme="dark"]:not([data-hud]) .btn.primary::before,:root[data-theme="dark"]:not([data-hud]) .btn.primary::after{content:none;}
+:root[data-theme="dark"]:not([data-hud]) .btn.ghost{background:transparent;border-color:transparent;}
+:root[data-theme="dark"]:not([data-hud]) .nav .fab{background:linear-gradient(135deg,#ff6b8a,#ffab5e);clip-path:none;border-radius:18px;box-shadow:0 0 18px rgba(255,107,138,.35);}
+:root[data-theme="dark"]:not([data-hud]) .nav .fab svg{color:#170812;}
+:root[data-theme="dark"]:not([data-hud]) .nav a.on svg{color:#3fc6ef;}
+:root[data-theme="dark"]:not([data-hud]) .card > h2::before,:root[data-theme="dark"]:not([data-hud]) .frame .tag{background:linear-gradient(90deg,#3fc6ef,#ff6b8a);}
 /* calm mode + reduced motion: no glow, no animation */
 :root[data-calm]{--glow:0 0 0 1px var(--line);--hv-glow:none}
 :root[data-calm] .core-btn{box-shadow:0 0 0 2px color-mix(in srgb,var(--tone) 25%,transparent)}
