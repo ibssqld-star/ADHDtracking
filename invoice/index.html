@@ -1312,6 +1312,10 @@ body{background:radial-gradient(80% 45% at 50% 0%,rgba(190,40,200,.22),transpare
 .ripple{position:absolute;border-radius:50%;pointer-events:none;z-index:2;transform:scale(.05);opacity:1;border:3px solid #36e8ff;background:radial-gradient(circle,rgba(54,232,255,.35),rgba(255,90,224,.12) 60%,transparent 72%);box-shadow:0 0 18px rgba(54,232,255,.9),0 0 30px rgba(255,90,224,.5),inset 0 0 16px rgba(54,232,255,.6);animation:rippleOut .75s cubic-bezier(.2,.7,.3,1) forwards}
 @keyframes rippleOut{0%{transform:scale(.05);opacity:1}70%{opacity:.8}100%{transform:scale(1);opacity:0}}
 @media (prefers-reduced-motion:reduce){.ripple{display:none}}
+/* global ripple: fixed to the screen, so it shows wherever you touch */
+.ripple-fx{position:fixed;border-radius:50%;pointer-events:none;z-index:9999;transform:scale(.05);opacity:1;border:3px solid #36e8ff;background:radial-gradient(circle,rgba(54,232,255,.3),rgba(255,90,224,.12) 60%,transparent 72%);box-shadow:0 0 18px rgba(54,232,255,.9),0 0 30px rgba(255,90,224,.5),inset 0 0 16px rgba(54,232,255,.6);animation:rippleFx .75s cubic-bezier(.2,.7,.3,1) forwards}
+@keyframes rippleFx{0%{transform:scale(.05);opacity:1}70%{opacity:.8}100%{transform:scale(1);opacity:0}}
+@media (prefers-reduced-motion:reduce){.ripple-fx{display:none}}
 /* calm mode + reduced motion: no glow, no animation */
 :root[data-calm]{--glow:0 0 0 1px var(--line);--hv-glow:none}
 :root[data-calm] .core-btn{box-shadow:0 0 0 2px color-mix(in srgb,var(--tone) 25%,transparent)}
@@ -3029,17 +3033,7 @@ document.addEventListener('click', e => {
   const hit = e.target.closest('button,a.btn,a.stile,a.ccard,.slot,.lrow,.tile,.rchip');
   if (hit && !S.settings.calm) {
     hit.classList.remove('juice'); void hit.offsetWidth; hit.classList.add('juice'); blip(660, 60);
-    // ripple: a ring spreads out from exactly where the finger landed
-    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      const r = hit.getBoundingClientRect(), size = Math.max(r.width, r.height) * 2.2;
-      const rp = document.createElement('span'); rp.className = 'ripple';
-      rp.style.width = rp.style.height = size + 'px';
-      rp.style.left = (e.clientX - r.left - size / 2) + 'px';
-      rp.style.top = (e.clientY - r.top - size / 2) + 'px';
-      if (getComputedStyle(hit).position === 'static') hit.style.position = 'relative';
-      hit.appendChild(rp);
-      setTimeout(() => rp.remove(), 800);
-    }
+
   }
   const a = e.target.closest('a[href^="#/"]');
   if (a) { e.preventDefault(); go(a.getAttribute('href').slice(1)); return; }
@@ -3240,6 +3234,20 @@ ACT['examples-clear'] = () => ask('Start fresh?', 'This removes the example busi
 ACT['examples-load'] = () => { loadExamples(); go('/'); toast('All set. Example data loaded.'); };
 
 window.addEventListener('beforeunload', () => { if (current.view === 'edit') { const d = getDoc(current.id); if (d && d.isNew && isEmptyDoc(d)) discardIfEmpty(d.id); } });
+
+// ripple anywhere: starts on touch-down, wherever the finger lands
+document.addEventListener('pointerdown', e => {
+  if (S.settings.calm || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const size = 150;
+  const rp = document.createElement('span');
+  rp.className = 'ripple-fx';
+  rp.style.width = rp.style.height = size + 'px';
+  rp.style.left = (e.clientX - size / 2) + 'px';
+  rp.style.top = (e.clientY - size / 2) + 'px';
+  document.body.appendChild(rp);
+  setTimeout(() => rp.remove(), 800);
+}, { passive: true });
+
 
 let hasSaved = false;
 try { hasSaved = !!localStorage.getItem(KEY); } catch (e) { /* storage blocked */ }
