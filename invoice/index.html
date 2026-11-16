@@ -1020,6 +1020,21 @@ dialog::backdrop{background:rgba(4,6,20,.62);-webkit-backdrop-filter:blur(6px);b
 :root[data-theme="dark"]:not([data-hud]) .chip{box-shadow:0 0 10px currentColor,inset 0 0 8px currentColor;background:transparent;}
 :root[data-theme="dark"]:not([data-hud]) .card > h2{letter-spacing:.06em;}
 :root[data-theme="dark"]:not([data-hud]) .li::before{width:3px;box-shadow:0 0 12px currentColor;}
+/* =================== QUOTE + CLIENT PAGES match the style =================== */
+@media (prefers-color-scheme: dark){
+:root:not([data-theme="light"]):not([data-hud]) .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch;}
+:root:not([data-theme="light"]):not([data-hud]) .toolbar .btn{clip-path:polygon(9px 0,100% 0,100% calc(100% - 9px),calc(100% - 9px) 100%,0 100%,0 9px);border:1px solid rgba(120,200,255,.26);border-radius:0;min-height:42px;padding:0 14px;}
+:root:not([data-theme="light"]):not([data-hud]) .btn.ghost{background:rgba(255,255,255,.03);border:1px solid rgba(120,200,255,.2);}
+:root:not([data-theme="light"]):not([data-hud]) .btn.sm{min-height:40px;}
+:root:not([data-theme="light"]):not([data-hud]) .btn.primary{border-color:transparent;}
+:root:not([data-theme="light"]):not([data-hud]) .rowcard{border-color:rgba(120,200,255,.2);}
+}
+:root[data-theme="dark"]:not([data-hud]) .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch;}
+:root[data-theme="dark"]:not([data-hud]) .toolbar .btn{clip-path:polygon(9px 0,100% 0,100% calc(100% - 9px),calc(100% - 9px) 100%,0 100%,0 9px);border:1px solid rgba(120,200,255,.26);border-radius:0;min-height:42px;padding:0 14px;}
+:root[data-theme="dark"]:not([data-hud]) .btn.ghost{background:rgba(255,255,255,.03);border:1px solid rgba(120,200,255,.2);}
+:root[data-theme="dark"]:not([data-hud]) .btn.sm{min-height:40px;}
+:root[data-theme="dark"]:not([data-hud]) .btn.primary{border-color:transparent;}
+:root[data-theme="dark"]:not([data-hud]) .rowcard{border-color:rgba(120,200,255,.2);}
 /* calm mode + reduced motion: no glow, no animation */
 :root[data-calm]{--glow:0 0 0 1px var(--line);--hv-glow:none}
 :root[data-calm] .core-btn{box-shadow:0 0 0 2px color-mix(in srgb,var(--tone) 25%,transparent)}
