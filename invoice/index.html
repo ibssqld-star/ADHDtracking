@@ -1035,6 +1035,12 @@ dialog::backdrop{background:rgba(4,6,20,.62);-webkit-backdrop-filter:blur(6px);b
 :root[data-theme="dark"]:not([data-hud]) .btn.sm{min-height:40px;}
 :root[data-theme="dark"]:not([data-hud]) .btn.primary{border-color:transparent;}
 :root[data-theme="dark"]:not([data-hud]) .rowcard{border-color:rgba(120,200,255,.2);}
+/* client jobs: heading outside, one neon-framed card per job */
+.jobs-h{font:600 18px "Barlow Semi Condensed",sans-serif;letter-spacing:.06em;margin:18px 4px 12px;color:#eef5ff;display:flex;align-items:center;gap:10px}
+.jobs-h::before{content:"";width:4px;height:18px;background:linear-gradient(180deg,#3fc6ef,#ff4fd8);box-shadow:0 0 10px rgba(255,79,216,.5)}
+.rowstack{display:flex;flex-direction:column;gap:14px}
+.rowcard{padding:0!important;border-radius:0!important;clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px)}
+.rowcard .li{padding:16px 18px;border:0;margin:0}
 /* calm mode + reduced motion: no glow, no animation */
 :root[data-calm]{--glow:0 0 0 1px var(--line);--hv-glow:none}
 :root[data-calm] .core-btn{box-shadow:0 0 0 2px color-mix(in srgb,var(--tone) 25%,transparent)}
@@ -1640,7 +1646,7 @@ function clientSlide(c) {
 function clientJobs(c) {
   if (!c) return '';
   const docs = clientStats(c).docs.sort((a, b) => (b.issueDate || '').localeCompare(a.issueDate || ''));
-  return `<div class="card"><h2>Jobs for ${esc(c.name)}</h2>${docs.length ? `<div class="list">${docs.map(d => rowHtml(d, true, true)).join('')}</div>` : '<div class="muted">Nothing yet.</div>'}</div>`;
+  return `<h2 class="jobs-h">Jobs for ${esc(c.name)}</h2>${docs.length ? `<div class="rowstack">${docs.map(d => `<div class="card rowcard">${rowHtml(d, true, true)}</div>`).join('')}</div>` : '<div class="card muted">Nothing yet.</div>'}`;
 }
 function rosterHtml(list) {
   return list.map(c => `<button type="button" class="rchip" data-act="pick-roster" data-id="${c.id}" aria-current="${c.id === clientSel}" aria-label="${esc(c.name)}"><span class="av ${avClass(c.id)}">${esc(initials(c.name))}</span><span>${esc(c.name.split(' ')[0])}</span></button>`).join('');
