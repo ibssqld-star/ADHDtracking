@@ -1226,6 +1226,25 @@ dialog::backdrop{background:rgba(4,6,20,.62);-webkit-backdrop-filter:blur(6px);b
 :root[data-theme="dark"]:not([data-hud]) .log{background-image:linear-gradient(180deg,rgba(255,255,255,.07),transparent 30%),repeating-linear-gradient(90deg,rgba(255,79,216,.22) 0 9px,transparent 9px 14px),repeating-linear-gradient(0deg,rgba(30,227,255,.12) 0 9px,transparent 9px 14px),linear-gradient(160deg,rgba(110,60,220,.55),rgba(20,30,110,.7) 70%);}
 :root[data-theme="dark"]:not([data-hud]) .log .ln{background:rgba(10,14,50,.55);border:1px solid rgba(150,200,255,.25);padding:6px 10px;margin-bottom:4px;}
 :root[data-theme="dark"]:not([data-hud]) .log .ln:hover{background:rgba(255,79,216,.18);}
+/* =================== ONE-JOB-AT-A-TIME PAGER (thin cyan HUD) =================== */
+.jsearch{margin-bottom:12px}
+.jpager{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain}
+.jpager::-webkit-scrollbar{display:none}
+.jslide{flex:0 0 100%;min-width:0;scroll-snap-align:start;scroll-snap-stop:always;padding:0 1px}
+.jcard{position:relative;background:linear-gradient(180deg,#0b1834,#060c1c);border:1px solid rgba(30,227,255,.55);padding:18px 18px 16px;box-shadow:0 0 18px rgba(30,227,255,.12),inset 0 0 22px rgba(30,227,255,.05)}
+.jcard::before,.jcard::after{content:"";position:absolute;width:18px;height:18px;border-color:#1ee3ff;border-style:solid;pointer-events:none}
+.jcard::before{top:-1px;left:-1px;border-width:2px 0 0 2px}
+.jcard::after{bottom:-1px;right:-1px;border-width:0 2px 2px 0}
+.jtop{display:flex;gap:16px;align-items:center}
+.jtop .docring{position:relative;width:88px;height:88px;flex:none}
+.jtxt{display:flex;flex-direction:column;gap:4px;min-width:0}
+.jkind{font:600 11px "Barlow Semi Condensed",sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#1ee3ff}
+.jtxt b{font-size:18px;overflow-wrap:anywhere}
+.jdue{font-size:14px;color:#93b6c6}
+.jdue.bad{color:#ff7a92}.jdue.warn{color:#ffb070}
+.jfoot{display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding-top:12px;border-top:1px solid rgba(30,227,255,.25)}
+.jamt{font:600 22px "Barlow Semi Condensed",sans-serif;font-variant-numeric:tabular-nums;text-align:right}
+.jamt small{display:block;font:400 12px Lexend,sans-serif;color:#93b6c6}
 /* calm mode + reduced motion: no glow, no animation */
 :root[data-calm]{--glow:0 0 0 1px var(--line);--hv-glow:none}
 :root[data-calm] .core-btn{box-shadow:0 0 0 2px color-mix(in srgb,var(--tone) 25%,transparent)}
@@ -1542,6 +1561,7 @@ function route() {
 function afterRender() {
   setupPager();
   setupClientPager();
+  setupJobPager();
   setupEditPager();
   const abnInput = document.querySelector('[data-abn-hint]');
   if (abnInput) updateAbnHint(abnInput);
@@ -1839,10 +1859,49 @@ function clientSlide(c) {
     <div class="cacts"><button class="btn primary" data-act="new" data-type="invoice" data-client="${c.id}">${I.plus}Invoice</button><a class="btn ghost" href="#/client/${c.id}">Edit details</a></div>
   </div></section>`;
 }
+let jobQuery = '';
+function jobDocs(c) {
+  const q = jobQuery.trim().toLowerCase();
+  return clientStats(c).docs
+    .filter(d => !q || [d.number, d.site, d.reference, d.status, ...d.lines.map(l => l.desc)].some(x => String(x || '').toLowerCase().includes(q)))
+    .sort((a, b) => (b.issueDate || '').localeCompare(a.issueDate || ''));
+}
+function jobSlide(d) {
+  const t = totals(d);
+  return `<section class="jslide" data-id="${d.id}" aria-label="${esc(d.number)}"><div class="jcard">
+    <div class="jtop">${docRing(d, t)}<div class="jtxt">
+      <span class="jkind">${docLabel(d)} · ${esc(d.number)}</span>
+      <b>${esc(d.site || (d.lines.find(l => l.desc) || {}).desc || 'No description')}</b>
+      <span class="jdue ${dueInfo(d).tone}">${esc(dueInfo(d).text)}</span>
+    </div></div>
+    <div class="jfoot"><span>${chip(d)}</span><span class="jamt">${money(t.balance > 0 && t.paid > 0 ? t.balance : t.total)}<small>${t.balance > 0 && t.paid > 0 ? 'left to pay' : 'total'}</small></span></div>
+    <a class="btn sm" href="#/view/${d.id}" style="margin-top:12px;width:100%">Open ${esc(d.number)}</a>
+  </div></section>`;
+}
 function clientJobs(c) {
   if (!c) return '';
-  const docs = clientStats(c).docs.sort((a, b) => (b.issueDate || '').localeCompare(a.issueDate || ''));
-  return `<h2 class="jobs-h">Jobs for ${esc(c.name)}</h2>${docs.length ? `<div class="rowstack">${docs.map(d => `<div class="card rowcard">${rowHtml(d, true, true)}</div>`).join('')}</div>` : '<div class="card muted">Nothing yet.</div>'}`;
+  const docs = jobDocs(c);
+  const head = `<h2 class="jobs-h">Jobs for ${esc(c.name)}</h2>
+    <input class="inp jsearch" type="search" data-bind="jobsearch" value="${esc(jobQuery)}" placeholder="Search this client’s jobs" aria-label="Search jobs">`;
+  if (!clientStats(c).docs.length) return head + '<div class="card muted">Nothing yet.</div>';
+  if (!docs.length) return head + '<div class="card muted">No jobs match that search.</div>';
+  return head + `<div class="jpager" id="jpager">${docs.map(jobSlide).join('')}</div>
+    <div class="cnav"><button class="btn" data-act="jprev" aria-label="Previous job">‹</button><span id="jcount">1 of ${docs.length}</span><button class="btn" data-act="jnext" aria-label="Next job">›</button></div>`;
+}
+function setupJobPager() {
+  const pg = document.getElementById('jpager'); if (!pg) return;
+  let raf;
+  pg.addEventListener('scroll', () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => {
+    const i = Math.round(pg.scrollLeft / Math.max(1, pg.clientWidth));
+    const cc = document.getElementById('jcount'); if (cc) cc.textContent = `${i + 1} of ${pg.children.length}`;
+  }); }, { passive: true });
+}
+function goJob(delta) {
+  const pg = document.getElementById('jpager'); if (!pg) return;
+  const cur = Math.round(pg.scrollLeft / Math.max(1, pg.clientWidth));
+  const next = Math.max(0, Math.min(pg.children.length - 1, cur + delta));
+  pg.scrollTo({ left: next * pg.clientWidth, behavior: S.settings.calm || matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  const cc = document.getElementById('jcount'); if (cc) cc.textContent = `${next + 1} of ${pg.children.length}`;
 }
 function rosterHtml(list) {
   return list.map(c => `<button type="button" class="rchip" data-act="pick-roster" data-id="${c.id}" aria-current="${c.id === clientSel}" aria-label="${esc(c.name)}"><span class="av ${avClass(c.id)}">${esc(initials(c.name))}</span><span>${esc(c.name.split(' ')[0])}</span></button>`).join('');
@@ -1869,7 +1928,7 @@ function setClientSel(id, scrollRoster = true) {
   const list = clientList(), i = list.findIndex(c => c.id === id);
   document.querySelectorAll('.rchip').forEach(b => b.setAttribute('aria-current', b.dataset.id === id));
   const cc = document.getElementById('ccount'); if (cc) cc.textContent = `${i + 1} of ${list.length}`;
-  const cj = document.getElementById('cjobs'); if (cj) cj.innerHTML = clientJobs(getClient(id));
+  const cj = document.getElementById('cjobs'); if (cj) { cj.innerHTML = clientJobs(getClient(id)); setupJobPager(); }
   if (scrollRoster) { const r = document.querySelector(`.rchip[data-id="${id}"]`); if (r) r.scrollIntoView({ block: 'nearest', inline: 'center' }); }
 }
 function goClient(i) {
@@ -2657,6 +2716,8 @@ const ACT = {
   },
   'pick-roster'(ds) { const i = clientList().findIndex(c => c.id === ds.id); goClient(i); },
   cprev() { goClient(clientList().findIndex(c => c.id === clientSel) - 1); },
+  jprev() { goJob(-1); },
+  jnext() { goJob(1); },
   cnext() { goClient(clientList().findIndex(c => c.id === clientSel) + 1); },
   skip(ds) { skipped.add(ds.id); route(); },
   unskip() { skipped.clear(); route(); },
@@ -2875,6 +2936,7 @@ document.addEventListener('input', e => {
     return;
   }
   if (b === 'search') { listFilter.q = val; refreshPages(); return; }
+  if (b === 'jobsearch') { jobQuery = val; const c0 = getClient(clientSel); const cj = document.getElementById('cjobs'); if (cj && c0) { cj.innerHTML = clientJobs(c0); setupJobPager(); const inp = cj.querySelector('input'); if (inp) { inp.focus(); inp.setSelectionRange(val.length, val.length); } } return; }
   if (b === 'clsearch') { clQuery = val; const list = clientList(); if (!list.some(c => c.id === clientSel)) clientSel = list[0] ? list[0].id : null; document.getElementById('cbody').innerHTML = clientsBody(list); setupClientPager(); return; }
   if (b === 'libsearch') { libQuery = val; const d0 = getDoc(current.id); document.getElementById('tiles').innerHTML = tilesHtml(d0); return; }
   if (b === 'csearch') { clientQuery = val; const d0 = getDoc(current.id); document.getElementById('cgrid').innerHTML = clientCardsHtml(d0); syncEditUI(d0); return; }
