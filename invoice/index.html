@@ -1257,6 +1257,26 @@ body{background:radial-gradient(90% 50% at 50% 0%,rgba(30,90,160,.35),transparen
 .mbar i{display:block;width:100%;background:repeating-linear-gradient(0deg,#28dcff 0 6px,transparent 6px 8px);box-shadow:0 0 10px rgba(40,220,255,.4)}
 .mb b{font:600 13px "Barlow Semi Condensed",sans-serif;color:#eef8ff}
 .bars-panel{margin-top:0}
+/* =================== SETTINGS: neon dashboard tiles and framed sections =================== */
+body{background:radial-gradient(80% 45% at 50% 0%,rgba(190,40,200,.22),transparent 70%),radial-gradient(60% 40% at 100% 100%,rgba(40,200,255,.14),transparent 70%),linear-gradient(180deg,#0a0820,#04050f 70%) fixed !important}
+.stiles{grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.stile{background:linear-gradient(180deg,rgba(255,60,200,.10),rgba(4,8,20,.9)) !important;border:1px solid rgba(255,80,220,.55) !important;clip-path:none !important;padding:18px !important;min-height:120px !important;flex-direction:column !important;align-items:flex-start !important;position:relative;box-shadow:0 0 16px rgba(255,60,200,.12),inset 0 0 22px rgba(255,60,200,.05)}
+.stile::after{content:"";position:absolute;right:-1px;top:-1px;width:14px;height:14px;border-top:2px solid #36e8ff;border-right:2px solid #36e8ff}
+.stile.ok{border-color:rgba(60,255,200,.6) !important}
+.stile.warn{border-color:rgba(255,190,80,.7) !important}
+.stile .sico{width:40px !important;height:40px !important;border:1.5px solid #ff5ae0 !important;background:transparent !important;color:#ff8ae8 !important;box-shadow:0 0 12px rgba(255,80,220,.45)}
+.stile .stxt{width:100%}
+.stile .stxt b{font:600 20px "Barlow Semi Condensed",sans-serif;letter-spacing:.04em;color:#f3eaff}
+.stile .stxt > span:not(.sbar){color:#9fb8d6;font-size:13px}
+.stile .sgo{position:absolute;right:16px;top:18px;color:#36e8ff;font-size:22px}
+.sbar{display:block;height:6px;margin-top:10px;background:repeating-linear-gradient(90deg,rgba(54,232,255,.18) 0 6px,transparent 6px 9px)}
+.sbar i{display:block;height:100%;background:repeating-linear-gradient(90deg,#36e8ff 0 6px,transparent 6px 9px);box-shadow:0 0 8px rgba(54,232,255,.5)}
+.stile.ok .sbar i{background:repeating-linear-gradient(90deg,#3cffc8 0 6px,transparent 6px 9px)}
+.stile.warn .sbar i{background:repeating-linear-gradient(90deg,#ffbe50 0 6px,transparent 6px 9px)}
+/* settings sections: framed cards with neon headings */
+.card > h2,.frame .tag{color:#f3eaff !important}
+.card > h2::before{background:#ff5ae0 !important;box-shadow:0 0 8px rgba(255,80,220,.7) !important}
+.card:has(> h2){border-color:rgba(255,80,220,.45) !important}
 /* calm mode + reduced motion: no glow, no animation */
 :root[data-calm]{--glow:0 0 0 1px var(--line);--hv-glow:none}
 :root[data-calm] .core-btn{box-shadow:0 0 0 2px color-mix(in srgb,var(--tone) 25%,transparent)}
@@ -2028,7 +2048,8 @@ function viewSettings(id) {
   if (!sec) return `
   <div class="page-head"><h1>Settings</h1></div>
   <div class="stiles">${SETTINGS.map(x => { const [tone, txt] = settingStatus(x.key);
-    return `<a class="stile ${tone}" href="#/settings/${x.key}"><span class="sico">${x.icon()}</span><span class="stxt"><b>${x.title}</b><span>${txt}</span></span><span class="sgo" aria-hidden="true">›</span></a>`; }).join('')}</div>`;
+    const pct = tone === 'ok' ? 100 : tone === 'warn' ? 40 : 70;
+    return `<a class="stile ${tone}" href="#/settings/${x.key}"><span class="sico">${x.icon()}</span><span class="stxt"><b>${x.title}</b><span>${txt}</span><span class="sbar" aria-hidden="true"><i style="width:${pct}%"></i></span></span><span class="sgo" aria-hidden="true">›</span></a>`; }).join('')}</div>`;
   const content = {
     business: `<div class="card">
     <div class="grid g2">
