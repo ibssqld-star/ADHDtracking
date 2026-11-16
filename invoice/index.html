@@ -3240,7 +3240,7 @@ window.addEventListener('beforeunload', () => { if (current.view === 'edit') { c
 // ripple anywhere: starts on touch-down, wherever the finger lands
 document.addEventListener('pointerdown', e => {
   if (S.settings.calm || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  const size = 150;
+  const size = 96;
   const rp = document.createElement('span');
   rp.className = 'ripple-fx';
   rp.style.width = rp.style.height = size + 'px';
