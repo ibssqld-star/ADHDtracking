@@ -1245,6 +1245,18 @@ dialog::backdrop{background:rgba(4,6,20,.62);-webkit-backdrop-filter:blur(6px);b
 .jfoot{display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding-top:12px;border-top:1px solid rgba(30,227,255,.25)}
 .jamt{font:600 22px "Barlow Semi Condensed",sans-serif;font-variant-numeric:tabular-nums;text-align:right}
 .jamt small{display:block;font:400 12px Lexend,sans-serif;color:#93b6c6}
+/* =================== HOME: navy HUD dashboard (thin cyan lines, bars, tiles) =================== */
+body{background:radial-gradient(90% 50% at 50% 0%,rgba(30,90,160,.35),transparent 70%),linear-gradient(180deg,#071a33,#030b18 70%) fixed !important}
+.frame,.card{background:linear-gradient(180deg,rgba(20,60,110,.28),rgba(4,12,26,.85)) !important;border:1px solid rgba(40,220,255,.5) !important;box-shadow:0 0 18px rgba(40,220,255,.1),inset 0 0 26px rgba(40,220,255,.04) !important}
+.frame .tag{background:#04121f !important;color:#8ff1ff !important;border:1px solid rgba(40,220,255,.6) !important;box-shadow:none !important;font-size:11px !important;letter-spacing:.18em !important}
+.frame::before{display:none}
+.frame::after{background:linear-gradient(#28dcff,#28dcff) left top/18px 1.5px no-repeat,linear-gradient(#28dcff,#28dcff) left top/1.5px 18px no-repeat,linear-gradient(#28dcff,#28dcff) right bottom/18px 1.5px no-repeat,linear-gradient(#28dcff,#28dcff) right bottom/1.5px 18px no-repeat !important}
+.mbars{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;align-items:end;height:170px;margin-top:6px}
+.mb{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:4px;font-size:12px;color:#8ff1ff}
+.mbar{width:100%;flex:1;display:flex;align-items:flex-end;background:repeating-linear-gradient(0deg,rgba(40,220,255,.12) 0 3px,transparent 3px 6px)}
+.mbar i{display:block;width:100%;background:repeating-linear-gradient(0deg,#28dcff 0 6px,transparent 6px 8px);box-shadow:0 0 10px rgba(40,220,255,.4)}
+.mb b{font:600 13px "Barlow Semi Condensed",sans-serif;color:#eef8ff}
+.bars-panel{margin-top:0}
 /* calm mode + reduced motion: no glow, no animation */
 :root[data-calm]{--glow:0 0 0 1px var(--line);--hv-glow:none}
 :root[data-calm] .core-btn{box-shadow:0 0 0 2px color-mix(in srgb,var(--tone) 25%,transparent)}
@@ -1653,6 +1665,18 @@ function clockText() {
 }
 setInterval(() => { const el = document.getElementById('clock'); if (el) el.innerHTML = clockText(); }, 15000);
 
+function monthBars() {
+  // paid per month for the last six months, drawn as segmented bars (original chart)
+  const now = new Date(), months = [];
+  for (let k = 5; k >= 0; k--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - k, 1), key = `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
+    let c = 0;
+    for (const doc of S.docs) if (doc.type === 'invoice') for (const p of doc.payments) if ((p.date || '').slice(0, 7) === key) c += toCents(p.amount);
+    months.push({ label: d.toLocaleDateString('en-AU', { month: 'short' }), c });
+  }
+  const max = Math.max(1, ...months.map(m => m.c));
+  return `<div class="mbars" role="img" aria-label="Paid each month, last six months">${months.map(m => `<div class="mb"><div class="mbar"><i style="height:${Math.max(4, Math.round(m.c / max * 100))}%"></i></div><span>${esc(m.label)}</span><b>${moneyShort(m.c)}</b></div>`).join('')}</div>`;
+}
 function viewHome() {
   const st = S.settings;
   const inv = S.docs.filter(d => d.type === 'invoice');
@@ -1702,6 +1726,7 @@ function viewHome() {
       ${gaugeHtml('#/invoices/overdue', 'Overdue', moneyShort(overdueSum), overdueN ? plural(overdueN, 'invoice') : 'None ✓', outstanding ? overdueSum / outstanding : 0, 'bad')}
       ${gaugeHtml('#/invoices/waiting', 'Owed', moneyShort(outstanding), plural(owedN, 'invoice'), 0, 'cy')}
     </div></section>
+    <section class="frame bars-panel"><span class="tag">Paid by month</span>${monthBars()}</section>
     <section class="frame log"><span class="tag">Status log</span>${logLines || '<div class="muted">All quiet. Nothing to report.</div>'}</section>
   </div>
 </div>`;
