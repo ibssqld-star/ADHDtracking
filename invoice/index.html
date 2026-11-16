@@ -1086,6 +1086,19 @@ dialog::backdrop{background:rgba(4,6,20,.62);-webkit-backdrop-filter:blur(6px);b
 :root[data-theme="dark"]:not([data-hud]) .bar i{box-shadow:0 0 14px rgba(255,79,216,.6);}
 :root[data-theme="dark"]:not([data-hud]) .frame .tag{box-shadow:0 0 14px rgba(63,198,239,.5)!important;}
 #fromquote{scroll-margin-top:150px}
+/* =================== WORK STEP: HUD tiles and segmented totals =================== */
+@media (prefers-color-scheme: dark){
+:root:not([data-theme="light"]):not([data-hud]) .addbig .btn.primary{background:linear-gradient(180deg,rgba(139,92,246,.16),rgba(255,79,216,.08)),rgba(8,14,26,.9);color:#eef5ff!important;border:1px solid rgba(190,140,255,.7);box-shadow:inset 0 0 0 4px rgba(8,14,26,.9),inset 0 0 0 5px rgba(190,140,255,.35),0 0 18px rgba(139,92,246,.35);clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px);min-height:64px;letter-spacing:.06em;}
+:root:not([data-theme="light"]):not([data-hud]) .addbig .btn:not(.primary){background:rgba(8,14,26,.85);border:1px solid rgba(120,200,255,.35);clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px);min-height:56px;}
+:root:not([data-theme="light"]):not([data-hud]) .totals{position:relative;border:1px solid rgba(120,200,255,.25);padding:14px 16px 12px;background:rgba(8,14,26,.6);clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px);margin-top:14px;}
+:root:not([data-theme="light"]):not([data-hud]) .totals::before{content:'';display:block;height:8px;margin-bottom:12px;background:repeating-linear-gradient(90deg,rgba(63,198,239,.55) 0 10px,transparent 10px 14px);opacity:.8;}
+:root:not([data-theme="light"]):not([data-hud]) .totals .grand span:last-child{color:#ff8ad8;text-shadow:0 0 12px rgba(255,79,216,.45);}
+}
+:root[data-theme="dark"]:not([data-hud]) .addbig .btn.primary{background:linear-gradient(180deg,rgba(139,92,246,.16),rgba(255,79,216,.08)),rgba(8,14,26,.9);color:#eef5ff!important;border:1px solid rgba(190,140,255,.7);box-shadow:inset 0 0 0 4px rgba(8,14,26,.9),inset 0 0 0 5px rgba(190,140,255,.35),0 0 18px rgba(139,92,246,.35);clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px);min-height:64px;letter-spacing:.06em;}
+:root[data-theme="dark"]:not([data-hud]) .addbig .btn:not(.primary){background:rgba(8,14,26,.85);border:1px solid rgba(120,200,255,.35);clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px);min-height:56px;}
+:root[data-theme="dark"]:not([data-hud]) .totals{position:relative;border:1px solid rgba(120,200,255,.25);padding:14px 16px 12px;background:rgba(8,14,26,.6);clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px);margin-top:14px;}
+:root[data-theme="dark"]:not([data-hud]) .totals::before{content:'';display:block;height:8px;margin-bottom:12px;background:repeating-linear-gradient(90deg,rgba(63,198,239,.55) 0 10px,transparent 10px 14px);opacity:.8;}
+:root[data-theme="dark"]:not([data-hud]) .totals .grand span:last-child{color:#ff8ad8;text-shadow:0 0 12px rgba(255,79,216,.45);}
 /* calm mode + reduced motion: no glow, no animation */
 :root[data-calm]{--glow:0 0 0 1px var(--line);--hv-glow:none}
 :root[data-calm] .core-btn{box-shadow:0 0 0 2px color-mix(in srgb,var(--tone) 25%,transparent)}
