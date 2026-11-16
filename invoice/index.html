@@ -7,7 +7,7 @@
 <title>Docket Invoicing</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Chakra+Petch:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Exo+2:wght@500;600;700&family=Lexend:wght@400;500;600;700&display=swap">
 <style>
 /* Layout: instrument rail (left) + one calm work column. "Night blueprint" HUD:
    hi-vis amber = the one thing to press, cyan = readouts, clipped-corner panels on a blueprint grid. */
@@ -24,8 +24,8 @@
   --glow:0 0 0 1px rgba(90,216,255,.22),0 0 30px rgba(90,216,255,.09);
   --hv-glow:0 0 0 1px color-mix(in srgb,var(--hv) 55%,transparent),0 0 26px color-mix(in srgb,var(--hv) 30%,transparent);
   --nav:#020306; --nav-ink:#c4cee6;
-  --f-display:"Chakra Petch",ui-sans-serif,system-ui,sans-serif;
-  --f-body:"Atkinson Hyperlegible",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-display:"Exo 2",ui-sans-serif,system-ui,sans-serif;
+  --f-body:"Lexend",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   --fs:16px; --cut:14px; --radius:4px;
   color-scheme:dark;
 }
@@ -62,6 +62,8 @@
   color-scheme:light;
 }
 :root[data-big]{--fs:18px}
+:root[data-font="atkinson"]{--f-body:"Atkinson Hyperlegible",ui-sans-serif,system-ui,sans-serif;--f-display:"Chakra Petch",ui-sans-serif,system-ui,sans-serif}
+:root[data-font="system"]{--f-body:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--f-display:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 :root[data-accent="cyan"]{--hv:#22e4ff;--hv-hover:#6aeeff;--hv-ink:#001a20}
 :root[data-accent="pink"]{--hv:#ff4fd8;--hv-hover:#ff86e4;--hv-ink:#22001b}
 :root[data-accent="green"]{--hv:#3dff8b;--hv-hover:#7affb0;--hv-ink:#00200c}
@@ -668,6 +670,13 @@ dialog.wide{width:min(780px,calc(100vw - 20px))}
 .li.simple .chip{grid-column:2;grid-row:2;justify-self:end}
 @media (max-width:560px){.li.simple .who,.li.simple .amt,.li.simple .chip{grid-row:auto}.li.simple .who{grid-row:1 / span 2}.li.simple .amt{grid-row:1}.li.simple .chip{grid-row:2}}
 
+.fontpick{display:flex;flex-direction:column;gap:8px;margin-bottom:18px}
+.fontpick button{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;padding:12px 14px;border:1.5px solid var(--line-2);background:var(--bg-2);color:var(--ink);cursor:pointer;clip-path:polygon(9px 0,100% 0,100% calc(100% - 9px),calc(100% - 9px) 100%,0 100%,0 9px)}
+.fontpick button b{font-size:17px}
+.fontpick button span{color:var(--ink-2);font-size:15px}
+.fontpick button.on{border-color:var(--cy);background:var(--cy-soft)}
+.fontpick button.on b::after{content:"  ✓";color:var(--cy)}
+:root:not([data-hud]) .f{font:700 15px/1.3 var(--f-body);color:var(--ink)}
 /* calm mode + reduced motion: no glow, no animation */
 :root[data-calm]{--glow:0 0 0 1px var(--line);--hv-glow:none}
 :root[data-calm] .core-btn{box-shadow:0 0 0 2px color-mix(in srgb,var(--tone) 25%,transparent)}
@@ -711,7 +720,7 @@ const DEFAULT = {
     paymentTermsDays: 14, quoteValidDays: 30, defaultRate: '95', chargeBy: 'hour',
     invoicePrefix: 'INV-', nextInvoice: 1, quotePrefix: 'Q-', nextQuote: 1,
     footerNote: 'Thanks for your business!', logo: '', cardLink: '', clientBase: '',
-    monthlyGoal: '15000', bigText: false, calm: false, celebrate: true, look: 'clean', accent: 'gold', display: 'auto', focusHome: false, reminderTone: 'friendly'
+    monthlyGoal: '15000', bigText: false, calm: false, celebrate: true, look: 'clean', font: 'lexend', accent: 'gold', display: 'auto', focusHome: false, reminderTone: 'friendly'
   },
   clients: [],
   docs: [],
@@ -737,7 +746,7 @@ function migrate(d) {
 let S = load();
 function save() {
   try { localStorage.setItem(KEY, JSON.stringify(S)); }
-  catch (e) { toast('Couldn’t save — browser storage is full. Try a smaller logo.'); }
+  catch (e) { toast('That didn’t save, the storage is full. A smaller logo should fix it.'); }
 }
 
 /* ---------- helpers ---------- */
@@ -920,6 +929,13 @@ function applyComfort() {
   const disp = S.settings.display;
   if (disp === 'light' || disp === 'dark') { r.setAttribute('data-theme', disp); r.dataset.docketTheme = '1'; }
   else if (r.dataset.docketTheme) { r.removeAttribute('data-theme'); delete r.dataset.docketTheme; }
+  const f = S.settings.font || 'lexend';
+  if (f === 'lexend') r.removeAttribute('data-font'); else r.setAttribute('data-font', f);
+  if ((f === 'atkinson' || path.startsWith('/settings')) && !document.getElementById('font-atk')) {
+    const l = document.createElement('link'); l.id = 'font-atk'; l.rel = 'stylesheet';
+    l.href = 'https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Chakra+Petch:wght@500;600;700&display=swap';
+    document.head.appendChild(l);
+  }
   if (S.settings.look === 'hud') r.setAttribute('data-hud', ''); else r.removeAttribute('data-hud');
   if (S.settings.accent && S.settings.accent !== 'gold') r.setAttribute('data-accent', S.settings.accent); else r.removeAttribute('data-accent');
 }
@@ -991,15 +1007,16 @@ function coreHtml() {
   const btn = (tag, attrs, verb, big, go) => `<${tag} class="core-btn" ${attrs}><span class="verb">${esc(verb)}</span><span class="amt">${esc(big)}</span><span class="go">${esc(go)}</span></${tag}>`;
   let tone, center, cap, nav = '', pos = -1;
   if (!all.length) {
-    tone = 'ok'; center = btn('button', 'data-act="quick"', 'All clear', '✓', 'Log a job →');
+    tone = 'ok'; center = btn('button', 'data-act="quick"', 'All clear', '✓', 'Tap to log a job');
     cap = `<div class="eyebrow">Nothing needs you</div><h2>You’re all caught up</h2><p>Finished a job? Log it while it’s fresh.</p>`;
   } else if (!list.length) {
-    tone = 'cy'; center = btn('button', 'data-act="unskip"', 'Paused', plural(all.length, 'thing'), 'Show again →');
+    tone = 'cy'; center = btn('button', 'data-act="unskip"', 'Paused', plural(all.length, 'thing'), 'Tap to show them again');
     cap = `<div class="eyebrow">Skipped for now</div><h2>They’ll wait for you</h2><p>Tap the core when you’re ready.</p>`;
   } else {
     const m = list[0]; pos = all.indexOf(m); tone = m.tone;
-    center = m.act ? btn('button', `data-act="${m.act}" data-id="${m.id}" aria-label="${esc(m.verb + ' ' + m.amt + ' from ' + m.who)}"`, m.verb, m.amt, 'Tap to start →')
-                   : btn('a', `href="${m.href}" aria-label="${esc(m.verb + ' ' + m.amt + ' to ' + m.who)}"`, m.verb, m.amt, 'Tap to start →');
+    const goText = m.act === 'remind' ? 'Tap to send a reminder' : m.tag === 'Follow up' ? 'Tap to open the quote' : 'Tap to check and send';
+    center = m.act ? btn('button', `data-act="${m.act}" data-id="${m.id}" aria-label="${esc(m.verb + ' ' + m.amt + ' from ' + m.who)}"`, m.verb, m.amt, goText)
+                   : btn('a', `href="${m.href}" aria-label="${esc(m.verb + ' ' + m.amt + ' to ' + m.who)}"`, m.verb, m.amt, goText);
     cap = `<div class="eyebrow">Next up · ${esc(m.tag)}</div><h2>${esc(m.who)}</h2><p>${esc(m.detail)}</p>`;
     nav = `<div class="row" style="justify-content:center"><button class="btn ghost sm" data-act="skip" data-id="${m.id}">Skip for now</button><span class="muted small">${pos + 1} of ${all.length}</span></div>`;
   }
@@ -1063,7 +1080,7 @@ function viewHome() {
   ].filter(Boolean).join('');
 
   return `<div class="console">
-  ${S.example ? `<div class="strip"><b>Example data</b><span>Smithy’s Plumbing isn’t real. Have a play.</span><button class="link" data-act="examples-clear">Clear & start mine</button></div>`
+  ${S.example ? `<div class="strip"><b>Example data</b><span>Smithy’s Plumbing isn’t real. Have a play.</span><button class="link" data-act="examples-clear">Clear examples</button></div>`
     : (!st.businessName || !st.abn) ? `<div class="strip"><b>Setup</b><span>Add your business name, ABN and bank details.</span><a class="link" href="#/settings">Add details</a></div>` : ''}
   <div class="c-left">
     <section class="frame clock" aria-label="Date and time"><span class="tag">${esc(part)}${who ? ' · ' + esc(who) : ''}</span>
@@ -1364,6 +1381,8 @@ function viewSettings() {
   </div>
 
   <div class="card"><h2>Comfort & focus</h2>
+    <div class="f" style="margin-bottom:8px">Text style</div>
+    <div class="fontpick">${[['lexend', 'Lexend', "'Lexend',sans-serif"], ['atkinson', 'Atkinson', "'Atkinson Hyperlegible',sans-serif"], ['system', 'Your phone’s font', 'system-ui,sans-serif']].map(([k, l, ff]) => `<button type="button" class="${(s.font || 'lexend') === k ? 'on' : ''}" data-act="font" data-val="${k}" aria-pressed="${(s.font || 'lexend') === k}" style="font-family:${ff}"><b>${l}</b><span>Coastline Builders · 0491 570 006 · $3,520.00</span></button>`).join('')}</div>
     <div class="f" style="margin-bottom:8px">Look</div>
     <div class="seg" style="margin-bottom:16px">${[['clean', 'Clean (easiest to read)'], ['hud', 'Full HUD']].map(([k, l]) => `<button type="button" class="${(s.look || 'clean') === k ? 'on' : ''}" data-act="look" data-val="${k}" aria-pressed="${(s.look || 'clean') === k}">${l}</button>`).join('')}</div>
     <div class="row">
@@ -1371,9 +1390,9 @@ function viewSettings() {
       <label class="check"><input type="checkbox" data-bind="set" data-key="calm" ${s.calm ? 'checked' : ''}>Calm mode (no glow or motion)</label>
       <label class="check"><input type="checkbox" data-bind="set" data-key="celebrate" ${s.celebrate ? 'checked' : ''}>Celebrate when I get paid</label>
     </div>
-    <div class="f mt" style="font-size:13px;font-weight:700;color:var(--ink-2)">Screen</div>
+    <div class="f mt">Screen</div>
     <div class="seg" style="margin-top:8px">${[['auto', 'Match my phone'], ['light', 'Light'], ['dark', 'Dark']].map(([k, l]) => `<button type="button" class="${(s.display || 'auto') === k ? 'on' : ''}" data-act="display" data-val="${k}">${l}</button>`).join('')}</div>
-    <div class="f mt" style="font-size:13px;font-weight:700;color:var(--ink-2)">Colour</div>
+    <div class="f mt">Colour</div>
     <div class="swatches mt" style="margin-top:8px">${[['gold', 'Gold', '#ffc21a'], ['cyan', 'Cyan', '#22e4ff'], ['pink', 'Neon pink', '#ff4fd8'], ['green', 'Toxic green', '#3dff8b']].map(([k, l, c]) => `<button type="button" class="${(s.accent || 'gold') === k ? 'on' : ''}" data-act="accent" data-val="${k}"><i style="background:${c};color:${c}"></i>${l}</button>`).join('')}</div>
     <div class="grid g3 mt">${field('monthlyGoal', 'Monthly income goal ($)', 'inputmode="decimal"')}</div>
   </div>
@@ -1400,7 +1419,7 @@ function updateAbnHint(input) {
   if (!v) { h.textContent = ''; h.className = 'hint'; return; }
   if (v.length !== 11) { h.textContent = `${v.length}/11 digits`; h.className = 'hint'; return; }
   const ok = abnValid(v);
-  h.textContent = ok ? '✓ Valid ABN' : '✗ That ABN doesn’t check out — double-check the digits';
+  h.textContent = ok ? '✓ ABN looks good' : 'That ABN doesn’t look quite right. Check the 11 digits.';
   h.className = 'hint ' + (ok ? 'ok' : 'bad');
 }
 
@@ -1479,7 +1498,7 @@ function tilesHtml(d) {
   return items.map(it => { const n = count(it.id);
     return `<button type="button" class="slot k-${it.kind} ${n ? 'has' : ''}" data-act="lib-add" data-id="${it.id}" aria-label="Add ${esc(it.desc)}${n ? `, ${n} added` : ''}">${n ? `<span class="cnt">×${esc(String(n))}</span>` : ''}<span class="ico">${KIND_ICO[it.kind] || ''}</span><b>${esc(it.desc)}</b><span class="pr">${money(toCents(it.price))} <small>/ ${esc(it.unit)}</small></span></button>`; }).join('')
     + (q && !items.length ? `<div class="muted" style="grid-column:1/-1">Nothing called “${esc(libQuery)}” yet.</div>` : '')
-    + `<button type="button" class="slot add" data-act="line-add-close">+ Something else</button>`;
+    + `<button type="button" class="slot add" data-act="line-add-close">+ Type my own item</button>`;
 }
 function pickerFoot(d) {
   const n = d.lines.filter(l => l.desc || num(l.price)).length;
@@ -1645,13 +1664,13 @@ function viewDoc(id) {
   if (isQ && d.status !== 'accepted') actions.push(`<button class="btn" data-act="quote-status" data-val="accepted">Mark accepted</button>`);
   if (isQ && d.status !== 'declined' && d.status !== 'accepted') actions.push(`<button class="btn" data-act="quote-status" data-val="declined">Declined</button>`);
   if (isQ) actions.push(`<button class="btn ${s !== 'draft' ? 'primary' : ''}" data-act="convert">Turn into invoice →</button>`);
-  minor.push(`<button class="btn ghost sm" data-act="duplicate">Duplicate</button>`);
+  minor.push(`<button class="btn ghost sm" data-act="duplicate">Copy as new</button>`);
 
   const warnings = [];
-  if (!S.settings.businessName || !S.settings.abn) warnings.push(`Your business name and ABN aren’t set — <a href="#/settings">add them in Settings</a>.`);
-  if (!c) warnings.push(`No client selected — <a href="#/edit/${d.id}">pick one</a>.`);
-  if (!isQ && d.gstReg && t.total >= 100000 && c && !c.address && !c.abn) warnings.push('Tax invoices of $1,000 or more must show the buyer’s identity or ABN — add the client’s address or ABN.');
-  if (!isQ && !S.settings.bsb && !S.settings.payId) warnings.push('No bank details or PayID — your client won’t know how to pay. <a href="#/settings">Add them</a>.');
+  if (!S.settings.businessName || !S.settings.abn) warnings.push(`<a href="#/settings"><b>Add your business name and ABN</b></a> so this counts as a tax invoice.`);
+  if (!c) warnings.push(`<a href="#/edit/${d.id}"><b>Pick a client</b></a> for this ${docLabel(d).toLowerCase()}.`);
+  if (!isQ && d.gstReg && t.total >= 100000 && c && !c.address && !c.abn) warnings.push('<b>Add the client’s address or ABN.</b> Tax invoices of $1,000+ need it.');
+  if (!isQ && !S.settings.bsb && !S.settings.payId) warnings.push('<a href="#/settings"><b>Add your bank details or PayID</b></a> so they can pay you.');
 
   const due = dueInfo(d);
   return `
@@ -1756,17 +1775,17 @@ function openModal(title, body, submitLabel, onSubmit) {
 function ask(title, message, okLabel, onOk, typeWord) {
   openModal(esc(title), `<p style="margin:0">${message}</p>${typeWord ? `<label class="f mt">Type ${typeWord} to confirm<input class="inp" name="word" id="ask-word" autocomplete="off" required></label>` : ''}`,
     okLabel, data => {
-      if (typeWord && String(data.word || '').trim().toUpperCase() !== typeWord) { toast(`Type ${typeWord} to confirm`); return false; }
+      if (typeWord && String(data.word || '').trim().toUpperCase() !== typeWord) { toast(`Type ${typeWord} in the box to go ahead.`); return false; }
       setTimeout(onOk, 0);
     });
   const ok = document.querySelector('#modal button[value=ok]');
   ok.style.background = 'var(--bad)'; ok.style.borderColor = 'var(--bad)'; ok.style.color = '#fff';
 }
 function copyText(text, el) {
-  const done = () => toast('Copied');
+  const done = () => toast('Copied. Ready to paste.');
   try {
-    navigator.clipboard.writeText(text).then(done, () => { if (el) { el.focus(); el.select(); } toast('Select the text and copy it'); });
-  } catch (e) { if (el) { el.focus(); el.select(); } toast('Select the text and copy it'); }
+    navigator.clipboard.writeText(text).then(done, () => { if (el) { el.focus(); el.select(); } toast('Press and hold the text to copy it.'); });
+  } catch (e) { if (el) { el.focus(); el.select(); } toast('Press and hold the text to copy it.'); }
 }
 // Show text the person can copy (used where downloads or mail links are blocked)
 function showCopy(title, intro, blocks) {
@@ -1781,8 +1800,8 @@ const EMBEDDED = (() => { try { return window.self !== window.top; } catch (e) {
 function clientModal(onDone) {
   openModal('New client', clientFields(), 'Add client', data => {
     const c = { id: uid(), name: data.name.trim(), contact: data.contact.trim(), email: data.email.trim(), phone: data.phone.trim(), address: data.address.trim(), abn: abnClean(data.abn) };
-    if (c.abn && !abnValid(c.abn)) { toast('That ABN doesn’t check out — fix it or leave it blank'); return false; }
-    S.clients.push(c); save(); toast('Client added');
+    if (c.abn && !abnValid(c.abn)) { toast('That ABN doesn’t look quite right. Check the digits, or leave it blank.'); return false; }
+    S.clients.push(c); save(); toast('All set. Client added.');
     onDone && onDone(c);
   });
 }
@@ -1798,7 +1817,7 @@ const ACT = {
   'client-del'(ds) {
     const n = S.docs.filter(d => d.clientId === ds.id).length;
     ask('Delete client?', n ? `This client has ${n} quote/invoice(s). They’ll be kept but show “No client”.` : 'This can’t be undone.', 'Delete client', () => {
-      S.clients = S.clients.filter(c => c.id !== ds.id); save(); go('/clients'); toast('Client deleted');
+      S.clients = S.clients.filter(c => c.id !== ds.id); save(); go('/clients'); toast('Done. Client deleted.');
     });
   },
   terms(ds) {
@@ -1861,7 +1880,7 @@ const ACT = {
   'line-save'(ds) {
     const d = getDoc(current.id), l = d.lines.find(x => x.id === ds.id); if (!l) return;
     if (l.lib) return toast('Already in your list');
-    if (!l.desc || !num(l.price)) return toast('Add a description and price first');
+    if (!l.desc || !num(l.price)) return toast('Add what it is and a price, then tap ☆ again.');
     const kind = l.unit === 'hr' ? 'labour' : /call.?out|fee|permit|travel|disposal/i.test(l.desc) ? 'fee' : l.unit === 'lot' ? 'job' : 'material';
     let price = num(l.price);
     if (d.gstReg && l.gst && d.incGst !== !!S.settings.pricesIncGst) price = S.settings.pricesIncGst ? price * 1.1 : price / 1.1;
@@ -1892,6 +1911,7 @@ const ACT = {
   charge(ds) { S.settings.chargeBy = ds.val; save(); route(); toast(ds.val === 'job' ? 'Set to fixed price per job' : 'Set to charge by the hour'); },
   display(ds) { S.settings.display = ds.val; save(); route(); },
   look(ds) { S.settings.look = ds.val; save(); route(); },
+  font(ds) { S.settings.font = ds.val; save(); route(); },
   quick() {
     const st = S.settings, gstNote = st.gstRegistered ? (st.pricesIncGst ? ' (inc GST)' : ' (ex GST)') : '';
     let rate = num(st.defaultRate);
@@ -1904,7 +1924,7 @@ const ACT = {
         <label class="f">Who for<select class="inp" name="client" id="q-client"><option value="">— Pick a client —</option>${opts}</select></label>
         <label class="f">…or a new client<input class="inp" name="newname" id="q-new" placeholder="Name"></label>
       </div>
-      <div class="f mt" style="font-size:13px;font-weight:700;color:var(--ink-2)">Charge by</div>
+      <div class="f mt">Charge by</div>
       <input type="hidden" name="mode" id="q-mode" value="${mode0}">
       <div class="seg" style="margin-top:6px">${[['hour', 'Hourly'], ['job', 'Fixed price']].map(([k, l]) => `<button type="button" data-mode="${k}" class="${mode0 === k ? 'on' : ''}" aria-pressed="${mode0 === k}">${l}</button>`).join('')}</div>
       <div class="grid g2 mt" id="q-hourly" ${mode0 === 'hour' ? '' : 'hidden'}>
@@ -1954,7 +1974,7 @@ const ACT = {
       : s === 'overdue' ? `${hi}, just a friendly reminder that invoice ${d.number} for ${money(t.balance)} was due ${auDate(d.dueDate)}. You can view and pay it here: ${link} Thanks, ${from}`
       : `${hi}, here’s your invoice ${d.number} from ${from} for ${money(t.balance)}, due ${d.dueDate === d.issueDate ? 'on receipt' : auDate(d.dueDate)}. View and pay here: ${link} Thanks!`;
     const smsHref = (ph, m) => `sms:${String(ph || '').replace(/[^\d+]/g, '')}?&body=${encodeURIComponent(m)}`;
-    const sent = () => { if (d.status === 'draft') { d.status = 'sent'; save(); toast('Marked as sent'); } };
+    const sent = () => { if (d.status === 'draft') { d.status = 'sent'; save(); toast('Done! Marked as sent.'); } };
     const m = openModal(s === 'overdue' ? 'Text a reminder' : `Text ${docLabel(d).toLowerCase()} ${esc(d.number)}`, `
       <label class="f mt">Their mobile<input class="inp" type="tel" name="phone" id="t-phone" value="${esc(c ? c.phone : '')}" placeholder="04xx xxx xxx" autocomplete="off"></label>
       <label class="f mt">Message<textarea class="inp" name="msg" id="t-msg" rows="6">${esc(msg)}</textarea></label>
@@ -1987,7 +2007,7 @@ const ACT = {
   },
   delete() {
     const d = getDoc(current.id);
-    const doIt = () => { removeDoc(d); current = { view: '', id: '' }; go(d.type === 'quote' ? '/quotes' : '/invoices'); toast('Deleted'); };
+    const doIt = () => { removeDoc(d); current = { view: '', id: '' }; go(d.type === 'quote' ? '/quotes' : '/invoices'); toast('Done. Deleted.'); };
     if (isEmptyDoc(d)) return doIt();
     ask(`Delete ${d.number}?`, `This ${docLabel(d).toLowerCase()} will be gone for good.`, 'Delete', doIt);
   },
@@ -1999,7 +2019,7 @@ const ACT = {
     }
     window.print();
   },
-  'mark-sent'() { const d = getDoc(current.id); d.status = 'sent'; save(); route(); toast('Marked as sent'); },
+  'mark-sent'() { const d = getDoc(current.id); d.status = 'sent'; save(); route(); toast('Done! Marked as sent.'); },
   async email() {
     const d = getDoc(current.id), c = getClient(d.clientId) || {}, st = S.settings, t = totals(d), s = status(d);
     const link = await clientLink(d);
@@ -2029,12 +2049,12 @@ const ACT = {
     const href = `mailto:${encodeURIComponent(c.email || '')}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     const m = openModal(s === 'overdue' ? 'Send a reminder' : `Email ${docLabel(d).toLowerCase()}`, `
       <p class="muted small" style="margin:0">Attach the PDF from Print / PDF.</p>
-      ${tones ? `<div class="f mt" style="font-size:13px;font-weight:700;color:var(--ink-2)">How firm?</div><div class="seg" style="margin-top:6px" id="tone">${[['friendly', 'Friendly nudge'], ['firm', 'Firm'], ['final', 'Final notice']].map(([k, l]) => `<button type="button" data-tone="${k}" class="${(st.reminderTone || 'friendly') === k ? 'on' : ''}">${l}</button>`).join('')}</div>
+      ${tones ? `<div class="f mt">How firm?</div><div class="seg" style="margin-top:6px" id="tone">${[['friendly', 'Friendly nudge'], ['firm', 'Firm'], ['final', 'Final notice']].map(([k, l]) => `<button type="button" data-tone="${k}" class="${(st.reminderTone || 'friendly') === k ? 'on' : ''}">${l}</button>`).join('')}</div>
 ` : ''}
       ${[['To', c.email || '(no email saved for this client)'], ['Subject', subject]].map(([l, v], i) => `<div class="copybox"><div class="row"><b class="small">${l}</b><button type="button" class="btn sm" data-copy="${i}">Copy</button></div><input class="inp" id="copy-${i}" readonly value="${esc(v)}"></div>`).join('')}
       <div class="copybox"><div class="row"><b class="small">Message</b><button type="button" class="btn sm" data-copy="2">Copy</button></div><textarea class="inp" id="copy-2" readonly rows="8">${esc(body)}</textarea></div>
       <div class="row mt"><a class="btn sm" href="${esc(href)}" target="_blank" rel="noopener">${I.mail}Open in mail app</a></div>`,
-      d.status === 'draft' ? 'Mark as sent' : 'Done', () => { if (d.status === 'draft') { d.status = 'sent'; save(); route(); toast('Marked as sent'); } });
+      d.status === 'draft' ? 'Mark as sent' : 'Done', () => { if (d.status === 'draft') { d.status = 'sent'; save(); route(); toast('Done! Marked as sent.'); } });
     const vals = [c.email || '', subject, body];
     m.querySelectorAll('[data-tone]').forEach(btn => btn.addEventListener('click', () => {
       st.reminderTone = btn.dataset.tone; save();
@@ -2054,11 +2074,11 @@ const ACT = {
       </div>
       <label class="f mt">Method<select class="inp" name="method"><option>Bank transfer</option><option>PayID / Osko</option><option>Card</option><option>Cash</option><option>Cheque</option><option>Other</option></select></label>`,
       'Save payment', data => {
-        if (num(data.amount) <= 0) { toast('Enter an amount'); return false; }
+        if (num(data.amount) <= 0) { toast('Add an amount above $0.'); return false; }
         d.payments.push({ id: uid(), amount: num(data.amount).toFixed(2), date: data.date, method: data.method });
         if (d.status === 'draft') d.status = 'sent';
         save(); route();
-        if (status(d) === 'paid') { toast('Paid in full. Nice work.'); celebrate(); }
+        if (status(d) === 'paid') { toast('Paid in full! Nice work.'); celebrate(); }
         else toast(`Payment recorded · ${money(totals(d).balance)} to go`);
       });
   },
@@ -2076,12 +2096,12 @@ const ACT = {
     });
     delete inv.isNew;
     q.status = 'accepted'; save(); pendingStep = 1;
-    toast(`Invoice ${inv.number} created. Adjust anything you need.`); go('/edit/' + inv.id);
+    toast(`Done! ${inv.number} created. Change anything you need.`); go('/edit/' + inv.id);
   },
   duplicate() {
     const o = getDoc(current.id);
     const d = newDoc(o.type, { clientId: o.clientId, site: o.site, notes: o.notes, lines: o.lines.map(l => ({ ...l, id: uid() })), gstReg: o.gstReg, incGst: o.incGst });
-    delete d.isNew; save(); toast(`Copied to ${d.number}`); go('/edit/' + d.id);
+    delete d.isNew; save(); toast(`Done! Copied to ${d.number}.`); go('/edit/' + d.id);
   },
   'logo-clear'() { S.settings.logo = ''; save(); route(); },
   'item-new'() {
@@ -2102,7 +2122,7 @@ const ACT = {
   backup() {
     const json = JSON.stringify(S, null, 2);
     if (EMBEDDED) return showCopy('Backup', 'Copy this and save it somewhere safe (a note or a .json file). Paste it back with “Restore backup” on any device.', [{ label: 'Backup data', text: json, multi: true }]);
-    download(`docket-backup-${today()}.json`, json, 'application/json'); toast('Backup downloaded');
+    download(`docket-backup-${today()}.json`, json, 'application/json'); toast('All set. Backup downloaded.');
   },
   csv() {
     const q = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
@@ -2118,7 +2138,7 @@ const ACT = {
   },
   wipe() {
     ask('Erase everything?', 'All clients, quotes, invoices and settings on this device will be deleted.', 'Erase everything', () => {
-      S = structuredClone(DEFAULT); save(); go('/'); toast('Everything erased');
+      S = structuredClone(DEFAULT); save(); go('/'); toast('Done. Everything erased.');
     }, 'ERASE');
   }
 };
@@ -2249,10 +2269,10 @@ document.addEventListener('change', e => {
       const cv = document.createElement('canvas');
       cv.width = Math.round(img.width * scale); cv.height = Math.round(img.height * scale);
       cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
-      S.settings.logo = cv.toDataURL('image/png'); save(); route(); toast('Logo saved');
+      S.settings.logo = cv.toDataURL('image/png'); save(); route(); toast('All set. Logo saved.');
       URL.revokeObjectURL(img.src);
     };
-    img.onerror = () => toast('Couldn’t read that image');
+    img.onerror = () => toast('That image didn’t load. Try a JPG or PNG.');
     img.src = URL.createObjectURL(file);
   }
   if (act === 'restore') {
@@ -2260,9 +2280,9 @@ document.addEventListener('change', e => {
       const data = JSON.parse(txt);
       if (!data.settings || !Array.isArray(data.docs)) throw new Error('bad');
       ask('Restore backup?', `It has ${data.docs.length} documents and ${(data.clients || []).length} clients, and replaces what’s on this device.`, 'Restore', () => {
-        S = migrate(data); save(); go('/'); toast('Backup restored');
+        S = migrate(data); save(); go('/'); toast('All set. Backup restored.');
       });
-    }).catch(() => toast('That file isn’t a Docket backup'));
+    }).catch(() => toast('That file doesn’t look like a Docket backup. Try the one from “Download backup”.'));
   }
   t.value = '';
 });
@@ -2318,8 +2338,8 @@ function loadExamples() {
   add('quote', { clientId: bld, site: 'Lot 22, Kippa-Ring', issueDate: addDays(t, -5), dueDate: addDays(t, 25), status: 'sent', lines: [L('Rough-in & fit-off, 3 bed home', '1', 'lot', '8900')] });
   save();
 }
-ACT['examples-clear'] = () => ask('Start fresh?', 'This removes the example business, clients, quotes and invoices so you can enter your own.', 'Clear examples', () => { S = structuredClone(DEFAULT); save(); go('/settings'); toast('Examples cleared — add your business details'); });
-ACT['examples-load'] = () => { loadExamples(); go('/'); toast('Example data loaded'); };
+ACT['examples-clear'] = () => ask('Start fresh?', 'This removes the example business, clients, quotes and invoices so you can enter your own.', 'Clear examples', () => { S = structuredClone(DEFAULT); save(); go('/settings'); toast('Examples cleared. Next: add your business details.'); });
+ACT['examples-load'] = () => { loadExamples(); go('/'); toast('All set. Example data loaded.'); };
 
 window.addEventListener('beforeunload', () => { if (current.view === 'edit') { const d = getDoc(current.id); if (d && d.isNew && isEmptyDoc(d)) discardIfEmpty(d.id); } });
 
