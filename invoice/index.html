@@ -699,6 +699,99 @@ dialog.wide{width:min(780px,calc(100vw - 20px))}
 .fontpick button.on{border-color:var(--cy);background:var(--cy-soft)}
 .fontpick button.on b::after{content:"  ✓";color:var(--cy)}
 :root:not([data-hud]) .f{font:700 15px/1.3 var(--f-body);color:var(--ink)}
+/* =================== FUTURISTIC POLISH (all looks) =================== */
+/* HUD stepper: numbered nodes joined by a line that fills as you go */
+.steps{gap:0;align-items:flex-start;padding:14px 0 12px}
+.steps .st{flex:1;display:flex;flex-direction:column;align-items:center;gap:7px;position:relative;text-align:center;color:var(--ink-3);font-weight:600}
+.steps .st::before{content:"";position:absolute;top:18px;left:calc(-50% + 24px);right:calc(50% + 24px);height:2px;background:var(--line-2)}
+.steps .st:first-child::before{display:none}
+.steps .st.done::before,.steps .st.now::before{background:linear-gradient(90deg,var(--ok),var(--hv));box-shadow:0 0 8px color-mix(in srgb,var(--hv) 40%,transparent)}
+.steps .st .node{width:38px;height:38px;display:grid;place-items:center;border-radius:50%;font:700 16px var(--f-display);border:2px solid var(--line-2);background:var(--bg-2);color:var(--ink-3);transition:box-shadow .2s}
+.steps .st.now{color:var(--ink)}
+.steps .st.now .node{border-color:var(--hv);color:var(--hv-text);background:color-mix(in srgb,var(--hv) 12%,var(--bg-2));box-shadow:0 0 0 4px var(--hv-soft),0 0 18px color-mix(in srgb,var(--hv) 35%,transparent)}
+.steps .st.done{color:var(--ok)}
+.steps .st.done .node{border-color:var(--ok);background:var(--ok-soft);color:var(--ok)}
+
+/* step number: hexagon badge */
+.stepnum{width:36px;height:32px;margin-right:12px;clip-path:polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%);background:linear-gradient(180deg,var(--hv-hover),var(--hv));color:var(--hv-ink)}
+
+/* character-select client cards */
+.ccard{flex-direction:row;align-items:center;gap:12px;padding:12px;min-height:72px;background:linear-gradient(180deg,color-mix(in srgb,var(--cy) 7%,var(--bg-2)),var(--bg-2));border:1.5px solid var(--line-2);clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px);border-radius:0}
+.ccard .av{width:42px;height:42px;font-size:16px;flex:none;color:var(--av);white-space:normal;overflow:visible}
+.ccard .cc-t{display:flex;flex-direction:column;gap:2px;min-width:0;font-size:inherit;color:inherit}
+.ccard .cc-t b{font-size:16px}
+.ccard .cc-t span{font-size:13px;color:var(--ink-2)}
+.ccard:hover{border-color:var(--cy)}
+.ccard.on{border-color:var(--hv);background:linear-gradient(180deg,color-mix(in srgb,var(--hv) 14%,var(--bg-2)),var(--bg-2));box-shadow:inset 0 0 0 1px var(--hv),inset 0 0 22px var(--hv-soft)}
+.ccard.on::after{content:"✓";top:6px;right:10px;color:var(--hv-text);font-weight:800;font-size:18px}
+.ccard.on .av{box-shadow:0 0 0 3px var(--bg-2),0 0 0 5px var(--av),0 0 16px color-mix(in srgb,var(--av) 50%,transparent)}
+.ccard.new{color:var(--hv-text);border-style:dashed}
+.ccard.new .av{--av:var(--hv);border-style:dashed;font-size:22px}
+
+/* glass dock for Back / total / Next */
+.sticky-actions.wiz{margin:18px -16px 0;padding:10px 16px calc(10px + 0px);
+  background:linear-gradient(90deg,transparent,var(--hv) 30%,var(--cy) 70%,transparent) top/100% 1.5px no-repeat,color-mix(in srgb,var(--panel) 78%,transparent);
+  -webkit-backdrop-filter:blur(14px) saturate(140%);backdrop-filter:blur(14px) saturate(140%);box-shadow:0 -12px 30px rgba(0,0,0,.28)}
+@media (min-width:821px){.sticky-actions.wiz{margin:18px 0 0;padding:12px 16px}}
+.wiz .etotal{font:600 22px var(--f-display)}
+.wiz .etotal small{font-family:var(--f-body)}
+
+/* neon checks */
+input[type="checkbox"]{-webkit-appearance:none;appearance:none;width:24px;height:24px;margin:0;flex:none;display:inline-grid;place-items:center;cursor:pointer;
+  border:2px solid color-mix(in srgb,var(--cy) 55%,var(--line-2));background:var(--bg-2);clip-path:polygon(6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%,0 6px)}
+input[type="checkbox"]::after{content:"";width:11px;height:6px;border:solid var(--hv-ink);border-width:0 0 3px 3px;transform:translateY(-2px) rotate(-45deg);opacity:0}
+input[type="checkbox"]:checked{background:linear-gradient(180deg,var(--hv-hover),var(--hv));border-color:var(--hv)}
+input[type="checkbox"]:checked::after{opacity:1}
+
+/* fields: neon focus, search icon */
+.inp:focus{border-color:var(--hv);box-shadow:inset 3px 0 0 var(--hv),inset 0 0 18px var(--hv-soft)}
+input[type="search"].inp{padding-left:44px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238b9bd0' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E") 14px 50%/20px 20px no-repeat,var(--bg-2)}
+.seg .on{box-shadow:inset 0 -3px 0 var(--hv);background:linear-gradient(180deg,color-mix(in srgb,var(--hv) 16%,transparent),transparent)}
+
+/* headings: neon marker + title underline */
+.page-head h1::after{content:"";display:block;width:48px;height:3px;margin-top:10px;background:linear-gradient(90deg,var(--hv),var(--cy));box-shadow:0 0 10px color-mix(in srgb,var(--hv) 45%,transparent)}
+:root:not([data-hud]) .card > h2::before{content:"";display:inline-block;width:4px;height:.85em;margin-right:10px;vertical-align:-1px;background:linear-gradient(180deg,var(--hv),var(--cy));box-shadow:0 0 8px color-mix(in srgb,var(--hv) 45%,transparent)}
+
+/* glass pop-ups and messages */
+dialog{background:linear-gradient(90deg,var(--hv),var(--cy)) top/100% 2px no-repeat,linear-gradient(180deg,color-mix(in srgb,var(--cy) 10%,var(--panel)),var(--panel) 180px);border-color:color-mix(in srgb,var(--cy) 50%,var(--line-2))}
+dialog::backdrop{background:rgba(4,6,20,.62);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+#toast{background:color-mix(in srgb,var(--panel-2) 82%,transparent);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-left-color:var(--hv)}
+
+/* totals read like a readout */
+.totals .grand span:last-child{font-family:var(--f-display);text-shadow:0 0 18px color-mix(in srgb,var(--hv) 30%,transparent)}
+
+/* receipt-style line rows */
+.lrow{display:flex;align-items:center;gap:12px;width:100%;padding:14px 6px;border:0;border-top:1px solid var(--line);background:none;color:var(--ink);text-align:left;cursor:pointer;font:inherit}
+#wlines .lrow:first-child{border-top:0}
+.lrow:hover{background:var(--cy-soft)}
+.lrow .lr-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.lrow .lr-t b{font-size:17px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lrow .lr-t > span{color:var(--ink-2);font-size:14px}
+.lrow .lr-a{font:600 18px var(--f-display);font-variant-numeric:tabular-nums;white-space:nowrap}
+.lrow .lr-go{font-size:24px;color:var(--ink-3)}
+.lsum{display:flex;justify-content:space-between;align-items:baseline;margin:18px 0 14px;padding-top:14px;border-top:1px solid var(--line)}
+.lsum b{font:600 26px var(--f-display);color:var(--hv-text)}
+
+/* editor: one client per row on phones, dock pinned above the menu bar */
+@media (max-width:620px){.cgrid{grid-template-columns:minmax(0,1fr)}}
+@media (min-width:621px){.cgrid{grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}}
+.ccard.on::after{top:50%;transform:translateY(-50%);right:16px;font-size:22px}
+.ccard .cc-t{padding-right:28px}
+@media (max-width:820px){
+  .sticky-actions.wiz{position:fixed;left:0;right:0;bottom:calc(78px + env(safe-area-inset-bottom,0px));margin:0;z-index:15;
+    padding:10px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px))}
+  .dock-space{height:96px}
+}
+.ready-item{display:flex;gap:10px;align-items:baseline}
+.ready-item .ri-m{flex:none;width:18px;font-weight:700}
+.ready-item > span:last-child{min-width:0}
+.ccard{justify-content:flex-start}
+#e-prev{gap:6px}
+@media (max-width:520px){
+  #e-prev{min-width:52px;padding:0 14px} #e-prev .lbl{display:none}
+  .wiz .etotal{font-size:19px} .wiz .btn.big{padding:0 14px}
+  .sticky-actions.wiz{gap:8px}
+}
 /* calm mode + reduced motion: no glow, no animation */
 :root[data-calm]{--glow:0 0 0 1px var(--line);--hv-glow:none}
 :root[data-calm] .core-btn{box-shadow:0 0 0 2px color-mix(in srgb,var(--tone) 25%,transparent)}
@@ -1480,7 +1573,7 @@ const kindOf = it => it.kind || (it.unit === 'hr' ? 'labour' : 'material');
 const hasWork = d => d.lines.some(l => l.desc && num(l.price));
 function stepsHtml(d) {
   const done = [!!d.clientId, hasWork(d), false];
-  return STEPS.map((l, i) => `<button type="button" class="st ${i === editStep ? 'now' : done[i] ? 'done' : ''}" data-act="estep" data-i="${i}" aria-current="${i === editStep ? 'step' : 'false'}"><i></i>${done[i] && i !== editStep ? '✓ ' : ''}${i + 1} · ${l}</button>`).join('');
+  return STEPS.map((l, i) => `<button type="button" class="st ${i === editStep ? 'now' : done[i] ? 'done' : ''}" data-act="estep" data-i="${i}" aria-current="${i === editStep ? 'step' : 'false'}"><span class="node">${done[i] && i !== editStep ? '✓' : i + 1}</span><span>${l}</span></button>`).join('');
 }
 function dateSummary(d) {
   const isQ = d.type === 'quote', n = daysBetween(d.issueDate, d.dueDate);
@@ -1494,7 +1587,7 @@ function readyHtml(d) {
     [!!(st.businessName && st.abn), 'Your business name & ABN are set'],
   ];
   if (d.type === 'invoice') items.push([!!(st.bsb || st.payId), 'Bank details or PayID so they can pay']);
-  return items.map(([ok, t]) => `<div class="row" style="gap:8px"><span style="color:var(--${ok ? 'ok' : 'warn'});font-weight:700;width:18px">${ok ? '✓' : '○'}</span><span class="${ok ? '' : 'muted'}">${esc(t)}</span></div>`).join('');
+  return items.map(([ok, t]) => `<div class="ready-item"><span class="ri-m" style="color:var(--${ok ? 'ok' : 'warn'})">${ok ? '✓' : '○'}</span><span class="${ok ? '' : 'muted'}">${esc(t)}</span></div>`).join('');
 }
 // --- slide 1: who
 function clientCardsHtml(d) {
@@ -1504,8 +1597,8 @@ function clientCardsHtml(d) {
   list.sort((a, b) => (b.id === d.clientId) - (a.id === d.clientId) || last(b.id) - last(a.id) || a.name.localeCompare(b.name));
   const more = !q && list.length > 8 ? list.length - 8 : 0;
   if (!q) list = list.slice(0, 8);
-  return `<button type="button" class="ccard new" data-act="new-client">+ New client</button>` +
-    list.map(c => `<button type="button" class="ccard ${c.id === d.clientId ? 'on' : ''}" data-act="pick-client" data-id="${c.id}" aria-pressed="${c.id === d.clientId}"><b>${esc(c.name)}</b><span>${esc(c.contact || c.phone || c.email || ' ')}</span></button>`).join('') +
+  return `<button type="button" class="ccard new" data-act="new-client"><span class="av" aria-hidden="true">+</span><b>New client</b></button>` +
+    list.map(c => `<button type="button" class="ccard ${c.id === d.clientId ? 'on' : ''}" data-act="pick-client" data-id="${c.id}" aria-pressed="${c.id === d.clientId}"><span class="av ${avClass(c.id)}" aria-hidden="true">${esc(initials(c.name))}</span><span class="cc-t"><b>${esc(c.name)}</b><span>${esc(c.contact || c.phone || c.email || ' ')}</span></span></button>`).join('') +
     (more ? `<div class="muted small" style="align-self:center">${more} more · search above</div>` : '');
 }
 function openQuotes(d) {
@@ -1558,22 +1651,30 @@ function libTabsHtml() {
   return KINDS.map(([k, l]) => `<button type="button" class="${g === k ? 'on' : ''}" data-act="lib" data-k="${k}" aria-pressed="${g === k}">${l} <span class="muted">${items.filter(i => i.kind === k).length}</span></button>`).join('');
 }
 function lineHtml(l, d) {
-  return `<div class="wline" data-line="${l.id}">
-    <div class="wl-top"><input class="inp" data-bind="line" data-key="desc" id="ld-${l.id}" value="${esc(l.desc)}" placeholder="What was it? e.g. Replace hot water system" aria-label="Description">
-      <button type="button" class="icon-btn star ${l.lib ? 'on' : ''}" data-act="line-save" data-id="${l.id}" title="${l.lib ? 'In your list' : 'Save to your list'}" aria-label="Save to your list">${l.lib ? '★' : '☆'}</button>
-      <button type="button" class="icon-btn" data-act="line-del" data-id="${l.id}" title="Remove line" aria-label="Remove line">${I.x}</button></div>
-    <div class="wl-row">
-      <div class="stepper"><button type="button" data-act="qty" data-id="${l.id}" data-d="-1" aria-label="One less">−</button><input class="inp" inputmode="decimal" data-bind="line" data-key="qty" id="lq-${l.id}" value="${esc(l.qty)}" aria-label="Quantity"><button type="button" data-act="qty" data-id="${l.id}" data-d="1" aria-label="One more">+</button></div>
-      <select class="inp" data-bind="line" data-key="unit" aria-label="Unit">${UNITS.map(u => `<option ${u === l.unit ? 'selected' : ''}>${u}</option>`).join('')}</select>
-      <label class="pr">$<input class="inp" inputmode="decimal" data-bind="line" data-key="price" value="${esc(l.price)}" placeholder="0.00" aria-label="Price each${d.gstReg ? (d.incGst ? ' inc GST' : ' ex GST') : ''}"></label>
-      ${d.gstReg ? `<label class="gstc"><input type="checkbox" data-bind="line" data-key="gst" ${l.gst ? 'checked' : ''}>GST</label>` : ''}
-      <span class="lt" id="lt-${l.id}">${money(lineCents(l))}</span>
+  const meta = `${esc(String(num(l.qty) || 0))} ${esc(l.unit)} × ${money(toCents(l.price))}${d.gstReg && !l.gst ? ' · no GST' : ''}`;
+  return `<button type="button" class="lrow" data-act="line-edit" data-id="${l.id}" aria-label="Edit ${esc(l.desc || 'item')}">
+    <span class="lr-t"><b>${esc(l.desc) || '<span class="muted">Untitled item</span>'}</b><span>${meta}</span></span>
+    <span class="lr-a">${money(lineCents(l))}</span><span class="lr-go" aria-hidden="true">›</span>
+  </button>`;
+}
+function lineEditorHtml(l, d) {
+  return `<div data-line="${l.id}">
+    <label class="f">What is it?<input class="inp" data-bind="line" data-key="desc" id="ld-${l.id}" value="${esc(l.desc)}" placeholder="e.g. Replace hot water system" autocomplete="off"></label>
+    <div class="grid g2 mt">
+      <div class="f">How many
+        <div class="stepper" style="margin-top:6px"><button type="button" data-act="qty" data-id="${l.id}" data-d="-1" aria-label="One less">−</button><input class="inp" inputmode="decimal" data-bind="line" data-key="qty" id="lq-${l.id}" value="${esc(l.qty)}" aria-label="Quantity"><button type="button" data-act="qty" data-id="${l.id}" data-d="1" aria-label="One more">+</button></div>
+      </div>
+      <label class="f">Unit<select class="inp" data-bind="line" data-key="unit">${UNITS.map(u => `<option ${u === l.unit ? 'selected' : ''}>${u}</option>`).join('')}</select></label>
+      <label class="f">Price each ($${d.gstReg ? (d.incGst ? ', inc GST' : ', ex GST') : ''})<input class="inp" inputmode="decimal" data-bind="line" data-key="price" value="${esc(l.price)}" placeholder="0.00"></label>
+      ${d.gstReg ? `<label class="check" style="align-self:end;min-height:46px"><input type="checkbox" data-bind="line" data-key="gst" ${l.gst ? 'checked' : ''}>Charge GST</label>` : ''}
     </div>
+    <div class="lsum"><span>Line total</span><b id="lt-${l.id}">${money(lineCents(l))}</b></div>
+    <div class="row"><button type="button" class="btn sm" id="m-save" data-act="line-save" data-id="${l.id}">${l.lib ? '★ In your list' : '☆ Save to my list'}</button><button type="button" class="btn sm ghost danger right" data-act="line-del" data-id="${l.id}">Remove</button></div>
   </div>`;
 }
 function linesHtml(d) {
   const real = d.lines;
-  return real.length ? real.map(l => lineHtml(l, d)).join('') : `<div class="muted">Nothing yet. Tap a job or cost above.</div>`;
+  return real.length ? real.map(l => lineHtml(l, d)).join('') : `<div class="muted">Nothing yet. Tap “Add jobs & costs”.</div>`;
 }
 function esumHtml(d) {
   const c = getClient(d.clientId), n = d.lines.filter(l => l.desc || num(l.price)).length;
@@ -1595,7 +1696,7 @@ function viewEdit(id) {
   <div class="epager" id="epager">
     <section class="eslide" id="es-0" aria-label="Step 1: Who">
       <div class="card">
-        <div class="stephead"><span class="stepnum">1</span>Who’s it for?</div>
+        <div class="stephead">Who’s it for?</div>
         ${S.clients.length >= 5 ? `<input class="inp" type="search" id="e-csearch" data-bind="csearch" value="${esc(clientQuery)}" placeholder="Search clients…" style="margin-bottom:12px">` : ''}
         <div class="cgrid" id="cgrid">${clientCardsHtml(d)}</div>
         <label class="f">Job site address (optional)<input class="inp" data-bind="doc" data-key="site" id="f-site" value="${esc(d.site)}" placeholder="Where the work was done"></label>
@@ -1604,7 +1705,7 @@ function viewEdit(id) {
     </section>
     <section class="eslide" id="es-1" aria-label="Step 2: The work">
       <div class="card">
-        <div class="row" style="margin-bottom:12px"><div class="stephead" style="margin:0"><span class="stepnum">2</span>What did you do?</div>
+        <div class="row" style="margin-bottom:12px"><div class="stephead" style="margin:0">What did you do?</div>
         ${d.gstReg ? `<label class="check right small"><input type="checkbox" data-bind="doc" data-key="incGst" id="f-incgst" ${d.incGst ? 'checked' : ''}>Prices include GST</label>` : '<span class="muted small right">No GST</span>'}</div>
         <div class="addbig">
           <button type="button" class="btn ${hasWork(d) ? '' : 'primary'}" id="b-picker" data-act="picker">${I.grid}Add jobs & costs</button>
@@ -1615,7 +1716,7 @@ function viewEdit(id) {
     </section>
     <section class="eslide" id="es-2" aria-label="Step 3: Send">
       <div class="card">
-        <div class="stephead"><span class="stepnum">3</span>Check & send</div>
+        <div class="stephead">Check & send</div>
         <div class="esum" id="esum">${esumHtml(d)}</div>
         <div id="ready" style="display:flex;flex-direction:column;gap:4px">${readyHtml(d)}</div>
         <label class="f mt">Notes for the client (optional)
@@ -1634,10 +1735,11 @@ function viewEdit(id) {
     </section>
   </div>
   <div class="sticky-actions wiz no-print">
-    <button class="btn" data-act="eprev" id="e-prev" ${editStep === 0 ? 'disabled style="visibility:hidden"' : ''}>← Back</button>
+    <button class="btn" data-act="eprev" id="e-prev" aria-label="Back" ${editStep === 0 ? 'disabled style="visibility:hidden"' : ''}><span aria-hidden="true">←</span><span class="lbl">Back</span></button>
     <span class="etotal" id="etotal">${money(totals(d).total)}<small>total${d.gstReg ? ' inc GST' : ''}</small></span>
     <button class="btn primary big" data-act="enext" id="e-next">${nextLabel()}</button>
-  </div>`;
+  </div>
+  <div class="dock-space"></div>`;
 }
 // --- slide mechanics
 function editPager() { return document.getElementById('epager'); }
@@ -1875,8 +1977,16 @@ const ACT = {
     document.getElementById('duedate').value = d.dueDate;
     document.querySelectorAll('#terms button').forEach(b => b.classList.toggle('on', Number(b.dataset.days) === n));
   },
-  'line-add'() { const d = getDoc(current.id); dropBlankLines(d); const l = blankLine(); d.lines.push(l); save(); refreshWork(d, 'ld-' + l.id); },
+  'line-add'() { const d = getDoc(current.id); dropBlankLines(d); const l = blankLine(); d.lines.push(l); save(); refreshWork(d); ACT['line-edit']({ id: l.id }, null, null, true); },
+  'line-edit'(ds, el, e, isNew) {
+    const d = getDoc(current.id), l = d.lines.find(x => x.id === ds.id); if (!l) return;
+    const m = openModal(isNew ? 'New item' : 'Edit item', lineEditorHtml(l, d), 'Done', () => {});
+    m.querySelector('button[value=cancel]').classList.add('hide');
+    m.addEventListener('close', () => { const dd = getDoc(current.id); if (dd) { dropBlankLines(dd); save(); refreshWork(dd); } }, { once: true });
+    if (isNew) setTimeout(() => m.querySelector('#ld-' + l.id)?.focus(), 50);
+  },
   'line-del'(ds) {
+    const md = document.getElementById('modal'); if (md.open) md.close();
     const d = getDoc(current.id);
     const i = d.lines.findIndex(l => l.id === ds.id);
     const [gone] = d.lines.splice(i, 1);
@@ -1890,11 +2000,11 @@ const ACT = {
   qty(ds) {
     const d = getDoc(current.id), l = d.lines.find(x => x.id === ds.id); if (!l) return;
     const v = Math.max(0, Math.round((num(l.qty) + Number(ds.d)) * 100) / 100);
-    if (v === 0) return ACT['line-del']({ id: l.id });
+    if (v === 0) { const m = document.getElementById('modal'); if (m.open) m.close(); return ACT['line-del']({ id: l.id }); }
     l.qty = String(v); save();
     const q = document.getElementById('lq-' + l.id); if (q) q.value = l.qty;
     const lt = document.getElementById('lt-' + l.id); if (lt) lt.textContent = money(lineCents(l));
-    document.getElementById('totals').innerHTML = editorTotals(d); afterEdit(d);
+    const tt = document.getElementById('totals'); if (tt) tt.innerHTML = editorTotals(d); afterEdit(d);
   },
   lib(ds) {
     libGroup = ds.k; libQuery = ''; const d = getDoc(current.id);
@@ -1928,13 +2038,15 @@ const ACT = {
   },
   'line-save'(ds) {
     const d = getDoc(current.id), l = d.lines.find(x => x.id === ds.id); if (!l) return;
-    if (l.lib) return toast('Already in your list');
-    if (!l.desc || !num(l.price)) return toast('Add what it is and a price, then tap ☆ again.');
+    const ms = document.getElementById('m-save');
+    if (l.lib) { if (ms) ms.textContent = '★ In your list'; return toast('Already in your list'); }
+    if (!l.desc || !num(l.price)) { if (ms) ms.textContent = 'Add a name and price first'; return toast('Add what it is and a price, then tap ☆ again.'); }
     const kind = l.unit === 'hr' ? 'labour' : /call.?out|fee|permit|travel|disposal/i.test(l.desc) ? 'fee' : l.unit === 'lot' ? 'job' : 'material';
     let price = num(l.price);
     if (d.gstReg && l.gst && d.incGst !== !!S.settings.pricesIncGst) price = S.settings.pricesIncGst ? price * 1.1 : price / 1.1;
     const it = { id: uid(), kind, desc: l.desc.trim(), unit: l.unit, price: price.toFixed(2), gst: !!l.gst };
     S.items.push(it); l.lib = it.id; save(); refreshWork(d);
+    if (ms) ms.textContent = `★ Saved to ${KINDS.find(k => k[0] === kind)[1]}`;
     toast(`Saved to your ${KINDS.find(k => k[0] === kind)[1]}`);
   },
   'pick-client'(ds) { const d = getDoc(current.id); d.clientId = ds.id; save(); refreshWho(d); },
