@@ -1308,6 +1308,11 @@ body{background:radial-gradient(80% 45% at 50% 0%,rgba(190,40,200,.22),transpare
 .wdots i.on{background:#36e8ff;box-shadow:0 0 8px rgba(54,232,255,.6)}
 .wbtns{display:grid;gap:10px;margin-top:14px}
 .wback{margin-top:18px}
+/* press shimmer: a light band sweeps across a control on tap (original effect) */
+.shimmer{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:2}
+.shimmer::after{content:"";position:absolute;top:-20%;bottom:-20%;left:-60%;width:45%;background:linear-gradient(100deg,transparent,rgba(190,240,255,.45),rgba(255,140,230,.25),transparent);transform:skewX(-18deg);animation:shimmerSweep .6s ease-out forwards}
+@keyframes shimmerSweep{to{left:120%}}
+@media (prefers-reduced-motion:reduce){.shimmer{display:none}}
 /* calm mode + reduced motion: no glow, no animation */
 :root[data-calm]{--glow:0 0 0 1px var(--line);--hv-glow:none}
 :root[data-calm] .core-btn{box-shadow:0 0 0 2px color-mix(in srgb,var(--tone) 25%,transparent)}
@@ -3023,7 +3028,15 @@ const ACT = {
 
 document.addEventListener('click', e => {
   const hit = e.target.closest('button,a.btn,a.stile,a.ccard,.slot,.lrow,.tile,.rchip');
-  if (hit && !S.settings.calm) { hit.classList.remove('juice'); void hit.offsetWidth; hit.classList.add('juice'); blip(660, 60); }
+  if (hit && !S.settings.calm) {
+    hit.classList.remove('juice'); void hit.offsetWidth; hit.classList.add('juice'); blip(660, 60);
+    // shimmer: a light band sweeps across the control, clipped to its shape
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      const sh = document.createElement('span'); sh.className = 'shimmer';
+      hit.style.position = hit.style.position || 'relative'; hit.appendChild(sh);
+      setTimeout(() => sh.remove(), 650);
+    }
+  }
   const a = e.target.closest('a[href^="#/"]');
   if (a) { e.preventDefault(); go(a.getAttribute('href').slice(1)); return; }
   const el = e.target.closest('[data-act]');
