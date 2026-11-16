@@ -1383,7 +1383,7 @@ const DEFAULT = {
     paymentTermsDays: 14, quoteValidDays: 30, defaultRate: '95', chargeBy: 'hour',
     invoicePrefix: 'INV-', nextInvoice: 1, quotePrefix: 'Q-', nextQuote: 1,
     footerNote: 'Thanks for your business!', logo: '', cardLink: '', clientBase: '',
-    monthlyGoal: '15000', paletteV2: true, overwhelm: 'gentle', onboarded: false, bigText: false, calm: false, celebrate: true, sound: false, look: 'clean', font: 'lexend', accent: 'neon', display: 'auto', focusHome: false, reminderTone: 'friendly'
+    monthlyGoal: '15000', paletteV2: true, overwhelm: 'gentle', onboarded: false, bigText: false, calm: false, celebrate: true, sound: false, look: 'clean', font: 'lexend', accent: 'neon', display: 'dark', focusHome: false, reminderTone: 'friendly'
   },
   clients: [],
   docs: [],
@@ -1625,8 +1625,8 @@ function applyComfort() {
   r.toggleAttribute('data-big', !!S.settings.bigText);
   r.toggleAttribute('data-calm', !!S.settings.calm);
   const disp = S.settings.display;
-  if (disp === 'light' || disp === 'dark') { r.setAttribute('data-theme', disp); r.dataset.docketTheme = '1'; }
-  else if (r.dataset.docketTheme) { r.removeAttribute('data-theme'); delete r.dataset.docketTheme; }
+  // one theme everywhere: dark unless you pick light. Following the device's setting mixed the two and hid text.
+  r.setAttribute('data-theme', disp === 'light' ? 'light' : 'dark'); r.dataset.docketTheme = '1';
   const f = S.settings.font || 'lexend';
   if (f === 'lexend') r.removeAttribute('data-font'); else r.setAttribute('data-font', f);
   if ((f === 'atkinson' || path.startsWith('/settings')) && !document.getElementById('font-atk')) {
