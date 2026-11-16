@@ -1299,6 +1299,15 @@ body{background:radial-gradient(80% 45% at 50% 0%,rgba(190,40,200,.22),transpare
 .juice{animation:juicePulse .32s ease-out}
 @keyframes juicePulse{0%{box-shadow:0 0 0 0 rgba(54,232,255,.55)}100%{box-shadow:0 0 0 14px rgba(54,232,255,0)}}
 @media (prefers-reduced-motion:reduce){.juice{animation:none}.btn:active,.stile:active{transform:none}}
+/* welcome: calm, one thing at a time */
+.welcome{max-width:560px;margin:24px auto;padding:28px 24px 22px}
+.welcome h1{font:600 30px/1.15 "Barlow Semi Condensed",sans-serif;margin:0 0 10px}
+.welcome .muted{margin:0 0 18px;line-height:1.55}
+.wdots{display:flex;gap:6px;margin-bottom:20px}
+.wdots i{width:22px;height:4px;background:rgba(54,232,255,.2)}
+.wdots i.on{background:#36e8ff;box-shadow:0 0 8px rgba(54,232,255,.6)}
+.wbtns{display:grid;gap:10px;margin-top:14px}
+.wback{margin-top:18px}
 /* calm mode + reduced motion: no glow, no animation */
 :root[data-calm]{--glow:0 0 0 1px var(--line);--hv-glow:none}
 :root[data-calm] .core-btn{box-shadow:0 0 0 2px color-mix(in srgb,var(--tone) 25%,transparent)}
@@ -1342,7 +1351,7 @@ const DEFAULT = {
     paymentTermsDays: 14, quoteValidDays: 30, defaultRate: '95', chargeBy: 'hour',
     invoicePrefix: 'INV-', nextInvoice: 1, quotePrefix: 'Q-', nextQuote: 1,
     footerNote: 'Thanks for your business!', logo: '', cardLink: '', clientBase: '',
-    monthlyGoal: '15000', paletteV2: true, bigText: false, calm: false, celebrate: true, sound: false, look: 'clean', font: 'lexend', accent: 'neon', display: 'auto', focusHome: false, reminderTone: 'friendly'
+    monthlyGoal: '15000', paletteV2: true, overwhelm: 'gentle', onboarded: false, bigText: false, calm: false, celebrate: true, sound: false, look: 'clean', font: 'lexend', accent: 'neon', display: 'auto', focusHome: false, reminderTone: 'friendly'
   },
   clients: [],
   docs: [],
@@ -1606,7 +1615,7 @@ function route() {
   current = { view, id };
   renderNav();
   const v = document.getElementById('view');
-  const r = { home: viewHome, invoices: () => viewWork(id || null), quotes: () => viewWork('quotes'), clients: viewClients, client: viewClient, settings: viewSettings, edit: viewEdit, view: viewDoc }[view] || viewHome;
+  const r = { welcome: viewWelcome, home: viewHome, invoices: () => viewWork(id || null), quotes: () => viewWork('quotes'), clients: viewClients, client: viewClient, settings: viewSettings, edit: viewEdit, view: viewDoc }[view] || viewHome;
   v.innerHTML = r(id);
   if (view !== 'edit') window.scrollTo(0, 0);
   afterRender();
@@ -1765,6 +1774,31 @@ function monthBars() {
   const max = Math.max(1, ...months.map(m => m.c));
   return `<div class="mbars" role="img" aria-label="Paid each month, last six months">${months.map(m => `<div class="mb"><div class="mbar"><i style="height:${Math.max(4, Math.round(m.c / max * 100))}%"></i></div><span>${esc(m.label)}</span><b>${moneyShort(m.c)}</b></div>`).join('')}</div>`;
 }
+/* ---------- welcome: one question per screen, every step skippable ---------- */
+let welcomeStep = 0;
+function viewWelcome() {
+  const st = S.settings, steps = 4;
+  const dots = Array.from({ length: steps }, (_, i) => `<i class="${i === welcomeStep ? 'on' : ''}"></i>`).join('');
+  const body = [
+    `<h1>Welcome to Docket</h1><p class="muted">Invoices for trades, kept simple. One question at a time, and you can skip any of them.</p>
+     <div class="wbtns"><button class="btn primary big" data-act="w-next">Start</button>
+     <button class="btn" data-act="w-examples">Look around with example data first</button></div>`,
+    `<h2 class="jobs-h">Your business name</h2><p class="muted">This goes at the top of your invoices. You can add the rest later.</p>
+     <input class="inp" data-bind="set" data-key="businessName" value="${esc(st.businessName)}" placeholder="e.g. Smith Plumbing Pty Ltd" autocomplete="organization">
+     <div class="wbtns"><button class="btn primary big" data-act="w-next">Next</button><button class="btn ghost" data-act="w-next">Skip for now</button></div>`,
+    `<h2 class="jobs-h">How do you usually charge?</h2><p class="muted">You can mix both on any job.</p>
+     <div class="wbtns"><button class="btn ${st.chargeBy !== 'job' ? 'primary' : ''} big" data-act="charge" data-val="hour">By the hour</button>
+     <button class="btn ${st.chargeBy === 'job' ? 'primary' : ''} big" data-act="charge" data-val="job">Fixed price per job</button></div>
+     <div class="wbtns"><button class="btn primary big" data-act="w-next">Next</button></div>`,
+    `<h2 class="jobs-h">How much should Docket show you?</h2>
+     <p class="muted">Gentle shows only your next task and your money. Full adds your level, missions and charts. You can change this any time in Settings.</p>
+     <div class="wbtns"><button class="btn ${st.overwhelm !== 'full' ? 'primary' : ''} big" data-act="w-view" data-val="gentle">Gentle (recommended)</button>
+     <button class="btn ${st.overwhelm === 'full' ? 'primary' : ''} big" data-act="w-view" data-val="full">Full</button></div>
+     <div class="wbtns"><button class="btn primary big" data-act="w-finish">Done, take me home</button></div>`
+  ][welcomeStep];
+  return `<section class="welcome card"><div class="wdots">${dots}</div>${body}
+    ${welcomeStep > 0 ? `<div class="wback"><button class="btn ghost sm" data-act="w-back">← Back</button></div>` : ''}</section>`;
+}
 function viewHome() {
   const st = S.settings;
   const inv = S.docs.filter(d => d.type === 'invoice');
@@ -1796,7 +1830,7 @@ function viewHome() {
     st.gstRegistered ? line('', 'ink-3', 'BAS due', q.due) : ''
   ].filter(Boolean).join('');
 
-  return `<div class="console">${gamePanel()}
+  return `<div class="console">${S.settings.overwhelm === 'full' ? gamePanel() : ''}
   ${S.example ? `<div class="strip"><b>Example data</b><span>Smithy’s Plumbing isn’t real. Have a play.</span><button class="link" data-act="examples-clear">Clear examples</button></div>`
     : (!st.businessName || !st.abn) ? `<div class="strip"><b>Setup</b><span>Add your business name, ABN and bank details.</span><a class="link" href="#/settings/business">Add details</a></div>` : ''}
   <div class="c-left">
@@ -1814,7 +1848,7 @@ function viewHome() {
       ${gaugeHtml('#/invoices/overdue', 'Overdue', moneyShort(overdueSum), overdueN ? plural(overdueN, 'invoice') : 'None ✓', outstanding ? overdueSum / outstanding : 0, 'bad')}
       ${gaugeHtml('#/invoices/waiting', 'Owed', moneyShort(outstanding), plural(owedN, 'invoice'), 0, 'cy')}
     </div></section>
-    ${hasRecentPayments() ? `<section class="frame bars-panel"><span class="tag">Paid by month</span>${monthBars()}</section>` : ''}
+    ${S.settings.overwhelm === 'full' && hasRecentPayments() ? `<section class="frame bars-panel"><span class="tag">Paid by month</span>${monthBars()}</section>` : ''}
     <section class="frame log"><span class="tag">Status log</span>${logLines || '<div class="muted">All quiet. Nothing to report.</div>'}</section>
   </div>
 </div>`;
@@ -2166,6 +2200,8 @@ function viewSettings(id) {
     ${KINDS.map(([k, l]) => { const its = S.items.filter(it => kindOf(it) === k); return `<div class="eyebrow" style="margin:14px 0 4px">${l}</div>` + (its.length ? its.map(it => `<div class="pl"><span>${esc(it.desc)}${it.gst ? '' : ' <span class="muted small">(GST-free)</span>'}</span><span class="muted small">/ ${esc(it.unit)}</span><b>${money(toCents(it.price))}</b><button class="icon-btn" title="Remove" aria-label="Remove ${esc(it.desc)}" data-act="item-del" data-id="${it.id}">${I.x}</button></div>`).join('') : `<div class="muted small">${k === 'labour' && num(s.defaultRate) ? `Your hourly rate ($${esc(s.defaultRate)}/hr) is always here.` : 'Nothing yet.'}</div>`); }).join('')}
   </div>`,
     look: `<div class="card">
+    <div class="f" style="margin-bottom:8px">How much to show</div>
+    <div class="seg" style="margin-bottom:16px">${[['gentle', 'Gentle'], ['full', 'Full']].map(([k, l]) => `<button type="button" class="${(s.overwhelm || 'gentle') === k ? 'on' : ''}" data-act="w-view" data-val="${k}" aria-pressed="${(s.overwhelm || 'gentle') === k}">${l}</button>`).join('')}</div>
     <div class="f" style="margin-bottom:8px">Text style</div>
     <div class="fontpick">${[['lexend', 'Lexend', "'Lexend',sans-serif"], ['atkinson', 'Atkinson', "'Atkinson Hyperlegible',sans-serif"], ['system', 'Your phone’s font', 'system-ui,sans-serif']].map(([k, l, ff]) => `<button type="button" class="${(s.font || 'lexend') === k ? 'on' : ''}" data-act="font" data-val="${k}" aria-pressed="${(s.font || 'lexend') === k}" style="font-family:${ff}"><b>${l}</b><span>Coastline Builders · 0491 570 006 · $3,520.00</span></button>`).join('')}</div>
     <div class="f" style="margin-bottom:8px">Look</div>
@@ -2745,6 +2781,11 @@ const ACT = {
   charge(ds) { S.settings.chargeBy = ds.val; save(); route(); toast(ds.val === 'job' ? 'Set to fixed price per job' : 'Set to charge by the hour'); },
   display(ds) { S.settings.display = ds.val; save(); route(); },
   look(ds) { S.settings.look = ds.val; save(); route(); },
+  'w-next'() { welcomeStep = Math.min(3, welcomeStep + 1); route(); },
+  'w-back'() { welcomeStep = Math.max(0, welcomeStep - 1); route(); },
+  'w-view'(ds) { S.settings.overwhelm = ds.val; save(); route(); },
+  'w-examples'() { loadExamples(); S.settings.onboarded = true; save(); welcomeStep = 0; go('/'); toast('Example data loaded. Clear it any time.'); },
+  'w-finish'() { S.settings.onboarded = true; save(); welcomeStep = 0; go('/'); toast('All set. Your next task is on home.'); },
   'settings-done'() { go('/settings'); toast('All set. Saved.'); },
   font(ds) { S.settings.font = ds.val; save(); route(); },
   quick() {
@@ -3185,7 +3226,7 @@ window.addEventListener('beforeunload', () => { if (current.view === 'edit') { c
 
 let hasSaved = false;
 try { hasSaved = !!localStorage.getItem(KEY); } catch (e) { /* storage blocked */ }
-if (!hasSaved) loadExamples();
+if (!hasSaved) { path = '/welcome'; S.settings.onboarded = false; }
 matchMedia('(prefers-color-scheme: light)').addEventListener('change', applyFrames);
 route();
 </script>
