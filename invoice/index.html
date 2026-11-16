@@ -13,17 +13,17 @@
    hi-vis amber = the one thing to press, cyan = readouts, clipped-corner panels on a blueprint grid. */
 :root{
   /* Neon HUD glass: one cyan family, dark glass inside glowing line frames */
-  --bg:#01060d; --bg-2:rgba(0,8,16,.55); --panel:rgba(3,16,28,.62); --panel-2:rgba(6,26,42,.6); --line:rgba(40,220,255,.20); --line-2:rgba(40,220,255,.38);
+  --bg:#030a1a; --bg-2:rgba(4,14,34,.55); --panel:rgba(6,20,48,.60); --panel-2:rgba(6,26,42,.6); --line:rgba(40,220,255,.20); --line-2:rgba(40,220,255,.38);
   --ink:#e6f7ff; --ink-2:#93b6c6; --ink-3:#5f8495;
-  --hv:#19e3ff; --hv-hover:#7cf1ff; --hv-ink:#001318; --hv-soft:rgba(25,227,255,.13); --hv-text:var(--hv);
-  --cy:#3cc8e4; --cy-soft:rgba(60,200,228,.12);
-  --ok:#3df5a2; --ok-soft:rgba(61,245,162,.12);
-  --warn:#ffc04d; --warn-soft:rgba(255,192,77,.12);
-  --bad:#ff4f6d; --bad-soft:rgba(255,79,109,.13);
-  --mg:#ff5fd2;
+  --hv:#1ee3ff; --hv-hover:#8ef4ff; --hv-ink:#00101c; --hv-soft:rgba(30,227,255,.14); --hv-text:var(--hv);
+  --cy:#c04dff; --cy-soft:rgba(192,77,255,.13);
+  --ok:#4dffb8; --ok-soft:rgba(77,255,184,.12);
+  --warn:#ff9040; --warn-soft:rgba(255,144,64,.13);
+  --bad:#ff3354; --bad-soft:rgba(255,51,84,.15);
+  --mg:#ff45d6;
   --muted-soft:rgba(147,182,198,.11);
-  --grid:rgba(25,227,255,.05); --halo:rgba(25,140,230,.22); --halo2:rgba(25,227,255,.07);
-  --sky1:#03101e; --sky2:#01050b; --arc:rgba(25,227,255,.10); --sheen:rgba(25,227,255,.05);
+  --grid:rgba(30,227,255,.05); --halo:rgba(40,110,255,.26); --halo2:rgba(192,77,255,.10);
+  --sky1:#071432; --sky2:#02040d; --arc:rgba(30,227,255,.11); --sheen:rgba(30,227,255,.05);
   --glow:0 0 0 1px rgba(25,227,255,.25),0 0 24px rgba(25,227,255,.12);
   --hv-glow:none;
   --nav:rgba(1,8,16,.78); --nav-ink:#c6e6f2;
@@ -906,6 +906,12 @@ dialog::backdrop{background:rgba(4,6,20,.62);-webkit-backdrop-filter:blur(6px);b
 :root:not([data-hud]) #toast{border-left-color:var(--hv-text);box-shadow:0 0 22px color-mix(in srgb,var(--hv-text) 18%,transparent)}
 :root:not([data-hud]) .mfoot{background:linear-gradient(180deg,transparent,var(--sky2) 45%);border-top-color:var(--line-2)}
 
+/* Press buttons follow the violet-to-blue glow buttons in the references: violet fill, white text, pink-white edge glow */
+:root:not([data-hud]) .btn.primary{background:linear-gradient(180deg,#9d6dff,#5b5dff);color:#fff!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 0 20px rgba(255,79,216,.32)}
+:root:not([data-hud]) .btn.primary:hover{background:linear-gradient(180deg,#b68bff,#7577ff)}
+:root:not([data-hud]) .nav .fab{background:linear-gradient(180deg,#9d6dff,#5b5dff);box-shadow:0 0 22px rgba(255,79,216,.35)}
+:root:not([data-hud]) .nav .fab svg{color:#fff}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]):not([data-hud]) .nav .fab svg{color:#fff}}
 /* calm mode + reduced motion: no glow, no animation */
 :root[data-calm]{--glow:0 0 0 1px var(--line);--hv-glow:none}
 :root[data-calm] .core-btn{box-shadow:0 0 0 2px color-mix(in srgb,var(--tone) 25%,transparent)}
