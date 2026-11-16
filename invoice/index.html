@@ -1201,6 +1201,14 @@ dialog::backdrop{background:rgba(4,6,20,.62);-webkit-backdrop-filter:blur(6px);b
 :root[data-theme="dark"]:not([data-hud]) .rowcard{border:none;border-radius:0;clip-path:polygon(14px 0,calc(100% - 14px) 0,100% 14px,100% calc(100% - 14px),calc(100% - 14px) 100%,14px 100%,0 calc(100% - 14px),0 14px);background:linear-gradient(160deg,rgba(90,40,170,.45),rgba(12,10,40,.92) 65%,rgba(20,40,110,.7));box-shadow:none;position:relative;}
 :root[data-theme="dark"]:not([data-hud]) .rowcard::before{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(135deg,#1ee3ff,rgba(30,227,255,.2) 30%,rgba(255,79,216,.25) 70%,#ff4fd8) border-box;-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;padding:1px;clip-path:polygon(14px 0,calc(100% - 14px) 0,100% 14px,100% calc(100% - 14px),calc(100% - 14px) 100%,14px 100%,0 calc(100% - 14px),0 14px);}
 :root[data-theme="dark"]:not([data-hud]) .rowcard::after{content:'';position:absolute;inset:4px;pointer-events:none;border:1px solid rgba(30,227,255,.32);clip-path:polygon(14px 0,calc(100% - 14px) 0,100% 14px,100% calc(100% - 14px),calc(100% - 14px) 100%,14px 100%,0 calc(100% - 14px),0 14px);background:linear-gradient(#1ee3ff,#1ee3ff) left top/22px 2px no-repeat,linear-gradient(#1ee3ff,#1ee3ff) left top/2px 22px no-repeat,linear-gradient(#ff4fd8,#ff4fd8) right bottom/22px 2px no-repeat,linear-gradient(#ff4fd8,#ff4fd8) right bottom/2px 22px no-repeat;}
+/* =================== DOCUMENT STATUS RING (reference: segmented gauge) =================== */
+.docstate{position:relative;display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px 16px}
+.docstate .docring{grid-column:2;grid-row:1 / span 2;position:relative;width:96px;height:96px}
+.docring svg{width:100%;height:100%;overflow:visible}
+.docring path{fill:none;stroke:rgba(150,190,255,.18);stroke-width:7;stroke-linecap:butt}
+.docring path.on{stroke:#ff4fd8;filter:drop-shadow(0 0 4px rgba(255,79,216,.8))}
+.docring .core{fill:rgba(20,10,50,.9);stroke:#1ee3ff;stroke-width:1.5;filter:drop-shadow(0 0 6px rgba(30,227,255,.6))}
+.docring span{position:absolute;inset:0;display:grid;place-items:center;font:600 16px "Barlow Semi Condensed",sans-serif;color:#eef5ff;pointer-events:none}
 /* calm mode + reduced motion: no glow, no animation */
 :root[data-calm]{--glow:0 0 0 1px var(--line);--hv-glow:none}
 :root[data-calm] .core-btn{box-shadow:0 0 0 2px color-mix(in srgb,var(--tone) 25%,transparent)}
@@ -2279,7 +2287,8 @@ function viewDoc(id) {
   const due = dueInfo(d);
   return `
   <div class="card docstate no-print"><span class="eyebrow">${docLabel(d)} ${esc(d.number)}</span><span class="${due.tone === 'bad' ? 'hint bad' : 'muted'}" style="font-size:15px">${esc(due.text)}</span>
-    <span class="big right">${money(isQ ? t.total : t.balance)} <span class="muted small" style="font-family:var(--f-body)">${isQ ? 'quoted' : t.balance > 0 ? 'to collect' : 'collected'}</span></span></div>
+    <span class="big right">${money(isQ ? t.total : t.balance)} <span class="muted small" style="font-family:var(--f-body)">${isQ ? 'quoted' : t.balance > 0 ? 'to collect' : 'collected'}</span></span>
+    ${docRing(d, t)}</div>
   <div class="toolbar no-print" style="margin-bottom:8px;gap:2px">${minor.join('')}</div>
   <div class="toolbar no-print">${actions.join('')}</div>
   ${warnings.length ? `<div class="banner no-print"><div class="small">${warnings.join('<br>')}</div></div>` : ''}
@@ -2288,6 +2297,17 @@ function viewDoc(id) {
   ${d.fromQuote ? `<div class="muted small mt no-print">Created from quote ${esc(d.fromQuote)}.</div>` : ''}`;
 }
 
+function docRing(d, t) {
+  // segmented ring: each segment is one tenth of the invoice; lit segments = collected share
+  const share = t.total ? Math.min(1, t.paid / t.total) : 0, n = 20, r = 52, cx = 60;
+  const segs = Array.from({ length: n }, (_, i) => {
+    const a0 = i / n * 2 * Math.PI + 0.06, a1 = (i + 1) / n * 2 * Math.PI - 0.06;
+    const pt = a => [(cx + r * Math.sin(a)).toFixed(1), (cx - r * Math.cos(a)).toFixed(1)];
+    const [x0, y0] = pt(a0), [x1, y1] = pt(a1);
+    return `<path d="M${x0} ${y0}A${r} ${r} 0 0 1 ${x1} ${y1}" class="${(i + 0.5) / n <= share ? 'on' : ''}"/>`;
+  }).join('');
+  return `<div class="docring" aria-label="${Math.round(share * 100)}% collected"><svg viewBox="0 0 120 120" aria-hidden="true">${segs}<circle cx="60" cy="60" r="34" class="core"/></svg><span>${Math.round(share * 100)}%</span></div>`;
+}
 function paperHtml(d) {
   const st = S.settings, c = getClient(d.clientId) || {};
   const isQ = d.type === 'quote', t = totals(d), s = status(d);
