@@ -336,6 +336,23 @@ textarea.inp{min-height:84px;resize:vertical}
 .cnav{display:flex;align-items:center;justify-content:center;gap:16px;margin:12px 0 18px;color:var(--ink-2);font-weight:700}
 .cnav .btn{min-width:52px;padding:0 14px}
 
+/* ---------- settings menu ---------- */
+.stiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.stile{display:flex;align-items:center;gap:14px;padding:16px 18px;text-decoration:none;color:var(--ink);min-height:76px;
+  background:var(--panel);border:1.5px solid var(--line-2);clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px)}
+.stile:hover{border-color:var(--cy);background:color-mix(in srgb,var(--cy) 6%,var(--panel))}
+.stile .sico{width:44px;height:44px;flex:none;display:grid;place-items:center;border-radius:50%;color:var(--cy);border:1.5px solid color-mix(in srgb,var(--cy) 55%,transparent);background:var(--cy-soft)}
+.stile .sico svg{width:22px;height:22px}
+.stile .stxt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.stile .stxt b{font-size:18px}
+.stile .stxt span{color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stile .sgo{font-size:26px;color:var(--ink-3)}
+.stile.ok .stxt span{color:var(--ok)}
+.stile.warn{border-color:color-mix(in srgb,var(--hv) 60%,var(--line-2))}
+.stile.warn .stxt span{color:var(--hv-text);font-weight:700}
+.stile.warn .sico{color:var(--hv-text);border-color:var(--hv);background:var(--hv-soft)}
+@media (max-width:520px){.stiles{grid-template-columns:minmax(0,1fr)}}
+
 /* ---------- swipeable paperwork pages ---------- */
 .ptabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--line);margin-bottom:16px;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg)}
 .ptabs::-webkit-scrollbar{display:none}
@@ -906,6 +923,7 @@ const I = {
   cog: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
   bolt: '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>',
   grid: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>',
+  eye: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
   plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
   x: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>',
   print: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>',
@@ -1081,7 +1099,7 @@ function viewHome() {
 
   return `<div class="console">
   ${S.example ? `<div class="strip"><b>Example data</b><span>Smithy’s Plumbing isn’t real. Have a play.</span><button class="link" data-act="examples-clear">Clear examples</button></div>`
-    : (!st.businessName || !st.abn) ? `<div class="strip"><b>Setup</b><span>Add your business name, ABN and bank details.</span><a class="link" href="#/settings">Add details</a></div>` : ''}
+    : (!st.businessName || !st.abn) ? `<div class="strip"><b>Setup</b><span>Add your business name, ABN and bank details.</span><a class="link" href="#/settings/business">Add details</a></div>` : ''}
   <div class="c-left">
     <section class="frame clock" aria-label="Date and time"><span class="tag">${esc(part)}${who ? ' · ' + esc(who) : ''}</span>
       <div class="time" id="clock">${clockText()}</div>
@@ -1319,12 +1337,38 @@ function viewClient(id) {
 }
 
 /* ---------- views: settings ---------- */
-function viewSettings() {
+const SETTINGS = [
+  { key: 'business', title: 'Your business', icon: () => I.home },
+  { key: 'paid', title: 'Getting paid', icon: () => I.cash },
+  { key: 'rates', title: 'Rates & goal', icon: () => KIND_ICO.labour },
+  { key: 'jobs', title: 'Jobs & costs', icon: () => I.grid },
+  { key: 'look', title: 'Look & comfort', icon: () => I.eye },
+  { key: 'numbers', title: 'Numbers & footer', icon: () => I.inv },
+  { key: 'data', title: 'Backup & data', icon: () => KIND_ICO.material }
+];
+function settingStatus(key) {
+  const s = S.settings;
+  switch (key) {
+    case 'business': return !s.businessName ? ['warn', 'Add your business name'] : !abnValid(s.abn) ? ['warn', 'Add your ABN'] : ['ok', '✓ Done'];
+    case 'paid': return (s.bsb && s.accountNumber) || s.payId ? ['ok', '✓ Done'] : ['warn', 'Add bank details or PayID'];
+    case 'rates': return ['', `${s.chargeBy === 'job' ? 'Per job' : 'By the hour'}${num(s.defaultRate) ? ` · $${esc(s.defaultRate)}/hr` : ''}`];
+    case 'jobs': return ['', `${plural(S.items.length, 'item')} saved`];
+    case 'look': return ['', `${({ lexend: 'Lexend', atkinson: 'Atkinson', system: 'Phone font' })[s.font || 'lexend']} · ${s.look === 'hud' ? 'Full HUD' : 'Clean'}`];
+    case 'numbers': return ['', `Next: ${esc(s.invoicePrefix)}${String(s.nextInvoice).padStart(4, '0')}`];
+    case 'data': return ['', 'Back up often'];
+  }
+  return ['', ''];
+}
+function viewSettings(id) {
   const s = S.settings;
   const field = (key, label, attrs = '') => `<label class="f">${label}<input class="inp" data-bind="set" data-key="${key}" value="${esc(s[key])}" ${attrs}></label>`;
-  return `
+  const sec = SETTINGS.find(x => x.key === id);
+  if (!sec) return `
   <div class="page-head"><h1>Settings</h1></div>
-  <div class="card"><h2>Your business</h2>
+  <div class="stiles">${SETTINGS.map(x => { const [tone, txt] = settingStatus(x.key);
+    return `<a class="stile ${tone}" href="#/settings/${x.key}"><span class="sico">${x.icon()}</span><span class="stxt"><b>${x.title}</b><span>${txt}</span></span><span class="sgo" aria-hidden="true">›</span></a>`; }).join('')}</div>`;
+  const content = {
+    business: `<div class="card">
     <div class="grid g2">
       ${field('businessName', 'Business / legal name *', 'autocomplete="organization"')}
       ${field('tradingName', 'Trading name (if different)')}
@@ -1344,17 +1388,8 @@ function viewSettings() {
       <label class="btn sm">${s.logo ? 'Change logo' : 'Upload logo'}<input type="file" accept="image/*" data-act-change="logo" hidden></label>
       ${s.logo ? '<button class="btn sm ghost danger" data-act="logo-clear">Remove</button>' : ''}
     </div>
-  </div>
-
-  <div class="card"><h2>Sending to clients</h2>
-    <div class="grid g2">
-      <label class="f">Card payment link (optional)<input class="inp" type="url" data-bind="set" data-key="cardLink" id="f-cardlink" value="${esc(s.cardLink)}" placeholder="https://buy.stripe.com/…"></label>
-      <label class="f">Client page address<input class="inp" type="url" data-bind="set" data-key="clientBase" id="f-clientbase" value="${esc(s.clientBase)}" placeholder="${esc(defaultClientBase())}"></label>
-    </div>
-    <div class="muted small mt">Card link: from Stripe or Square. Client page: leave blank.</div>
-  </div>
-
-  <div class="card"><h2>How you get paid</h2>
+  </div>`,
+    paid: `<div class="card">
     <div class="grid g2">
       ${field('accountName', 'Account name')}
       ${field('bsb', 'BSB', 'inputmode="numeric" placeholder="000-000"')}
@@ -1364,23 +1399,22 @@ function viewSettings() {
       ${field('quoteValidDays', 'Quotes valid for (days)', 'inputmode="numeric"')}
     </div>
   </div>
-
-  <div class="card"><h2>How you charge</h2>
+  <div class="card"><h2>Card payments (optional)</h2>
+    <div class="grid g2">
+      <label class="f">Stripe or Square payment link<input class="inp" type="url" data-bind="set" data-key="cardLink" id="f-cardlink" value="${esc(s.cardLink)}" placeholder="https://buy.stripe.com/…"></label>
+      <label class="f">Client page address<input class="inp" type="url" data-bind="set" data-key="clientBase" id="f-clientbase" value="${esc(s.clientBase)}" placeholder="${esc(defaultClientBase())}"></label>
+    </div>
+    <div class="muted small mt">Leave “Client page address” blank.</div>
+  </div>`,
+    rates: `<div class="card">
     <div class="seg">${[['hour', 'By the hour'], ['job', 'Per job (fixed price)']].map(([k, l]) => `<button type="button" class="${(s.chargeBy || 'hour') === k ? 'on' : ''}" data-act="charge" data-val="${k}" aria-pressed="${(s.chargeBy || 'hour') === k}">${l}</button>`).join('')}</div>
     <div class="grid g3 mt">${field('defaultRate', `Hourly rate $${s.gstRegistered ? ' (ex GST)' : ''}`, 'inputmode="decimal" placeholder="e.g. 95"')}</div>
-  </div>
-
-  <div class="card"><h2>Numbering & defaults</h2>
-    <div class="grid g3">
-      ${field('invoicePrefix', 'Invoice prefix')}
-      ${field('nextInvoice', 'Next invoice no.', 'inputmode="numeric"')}
-      ${field('quotePrefix', 'Quote prefix')}
-      ${field('nextQuote', 'Next quote no.', 'inputmode="numeric"')}
-    </div>
-    <label class="f mt">Footer note on every document<input class="inp" data-bind="set" data-key="footerNote" value="${esc(s.footerNote)}"></label>
-  </div>
-
-  <div class="card"><h2>Comfort & focus</h2>
+    <div class="grid g3 mt">${field('monthlyGoal', 'Monthly income goal ($)', 'inputmode="decimal"')}</div>
+  </div>`,
+    jobs: `<div class="card pricelist"><div class="row" style="margin-bottom:10px"><span class="muted small">Tip: tap ☆ on any invoice line to save it here.</span><button class="btn sm right" data-act="item-new">${I.plus}Add</button></div>
+    ${KINDS.map(([k, l]) => { const its = S.items.filter(it => kindOf(it) === k); return `<div class="eyebrow" style="margin:14px 0 4px">${l}</div>` + (its.length ? its.map(it => `<div class="pl"><span>${esc(it.desc)}${it.gst ? '' : ' <span class="muted small">(GST-free)</span>'}</span><span class="muted small">/ ${esc(it.unit)}</span><b>${money(toCents(it.price))}</b><button class="icon-btn" title="Remove" aria-label="Remove ${esc(it.desc)}" data-act="item-del" data-id="${it.id}">${I.x}</button></div>`).join('') : `<div class="muted small">${k === 'labour' && num(s.defaultRate) ? `Your hourly rate ($${esc(s.defaultRate)}/hr) is always here.` : 'Nothing yet.'}</div>`); }).join('')}
+  </div>`,
+    look: `<div class="card">
     <div class="f" style="margin-bottom:8px">Text style</div>
     <div class="fontpick">${[['lexend', 'Lexend', "'Lexend',sans-serif"], ['atkinson', 'Atkinson', "'Atkinson Hyperlegible',sans-serif"], ['system', 'Your phone’s font', 'system-ui,sans-serif']].map(([k, l, ff]) => `<button type="button" class="${(s.font || 'lexend') === k ? 'on' : ''}" data-act="font" data-val="${k}" aria-pressed="${(s.font || 'lexend') === k}" style="font-family:${ff}"><b>${l}</b><span>Coastline Builders · 0491 570 006 · $3,520.00</span></button>`).join('')}</div>
     <div class="f" style="margin-bottom:8px">Look</div>
@@ -1394,15 +1428,17 @@ function viewSettings() {
     <div class="seg" style="margin-top:8px">${[['auto', 'Match my phone'], ['light', 'Light'], ['dark', 'Dark']].map(([k, l]) => `<button type="button" class="${(s.display || 'auto') === k ? 'on' : ''}" data-act="display" data-val="${k}">${l}</button>`).join('')}</div>
     <div class="f mt">Colour</div>
     <div class="swatches mt" style="margin-top:8px">${[['gold', 'Gold', '#ffc21a'], ['cyan', 'Cyan', '#22e4ff'], ['pink', 'Neon pink', '#ff4fd8'], ['green', 'Toxic green', '#3dff8b']].map(([k, l, c]) => `<button type="button" class="${(s.accent || 'gold') === k ? 'on' : ''}" data-act="accent" data-val="${k}"><i style="background:${c};color:${c}"></i>${l}</button>`).join('')}</div>
-    <div class="grid g3 mt">${field('monthlyGoal', 'Monthly income goal ($)', 'inputmode="decimal"')}</div>
-  </div>
-
-  <div class="card pricelist"><div class="row" style="margin-bottom:10px"><h2 style="margin:0">Your jobs & costs</h2><button class="btn sm right" data-act="item-new">${I.plus}Add</button></div>
-    <div class="muted small" style="margin-bottom:8px">Tip: tap ☆ on any invoice line to save it here.</div>
-    ${KINDS.map(([k, l]) => { const its = S.items.filter(it => kindOf(it) === k); return `<div class="eyebrow" style="margin:14px 0 4px">${l}</div>` + (its.length ? its.map(it => `<div class="pl"><span>${esc(it.desc)}${it.gst ? '' : ' <span class="muted small">(GST-free)</span>'}</span><span class="muted small">/ ${esc(it.unit)}</span><b>${money(toCents(it.price))}</b><button class="icon-btn" title="Remove" aria-label="Remove ${esc(it.desc)}" data-act="item-del" data-id="${it.id}">${I.x}</button></div>`).join('') : `<div class="muted small">${k === 'labour' && num(s.defaultRate) ? `Your hourly rate ($${esc(s.defaultRate)}/hr) is always here.` : 'Nothing yet.'}</div>`); }).join('')}
-  </div>
-
-  <div class="card"><h2>Your data</h2>
+  </div>`,
+    numbers: `<div class="card">
+    <div class="grid g3">
+      ${field('invoicePrefix', 'Invoice prefix')}
+      ${field('nextInvoice', 'Next invoice no.', 'inputmode="numeric"')}
+      ${field('quotePrefix', 'Quote prefix')}
+      ${field('nextQuote', 'Next quote no.', 'inputmode="numeric"')}
+    </div>
+    <label class="f mt">Footer note on every document<input class="inp" data-bind="set" data-key="footerNote" value="${esc(s.footerNote)}"></label>
+  </div>`,
+    data: `<div class="card">
     <div class="muted small" style="margin-bottom:12px">Saved in this browser only. Back up often.</div>
     <div class="row">
       <button class="btn" data-act="backup">Download backup</button>
@@ -1411,7 +1447,13 @@ function viewSettings() {
       <button class="btn" data-act="examples-load">Load example data</button>
       <button class="btn ghost danger right" data-act="wipe">Erase everything</button>
     </div>
-  </div>`;
+  </div>`
+  }[sec.key];
+  return `
+  <div class="row" style="margin-bottom:4px"><a class="btn ghost sm" href="#/settings" style="margin-left:-12px">${I.back}Settings</a></div>
+  <div class="page-head"><h1>${sec.title}</h1></div>
+  ${content}
+  <div class="row" style="justify-content:flex-end;margin-top:18px"><button class="btn primary big" data-act="settings-done">Done</button></div>`;
 }
 function updateAbnHint(input) {
   const h = document.getElementById('abnhint'); if (!h) return;
@@ -1667,10 +1709,10 @@ function viewDoc(id) {
   minor.push(`<button class="btn ghost sm" data-act="duplicate">Copy as new</button>`);
 
   const warnings = [];
-  if (!S.settings.businessName || !S.settings.abn) warnings.push(`<a href="#/settings"><b>Add your business name and ABN</b></a> so this counts as a tax invoice.`);
+  if (!S.settings.businessName || !S.settings.abn) warnings.push(`<a href="#/settings/business"><b>Add your business name and ABN</b></a> so this counts as a tax invoice.`);
   if (!c) warnings.push(`<a href="#/edit/${d.id}"><b>Pick a client</b></a> for this ${docLabel(d).toLowerCase()}.`);
   if (!isQ && d.gstReg && t.total >= 100000 && c && !c.address && !c.abn) warnings.push('<b>Add the client’s address or ABN.</b> Tax invoices of $1,000+ need it.');
-  if (!isQ && !S.settings.bsb && !S.settings.payId) warnings.push('<a href="#/settings"><b>Add your bank details or PayID</b></a> so they can pay you.');
+  if (!isQ && !S.settings.bsb && !S.settings.payId) warnings.push('<a href="#/settings/paid"><b>Add your bank details or PayID</b></a> so they can pay you.');
 
   const due = dueInfo(d);
   return `
@@ -1911,6 +1953,7 @@ const ACT = {
   charge(ds) { S.settings.chargeBy = ds.val; save(); route(); toast(ds.val === 'job' ? 'Set to fixed price per job' : 'Set to charge by the hour'); },
   display(ds) { S.settings.display = ds.val; save(); route(); },
   look(ds) { S.settings.look = ds.val; save(); route(); },
+  'settings-done'() { go('/settings'); toast('All set. Saved.'); },
   font(ds) { S.settings.font = ds.val; save(); route(); },
   quick() {
     const st = S.settings, gstNote = st.gstRegistered ? (st.pricesIncGst ? ' (inc GST)' : ' (ex GST)') : '';
@@ -2338,7 +2381,7 @@ function loadExamples() {
   add('quote', { clientId: bld, site: 'Lot 22, Kippa-Ring', issueDate: addDays(t, -5), dueDate: addDays(t, 25), status: 'sent', lines: [L('Rough-in & fit-off, 3 bed home', '1', 'lot', '8900')] });
   save();
 }
-ACT['examples-clear'] = () => ask('Start fresh?', 'This removes the example business, clients, quotes and invoices so you can enter your own.', 'Clear examples', () => { S = structuredClone(DEFAULT); save(); go('/settings'); toast('Examples cleared. Next: add your business details.'); });
+ACT['examples-clear'] = () => ask('Start fresh?', 'This removes the example business, clients, quotes and invoices so you can enter your own.', 'Clear examples', () => { S = structuredClone(DEFAULT); save(); go('/settings/business'); toast('Examples cleared. Next: add your business details.'); });
 ACT['examples-load'] = () => { loadExamples(); go('/'); toast('All set. Example data loaded.'); };
 
 window.addEventListener('beforeunload', () => { if (current.view === 'edit') { const d = getDoc(current.id); if (d && d.isNew && isEmptyDoc(d)) discardIfEmpty(d.id); } });
