@@ -1308,11 +1308,10 @@ body{background:radial-gradient(80% 45% at 50% 0%,rgba(190,40,200,.22),transpare
 .wdots i.on{background:#36e8ff;box-shadow:0 0 8px rgba(54,232,255,.6)}
 .wbtns{display:grid;gap:10px;margin-top:14px}
 .wback{margin-top:18px}
-/* press shimmer: a light band sweeps across a control on tap (original effect) */
-.shimmer{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:2}
-.shimmer::after{content:"";position:absolute;top:-20%;bottom:-20%;left:-60%;width:45%;background:linear-gradient(100deg,transparent,rgba(190,240,255,.45),rgba(255,140,230,.25),transparent);transform:skewX(-18deg);animation:shimmerSweep .6s ease-out forwards}
-@keyframes shimmerSweep{to{left:120%}}
-@media (prefers-reduced-motion:reduce){.shimmer{display:none}}
+/* ripple: a ring spreads from the tap point (original effect) */
+.ripple{position:absolute;border-radius:50%;pointer-events:none;z-index:2;transform:scale(0);opacity:.9;background:radial-gradient(circle,transparent 46%,rgba(54,232,255,.55) 52%,rgba(255,90,224,.35) 60%,transparent 70%);animation:rippleOut .65s ease-out forwards}
+@keyframes rippleOut{to{transform:scale(1);opacity:0}}
+@media (prefers-reduced-motion:reduce){.ripple{display:none}}
 /* calm mode + reduced motion: no glow, no animation */
 :root[data-calm]{--glow:0 0 0 1px var(--line);--hv-glow:none}
 :root[data-calm] .core-btn{box-shadow:0 0 0 2px color-mix(in srgb,var(--tone) 25%,transparent)}
@@ -3030,11 +3029,16 @@ document.addEventListener('click', e => {
   const hit = e.target.closest('button,a.btn,a.stile,a.ccard,.slot,.lrow,.tile,.rchip');
   if (hit && !S.settings.calm) {
     hit.classList.remove('juice'); void hit.offsetWidth; hit.classList.add('juice'); blip(660, 60);
-    // shimmer: a light band sweeps across the control, clipped to its shape
+    // ripple: a ring spreads out from exactly where the finger landed
     if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      const sh = document.createElement('span'); sh.className = 'shimmer';
-      hit.style.position = hit.style.position || 'relative'; hit.appendChild(sh);
-      setTimeout(() => sh.remove(), 650);
+      const r = hit.getBoundingClientRect(), size = Math.max(r.width, r.height) * 2.2;
+      const rp = document.createElement('span'); rp.className = 'ripple';
+      rp.style.width = rp.style.height = size + 'px';
+      rp.style.left = (e.clientX - r.left - size / 2) + 'px';
+      rp.style.top = (e.clientY - r.top - size / 2) + 'px';
+      if (getComputedStyle(hit).position === 'static') hit.style.position = 'relative';
+      hit.appendChild(rp);
+      setTimeout(() => rp.remove(), 700);
     }
   }
   const a = e.target.closest('a[href^="#/"]');
