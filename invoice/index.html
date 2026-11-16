@@ -1313,8 +1313,8 @@ body{background:radial-gradient(80% 45% at 50% 0%,rgba(190,40,200,.22),transpare
 @keyframes rippleOut{0%{transform:scale(.05);opacity:1}70%{opacity:.8}100%{transform:scale(1);opacity:0}}
 @media (prefers-reduced-motion:reduce){.ripple{display:none}}
 /* global ripple: fixed to the screen, so it shows wherever you touch */
-.ripple-fx{position:fixed;border-radius:50%;pointer-events:none;z-index:9999;transform:scale(.05);opacity:1;border:3px solid var(--hv);background:radial-gradient(circle,color-mix(in srgb,var(--hv) 38%,transparent),color-mix(in srgb,var(--hv) 12%,transparent) 60%,transparent 72%);box-shadow:0 0 0 2px var(--bg),0 0 18px color-mix(in srgb,var(--hv) 85%,transparent),inset 0 0 16px color-mix(in srgb,var(--hv) 60%,transparent);animation:rippleFx 1.1s cubic-bezier(.16,.84,.3,1) forwards}
-.ripple-fx::after{content:"";position:absolute;inset:-3px;border-radius:50%;border:1.5px solid var(--hv);opacity:0;animation:rippleRing 1.1s cubic-bezier(.16,.84,.3,1) .2s forwards}
+.ripple-fx{position:fixed;border-radius:50%;pointer-events:none;z-index:9999;transform:scale(.05);opacity:1;border:2px solid color-mix(in srgb,var(--hv) 50%,transparent);background:radial-gradient(circle,color-mix(in srgb,var(--hv) 14%,transparent),color-mix(in srgb,var(--hv) 4%,transparent) 60%,transparent 72%);box-shadow:0 0 12px color-mix(in srgb,var(--hv) 35%,transparent),inset 0 0 12px color-mix(in srgb,var(--hv) 22%,transparent);animation:rippleFx 1.1s cubic-bezier(.16,.84,.3,1) forwards}
+.ripple-fx::after{content:"";position:absolute;inset:-3px;border-radius:50%;border:1px solid color-mix(in srgb,var(--hv) 40%,transparent);opacity:0;animation:rippleRing 1.1s cubic-bezier(.16,.84,.3,1) .2s forwards}
 @keyframes rippleFx{0%{transform:scale(.05);opacity:1}55%{transform:scale(1.04);opacity:.75}75%{transform:scale(.98);opacity:.45}100%{transform:scale(1);opacity:0}}
 @keyframes rippleRing{0%{transform:scale(.4);opacity:.8}100%{transform:scale(1.35);opacity:0}}
 @media (prefers-reduced-motion:reduce){.ripple-fx{display:none}}
