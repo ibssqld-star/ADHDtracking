@@ -1318,6 +1318,28 @@ body{background:radial-gradient(80% 45% at 50% 0%,rgba(190,40,200,.22),transpare
 @keyframes rippleFx{0%{transform:scale(.05);opacity:1}55%{transform:scale(1.04);opacity:.75}75%{transform:scale(.98);opacity:.45}100%{transform:scale(1);opacity:0}}
 @keyframes rippleRing{0%{transform:scale(.4);opacity:.8}100%{transform:scale(1.35);opacity:0}}
 @media (prefers-reduced-motion:reduce){.ripple-fx{display:none}}
+/* game feedback: banners, sparks, pulse, streak, badges, mission cards */
+.gbanner{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));left:50%;z-index:80;display:flex;gap:12px;align-items:center;min-width:250px;max-width:calc(100vw - 32px);padding:10px 16px 10px 10px;background:var(--bg);border:1px solid var(--cy);box-shadow:var(--glow);clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px);transform:translate(-50%,0);animation:gbIn .45s cubic-bezier(.2,.9,.3,1.2) both;cursor:pointer}
+.gbanner.out{animation:gbOut .45s ease-in both}
+.gbanner .gb-ico{flex:none;width:42px;height:42px;display:grid;place-items:center;font:700 14px var(--f-display);letter-spacing:.06em;color:var(--hv-ink);background:var(--hv);clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,0 100%)}
+.gbanner.badge .gb-ico{background:var(--cy)}
+.gbanner b{display:block;font:600 17px/1.2 var(--f-display);letter-spacing:.04em;color:var(--ink)}
+.gbanner div>span{font-size:13px;color:var(--ink-2)}
+@keyframes gbIn{from{transform:translate(-50%,-150%);opacity:0}to{transform:translate(-50%,0);opacity:1}}
+@keyframes gbOut{to{transform:translate(-50%,-150%);opacity:0}}
+.lvl-pulse{animation:lvlPulse 1.2s ease-out 2}
+@keyframes lvlPulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--hv) 70%,transparent)}100%{box-shadow:0 0 0 28px transparent}}
+.spark{position:fixed;width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;background:var(--hv);box-shadow:0 0 8px var(--hv);pointer-events:none;z-index:75;animation:sparkFly .8s ease-out forwards}
+@keyframes sparkFly{from{transform:translate(0,0);opacity:1}to{transform:translate(var(--dx),var(--dy));opacity:0}}
+.streak{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:baseline;margin-top:14px;font:500 14px var(--f-display);color:var(--ink-2)}
+.streak b{color:var(--ink);font-size:18px;font-variant-numeric:tabular-nums}
+.streak em{flex-basis:100%;font-style:normal;font-size:12px;color:var(--ink-3)}
+.badges{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.gbadge{font:600 12px var(--f-display);letter-spacing:.04em;padding:4px 9px;border:1px solid var(--line-2);color:var(--ink-3)}
+.gbadge.on{border-color:var(--ok);color:var(--ok);background:var(--ok-soft)}
+.mission-row{border:1px solid var(--line-2);background:var(--bg-2);padding:10px 12px;margin-top:8px;clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px)}
+.mission-row.done{border-color:var(--ok);background:var(--ok-soft)}
+@media (prefers-reduced-motion:reduce){.gbanner,.lvl-pulse,.spark{animation:none!important}.gbanner{transform:translate(-50%,0)}}
 /* calm mode + reduced motion: no glow, no animation */
 :root[data-calm]{--glow:0 0 0 1px var(--line);--hv-glow:none}
 :root[data-calm] .core-btn{box-shadow:0 0 0 2px color-mix(in srgb,var(--tone) 25%,transparent)}
@@ -1632,6 +1654,7 @@ function route() {
 }
 
 function afterRender() {
+  playPendingFx();
   setupPager();
   setupClientPager();
   setupJobPager();
@@ -1756,11 +1779,83 @@ function gamePanel() {
       <div class="xpbar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></div></div>
     <div class="missions">${ms.map(m => { const p = Math.round(m.done / m.goal * 100);
       return `<div class="mission-row ${m.done >= m.goal ? 'done' : ''}"><span class="mtick">${m.done >= m.goal ? '✓' : ''}</span><div class="mtxt"><b>${esc(m.label)}</b><div class="mbar2"><i style="width:${p}%"></i></div></div><span class="mcount">${m.done}/${m.goal}</span></div>`; }).join('')}</div>
+    ${gameExtrasHtml()}
   </section>`;
 }
 function hasRecentPayments() {
   const cut = addDays(today(), -180);
   return S.docs.some(d => d.type === 'invoice' && d.payments.some(p => (p.date || '') >= cut));
+}
+/* ---------- game feedback: level-ups, badges, streak, count-up, sparks (all optional, never punitive) ---------- */
+let pendingPayFx = false;
+function achievements() {
+  return [
+    { id: 'first-invoice', name: 'First invoice out', desc: 'You sent your first invoice', test: () => S.docs.some(d => d.type === 'invoice' && d.status !== 'draft') },
+    { id: 'first-payment', name: 'Cha-ching', desc: 'Your first payment is in', test: () => S.docs.some(d => d.type === 'invoice' && d.payments.length > 0) },
+    { id: 'paid-in-full', name: 'Paid in full', desc: 'An invoice is fully paid', test: () => S.docs.some(d => d.type === 'invoice' && status(d) === 'paid') },
+    { id: 'ten-invoices', name: 'Ten up', desc: 'Ten invoices made', test: () => S.docs.filter(d => d.type === 'invoice').length >= 10 },
+    { id: 'streak-3', name: 'On a roll', desc: 'Three days in a row sending', test: () => streakInfo().best >= 3 },
+  ];
+}
+function streakInfo() {
+  // current = days in a row up to today (or yesterday); best = longest run ever. Missing a day never shows a penalty.
+  const days = new Set(S.docs.filter(d => d.type === 'invoice' && d.status !== 'draft' && d.issueDate).map(d => d.issueDate));
+  let cur = 0, c = today();
+  if (!days.has(c)) c = addDays(c, -1);
+  while (days.has(c)) { cur++; c = addDays(c, -1); }
+  let best = 0, run = 0, prev = null;
+  for (const dd of [...days].sort()) { run = prev && addDays(prev, 1) === dd ? run + 1 : 1; best = Math.max(best, run); prev = dd; }
+  return { cur, best };
+}
+function gameExtrasHtml() {
+  const s = streakInfo(), got = S.settings.badges || [];
+  return `<div class="streak"><span>Streak <b>${s.cur}</b> ${s.cur === 1 ? 'day' : 'days'}</span><span>Best <b>${s.best}</b></span>${s.cur ? '' : '<em>Send one invoice today to start a new streak.</em>'}</div>
+    <div class="badges">${achievements().map(a => `<span class="gbadge ${got.includes(a.id) ? 'on' : ''}" title="${esc(a.desc)}">${got.includes(a.id) ? '★' : '☆'} ${esc(a.name)}</span>`).join('')}</div>`;
+}
+function gameCheck() {
+  // finds new level-ups and badges, records them, and returns them for a banner
+  const G = S.settings, x = xpInfo(), out = [];
+  if (G.badges === undefined) { G.badges = []; G.lvlSeen = x.level; save(); return out; } // first run: record silently
+  if (x.level > G.lvlSeen) { out.push({ kind: 'level', title: 'Level ' + x.level, sub: 'Level up. Keep it going.' }); G.lvlSeen = x.level; }
+  for (const a of achievements()) if (!G.badges.includes(a.id) && a.test()) { G.badges.push(a.id); out.push({ kind: 'badge', title: a.name, sub: a.desc }); }
+  if (out.length) save();
+  return out;
+}
+function showGameBanner(b) {
+  if (S.settings.calm) return;
+  const el = document.createElement('div');
+  el.className = 'gbanner ' + b.kind;
+  el.setAttribute('role', 'status');
+  el.innerHTML = `<span class="gb-ico">${b.kind === 'level' ? 'LV' : '★'}</span><div><b>${esc(b.title)}</b><span>${esc(b.sub)}</span></div>`;
+  el.addEventListener('click', () => el.remove());
+  document.body.appendChild(el);
+  if (b.kind === 'level') { blip(880, 120); setTimeout(() => blip(1320, 180), 130); } else blip(1320, 180);
+  if (navigator.vibrate) navigator.vibrate([20, 40, 20]);
+  setTimeout(() => el.classList.add('out'), 3200);
+  setTimeout(() => el.remove(), 3700);
+}
+function pulseLevel() {
+  ['.core-btn', '.game-panel'].forEach(sel => document.querySelectorAll(sel).forEach(e => { e.classList.remove('lvl-pulse'); void e.offsetWidth; e.classList.add('lvl-pulse'); }));
+}
+function payFx() {
+  // sparks from the collected ring and a count-up of its percentage
+  if (S.settings.calm || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const el = document.querySelector('.docring'); if (!el) return;
+  const r = el.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+  for (let i = 0; i < 14; i++) {
+    const s = document.createElement('span'), a = Math.random() * Math.PI * 2, dist = 50 + Math.random() * 60;
+    s.className = 'spark'; s.style.left = cx + 'px'; s.style.top = cy + 'px';
+    s.style.setProperty('--dx', Math.cos(a) * dist + 'px'); s.style.setProperty('--dy', Math.sin(a) * dist + 'px');
+    document.body.appendChild(s); setTimeout(() => s.remove(), 900);
+  }
+  const num = el.querySelector('span'), end = parseInt(num && num.textContent, 10) || 0, t0 = performance.now();
+  if (num) (function tick(now) { const k = Math.min(1, (now - t0) / 900); num.textContent = Math.round(end * (1 - Math.pow(1 - k, 3))) + '%'; if (k < 1) requestAnimationFrame(tick); })(t0);
+}
+function playPendingFx() {
+  if (pendingPayFx) { pendingPayFx = false; payFx(); }
+  const q = gameCheck();
+  q.forEach((b, i) => setTimeout(() => showGameBanner(b), 500 + i * 3800)); // one banner at a time
+  if (q.some(b => b.kind === 'level')) pulseLevel();
 }
 let audioCtx = null;
 function blip(freq = 880, ms = 120) {
@@ -2965,8 +3060,8 @@ const ACT = {
         if (num(data.amount) <= 0) { toast('Add an amount above $0.'); return false; }
         d.payments.push({ id: uid(), amount: num(data.amount).toFixed(2), date: data.date, method: data.method });
         if (d.status === 'draft') d.status = 'sent';
-        save(); route();
-        if (status(d) === 'paid') { toast('Paid in full! Nice work.'); celebrate(); blip(1040, 220); }
+        pendingPayFx = true; save(); route();
+        if (status(d) === 'paid') { toast('Paid in full! Nice work.'); celebrate(); blip(1040, 220); if (navigator.vibrate) navigator.vibrate([30, 50, 30]); }
         else toast(`Payment recorded · ${money(totals(d).balance)} to go`);
       });
   },
