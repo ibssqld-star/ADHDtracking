@@ -1161,6 +1161,15 @@ dialog::backdrop{background:rgba(4,6,20,.62);-webkit-backdrop-filter:blur(6px);b
 :root[data-theme="dark"]:not([data-hud]) .card > h2::before{width:2px;}
 :root[data-theme="dark"]:not([data-hud]) .jobs-h::before{width:2px;}
 :root[data-theme="dark"]:not([data-hud]) .totals .grand{border-top-width:1px;}
+/* =================== CLIENT DIAL =================== */
+/* client dial: ring gauge with tick marks, segmented neon, behind the avatar */
+.dialwrap{position:relative;width:150px;height:150px;display:grid;place-items:center}
+.dialwrap .av.big{position:relative;z-index:1;width:92px;height:92px}
+.ring2{position:absolute;inset:0;width:100%;height:100%}
+.ring2 .tk line{stroke:rgba(150,200,255,.35);stroke-width:1}
+.ring2 .rtrk{fill:none;stroke:rgba(120,160,230,.18);stroke-width:2}
+.ring2 .rval{fill:none;stroke:url(#ringg);stroke:#ff4fd8;stroke-width:3;stroke-linecap:round;filter:drop-shadow(0 0 4px rgba(255,79,216,.7))}
+.rlbl{position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);white-space:nowrap;font:600 12px "Barlow Semi Condensed",sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#eef5ff;background:rgba(6,12,26,.92);padding:2px 8px;border:1px solid rgba(30,227,255,.5)}
 /* calm mode + reduced motion: no glow, no animation */
 :root[data-calm]{--glow:0 0 0 1px var(--line);--hv-glow:none}
 :root[data-calm] .core-btn{box-shadow:0 0 0 2px color-mix(in srgb,var(--tone) 25%,transparent)}
@@ -1735,6 +1744,17 @@ window.addEventListener('resize', () => { const pg = document.getElementById('pa
 let clQuery = '', clientSel = null;
 const initials = n => (String(n || '?').trim().split(/\s+/).map(w => w[0]).filter(Boolean).slice(0, 2).join('') || '?').toUpperCase();
 const avClass = id => 'a' + ([...String(id)].reduce((a, ch) => a + ch.charCodeAt(0), 0) % 5);
+function clientRing(c) {
+  // share of this client's invoiced work that has been paid (original gauge, not copied from any artwork)
+  const inv = S.docs.filter(d => d.clientId === c.id && d.type === 'invoice' && d.status !== 'draft');
+  const billed = inv.reduce((a, d) => a + totals(d).total, 0), paid = inv.reduce((a, d) => a + totals(d).paid, 0);
+  const pct = billed ? Math.min(1, paid / billed) : 0, r = 60, C = 2 * Math.PI * r;
+  const ticks = Array.from({ length: 48 }, (_, i) => { const a = i / 48 * Math.PI * 2, r1 = i % 4 ? 70 : 68, r2 = 78; return `<line x1="${(90 + r1 * Math.sin(a)).toFixed(1)}" y1="${(90 - r1 * Math.cos(a)).toFixed(1)}" x2="${(90 + r2 * Math.sin(a)).toFixed(1)}" y2="${(90 - r2 * Math.cos(a)).toFixed(1)}"/>`; }).join('');
+  return `<svg class="ring2" viewBox="0 0 180 180" aria-hidden="true"><g class="tk">${ticks}</g>
+    <circle cx="90" cy="90" r="${r}" class="rtrk"/>
+    <circle cx="90" cy="90" r="${r}" class="rval" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C * (1 - pct)).toFixed(1)}" transform="rotate(-90 90 90)"/>
+    </svg><span class="rlbl">${Math.round(pct * 100)}% paid</span>`;
+}
 function clientStats(c) {
   const docs = S.docs.filter(d => d.clientId === c.id);
   let owing = 0, overdue = 0;
@@ -1755,7 +1775,7 @@ function clientSlide(c) {
     c.email && `<a class="btn" href="mailto:${esc(c.email)}">${I.mail}Email</a>`
   ].filter(Boolean).join('');
   return `<section class="cslide" data-id="${c.id}" aria-label="${esc(c.name)}"><div class="card ccard-big">
-    <div class="av big ${avClass(c.id)}" aria-hidden="true">${esc(initials(c.name))}</div>
+    <div class="dialwrap">${clientRing(c)}<div class="av big ${avClass(c.id)}" aria-hidden="true">${esc(initials(c.name))}</div></div>
     <div class="cname">${esc(c.name)}</div>
     ${st.owing ? `<div class="cown ${st.overdue ? 'bad' : ''}">${money(st.owing)}<small>${st.overdue ? `owing · ${money(st.overdue)} overdue` : 'owing'}</small></div>`
       : `<div class="cok">${st.inv ? '✓ All paid up' : 'No invoices yet'}</div>`}
