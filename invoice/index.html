@@ -1277,6 +1277,28 @@ body{background:radial-gradient(80% 45% at 50% 0%,rgba(190,40,200,.22),transpare
 .card > h2,.frame .tag{color:#f3eaff !important}
 .card > h2::before{background:#ff5ae0 !important;box-shadow:0 0 8px rgba(255,80,220,.7) !important}
 .card:has(> h2){border-color:rgba(255,80,220,.45) !important}
+/* =================== GAME LAYER: level, missions, juicy taps =================== */
+.game-panel{padding-top:22px}
+.lvl{margin-top:4px}
+.lvl-row{display:flex;justify-content:space-between;align-items:baseline;font:600 14px "Barlow Semi Condensed",sans-serif;letter-spacing:.06em;color:#cfeaff}
+.lvl-row span{color:#8ff1ff;font-size:12px}
+.xpbar{height:8px;margin-top:8px;background:repeating-linear-gradient(90deg,rgba(54,232,255,.18) 0 6px,transparent 6px 9px)}
+.xpbar i{display:block;height:100%;background:repeating-linear-gradient(90deg,#36e8ff 0 6px,transparent 6px 9px);box-shadow:0 0 10px rgba(54,232,255,.5);transition:width .6s ease}
+.missions{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.mission-row{display:flex;align-items:center;gap:12px;padding:8px 10px;border:1px solid rgba(40,220,255,.22)}
+.mission-row.done{border-color:rgba(60,255,200,.6);background:rgba(60,255,200,.06)}
+.mtick{width:22px;height:22px;flex:none;display:grid;place-items:center;border:1px solid rgba(40,220,255,.5);color:#3cffc8;font-weight:700}
+.mission-row.done .mtick{border-color:#3cffc8;background:rgba(60,255,200,.15)}
+.mtxt{flex:1;min-width:0}
+.mtxt b{font-weight:600;font-size:14px;color:#eef8ff}
+.mbar2{height:4px;margin-top:6px;background:rgba(54,232,255,.12)}
+.mbar2 i{display:block;height:100%;background:linear-gradient(90deg,#36e8ff,#ff5ae0);transition:width .5s ease}
+.mcount{font:600 14px "Barlow Semi Condensed",sans-serif;color:#8ff1ff;font-variant-numeric:tabular-nums}
+/* juicy press: squash on press, a brief ring pulse after a tap */
+.btn:active,.stile:active,.ccard:active,.slot:active,.lrow:active,.tile:active,.rchip:active{transform:scale(.96);transition:transform .05s}
+.juice{animation:juicePulse .32s ease-out}
+@keyframes juicePulse{0%{box-shadow:0 0 0 0 rgba(54,232,255,.55)}100%{box-shadow:0 0 0 14px rgba(54,232,255,0)}}
+@media (prefers-reduced-motion:reduce){.juice{animation:none}.btn:active,.stile:active{transform:none}}
 /* calm mode + reduced motion: no glow, no animation */
 :root[data-calm]{--glow:0 0 0 1px var(--line);--hv-glow:none}
 :root[data-calm] .core-btn{box-shadow:0 0 0 2px color-mix(in srgb,var(--tone) 25%,transparent)}
@@ -1320,7 +1342,7 @@ const DEFAULT = {
     paymentTermsDays: 14, quoteValidDays: 30, defaultRate: '95', chargeBy: 'hour',
     invoicePrefix: 'INV-', nextInvoice: 1, quotePrefix: 'Q-', nextQuote: 1,
     footerNote: 'Thanks for your business!', logo: '', cardLink: '', clientBase: '',
-    monthlyGoal: '15000', paletteV2: true, bigText: false, calm: false, celebrate: true, look: 'clean', font: 'lexend', accent: 'neon', display: 'auto', focusHome: false, reminderTone: 'friendly'
+    monthlyGoal: '15000', paletteV2: true, bigText: false, calm: false, celebrate: true, sound: false, look: 'clean', font: 'lexend', accent: 'neon', display: 'auto', focusHome: false, reminderTone: 'friendly'
   },
   clients: [],
   docs: [],
@@ -1685,6 +1707,52 @@ function clockText() {
 }
 setInterval(() => { const el = document.getElementById('clock'); if (el) el.innerHTML = clockText(); }, 15000);
 
+/* ---------- game layer: level, missions, sound (all optional, never punitive) ---------- */
+function xpInfo() {
+  // XP: 10 per paid invoice, plus 1 per $100 paid. Level every 50 XP.
+  let xp = 0;
+  for (const d of S.docs) if (d.type === 'invoice') {
+    const t = totals(d);
+    if (t.total > 0 && t.paid > 0) xp += 10 + Math.floor(t.paid / 10000);
+  }
+  return { xp, level: Math.floor(xp / 50) + 1, into: xp % 50 };
+}
+function missionList() {
+  const now = new Date(), weekAgo = addDays(today(), -6);
+  const sentWeek = S.docs.filter(d => d.type === 'invoice' && d.status !== 'draft' && d.issueDate >= weekAgo).length;
+  const jobToday = S.docs.some(d => d.createdAt && isoOf(new Date(d.createdAt)) === today());
+  const payWeek = S.docs.some(d => d.type === 'invoice' && d.payments.some(p => p.date >= weekAgo));
+  return [
+    { label: 'Log a job today', done: jobToday ? 1 : 0, goal: 1 },
+    { label: 'Send 3 invoices this week', done: Math.min(3, sentWeek), goal: 3 },
+    { label: 'Record a payment this week', done: payWeek ? 1 : 0, goal: 1 },
+  ];
+}
+function gamePanel() {
+  const x = xpInfo(), pct = Math.round(x.into / 50 * 100);
+  const ms = missionList();
+  return `<section class="frame game-panel" aria-label="Level and missions">
+    <span class="tag">Level ${x.level}</span>
+    <div class="lvl"><div class="lvl-row"><b>${x.xp} XP</b><span>${50 - x.into} to level ${x.level + 1}</span></div>
+      <div class="xpbar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></div></div>
+    <div class="missions">${ms.map(m => { const p = Math.round(m.done / m.goal * 100);
+      return `<div class="mission-row ${m.done >= m.goal ? 'done' : ''}"><span class="mtick">${m.done >= m.goal ? '✓' : ''}</span><div class="mtxt"><b>${esc(m.label)}</b><div class="mbar2"><i style="width:${p}%"></i></div></div><span class="mcount">${m.done}/${m.goal}</span></div>`; }).join('')}</div>
+  </section>`;
+}
+function hasRecentPayments() {
+  const cut = addDays(today(), -180);
+  return S.docs.some(d => d.type === 'invoice' && d.payments.some(p => (p.date || '') >= cut));
+}
+let audioCtx = null;
+function blip(freq = 880, ms = 120) {
+  if (!S.settings.sound) return;
+  try {
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = 'sine'; o.frequency.value = freq; g.gain.value = 0.05;
+    o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + ms / 1000);
+  } catch (e) { /* audio blocked: stay silent */ }
+}
 function monthBars() {
   // paid per month for the last six months, drawn as segmented bars (original chart)
   const now = new Date(), months = [];
@@ -1728,7 +1796,7 @@ function viewHome() {
     st.gstRegistered ? line('', 'ink-3', 'BAS due', q.due) : ''
   ].filter(Boolean).join('');
 
-  return `<div class="console">
+  return `<div class="console">${gamePanel()}
   ${S.example ? `<div class="strip"><b>Example data</b><span>Smithy’s Plumbing isn’t real. Have a play.</span><button class="link" data-act="examples-clear">Clear examples</button></div>`
     : (!st.businessName || !st.abn) ? `<div class="strip"><b>Setup</b><span>Add your business name, ABN and bank details.</span><a class="link" href="#/settings/business">Add details</a></div>` : ''}
   <div class="c-left">
@@ -1746,7 +1814,7 @@ function viewHome() {
       ${gaugeHtml('#/invoices/overdue', 'Overdue', moneyShort(overdueSum), overdueN ? plural(overdueN, 'invoice') : 'None ✓', outstanding ? overdueSum / outstanding : 0, 'bad')}
       ${gaugeHtml('#/invoices/waiting', 'Owed', moneyShort(outstanding), plural(owedN, 'invoice'), 0, 'cy')}
     </div></section>
-    <section class="frame bars-panel"><span class="tag">Paid by month</span>${monthBars()}</section>
+    ${hasRecentPayments() ? `<section class="frame bars-panel"><span class="tag">Paid by month</span>${monthBars()}</section>` : ''}
     <section class="frame log"><span class="tag">Status log</span>${logLines || '<div class="muted">All quiet. Nothing to report.</div>'}</section>
   </div>
 </div>`;
@@ -2106,6 +2174,7 @@ function viewSettings(id) {
       <label class="check"><input type="checkbox" data-bind="set" data-key="bigText" ${s.bigText ? 'checked' : ''}>Bigger text</label>
       <label class="check"><input type="checkbox" data-bind="set" data-key="calm" ${s.calm ? 'checked' : ''}>Calm mode (no glow or motion)</label>
       <label class="check"><input type="checkbox" data-bind="set" data-key="celebrate" ${s.celebrate ? 'checked' : ''}>Celebrate when I get paid</label>
+      <label class="check"><input type="checkbox" data-bind="set" data-key="sound" ${s.sound ? 'checked' : ''}>Sound effects (off by default)</label>
     </div>
     <div class="f mt">Screen</div>
     <div class="seg" style="margin-top:8px">${[['auto', 'Match my phone'], ['light', 'Light'], ['dark', 'Dark']].map(([k, l]) => `<button type="button" class="${(s.display || 'auto') === k ? 'on' : ''}" data-act="display" data-val="${k}">${l}</button>`).join('')}</div>
@@ -2846,7 +2915,7 @@ const ACT = {
         d.payments.push({ id: uid(), amount: num(data.amount).toFixed(2), date: data.date, method: data.method });
         if (d.status === 'draft') d.status = 'sent';
         save(); route();
-        if (status(d) === 'paid') { toast('Paid in full! Nice work.'); celebrate(); }
+        if (status(d) === 'paid') { toast('Paid in full! Nice work.'); celebrate(); blip(1040, 220); }
         else toast(`Payment recorded · ${money(totals(d).balance)} to go`);
       });
   },
@@ -2912,6 +2981,8 @@ const ACT = {
 };
 
 document.addEventListener('click', e => {
+  const hit = e.target.closest('button,a.btn,a.stile,a.ccard,.slot,.lrow,.tile,.rchip');
+  if (hit && !S.settings.calm) { hit.classList.remove('juice'); void hit.offsetWidth; hit.classList.add('juice'); blip(660, 60); }
   const a = e.target.closest('a[href^="#/"]');
   if (a) { e.preventDefault(); go(a.getAttribute('href').slice(1)); return; }
   const el = e.target.closest('[data-act]');
