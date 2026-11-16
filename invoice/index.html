@@ -1309,8 +1309,8 @@ body{background:radial-gradient(80% 45% at 50% 0%,rgba(190,40,200,.22),transpare
 .wbtns{display:grid;gap:10px;margin-top:14px}
 .wback{margin-top:18px}
 /* ripple: a ring spreads from the tap point (original effect) */
-.ripple{position:absolute;border-radius:50%;pointer-events:none;z-index:2;transform:scale(0);opacity:.9;background:radial-gradient(circle,transparent 46%,rgba(54,232,255,.55) 52%,rgba(255,90,224,.35) 60%,transparent 70%);animation:rippleOut .65s ease-out forwards}
-@keyframes rippleOut{to{transform:scale(1);opacity:0}}
+.ripple{position:absolute;border-radius:50%;pointer-events:none;z-index:2;transform:scale(.05);opacity:1;border:3px solid #36e8ff;background:radial-gradient(circle,rgba(54,232,255,.35),rgba(255,90,224,.12) 60%,transparent 72%);box-shadow:0 0 18px rgba(54,232,255,.9),0 0 30px rgba(255,90,224,.5),inset 0 0 16px rgba(54,232,255,.6);animation:rippleOut .75s cubic-bezier(.2,.7,.3,1) forwards}
+@keyframes rippleOut{0%{transform:scale(.05);opacity:1}70%{opacity:.8}100%{transform:scale(1);opacity:0}}
 @media (prefers-reduced-motion:reduce){.ripple{display:none}}
 /* calm mode + reduced motion: no glow, no animation */
 :root[data-calm]{--glow:0 0 0 1px var(--line);--hv-glow:none}
@@ -3038,7 +3038,7 @@ document.addEventListener('click', e => {
       rp.style.top = (e.clientY - r.top - size / 2) + 'px';
       if (getComputedStyle(hit).position === 'static') hit.style.position = 'relative';
       hit.appendChild(rp);
-      setTimeout(() => rp.remove(), 700);
+      setTimeout(() => rp.remove(), 800);
     }
   }
   const a = e.target.closest('a[href^="#/"]');
