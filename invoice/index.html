@@ -1313,7 +1313,7 @@ body{background:radial-gradient(80% 45% at 50% 0%,rgba(190,40,200,.22),transpare
 @keyframes rippleOut{0%{transform:scale(.05);opacity:1}70%{opacity:.8}100%{transform:scale(1);opacity:0}}
 @media (prefers-reduced-motion:reduce){.ripple{display:none}}
 /* global ripple: fixed to the screen, so it shows wherever you touch */
-.ripple-fx{position:fixed;border-radius:50%;pointer-events:none;z-index:9999;transform:scale(.05);opacity:1;border:3px solid #36e8ff;background:radial-gradient(circle,rgba(54,232,255,.3),rgba(255,90,224,.12) 60%,transparent 72%);box-shadow:0 0 18px rgba(54,232,255,.9),0 0 30px rgba(255,90,224,.5),inset 0 0 16px rgba(54,232,255,.6);animation:rippleFx .75s cubic-bezier(.2,.7,.3,1) forwards}
+.ripple-fx{position:fixed;border-radius:50%;pointer-events:none;z-index:9999;transform:scale(.05);opacity:1;border:3px solid var(--hv);background:radial-gradient(circle,color-mix(in srgb,var(--hv) 38%,transparent),color-mix(in srgb,var(--hv) 12%,transparent) 60%,transparent 72%);box-shadow:0 0 0 2px var(--bg),0 0 18px color-mix(in srgb,var(--hv) 85%,transparent),inset 0 0 16px color-mix(in srgb,var(--hv) 60%,transparent);animation:rippleFx .75s cubic-bezier(.2,.7,.3,1) forwards}
 @keyframes rippleFx{0%{transform:scale(.05);opacity:1}70%{opacity:.8}100%{transform:scale(1);opacity:0}}
 @media (prefers-reduced-motion:reduce){.ripple-fx{display:none}}
 /* calm mode + reduced motion: no glow, no animation */
