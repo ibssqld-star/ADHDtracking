@@ -306,6 +306,34 @@ textarea.inp{min-height:84px;resize:vertical}
 .wiz .etotal small{display:block;font:400 11px var(--f-body);color:var(--ink-2)}
 @media (max-width:520px){.wiz .btn.big{padding:0 16px;font-size:.95em}.wiz .btn{padding:0 12px}}
 
+/* ---------- clients: one client at a time ---------- */
+.roster{display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;padding:10px 8px 10px;margin-bottom:6px}
+.roster::-webkit-scrollbar{display:none}
+.rchip{flex:none;width:68px;display:flex;flex-direction:column;align-items:center;gap:6px;background:none;border:0;cursor:pointer;color:var(--ink-2);font:600 13px/1.2 var(--f-body);padding:0}
+.rchip span{max-width:68px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rchip[aria-current="true"]{color:var(--ink)}
+.rchip[aria-current="true"] .av{box-shadow:0 0 0 3px var(--bg),0 0 0 5px var(--av);transform:scale(1.06)}
+.av{--av:var(--cy);width:52px;height:52px;flex:none;display:grid;place-items:center;font:700 19px var(--f-display);color:var(--av);
+  background:color-mix(in srgb,var(--av) 16%,var(--panel));border:2px solid var(--av);border-radius:50%;transition:transform .12s}
+.av.big{width:84px;height:84px;font-size:32px;border-width:3px}
+.av.a0{--av:var(--hv)}.av.a1{--av:var(--cy)}.av.a2{--av:var(--ok)}.av.a3{--av:var(--mg)}.av.a4{--av:var(--warn)}
+.cpager{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain}
+.cpager::-webkit-scrollbar{display:none}
+.cslide{flex:0 0 100%;min-width:0;scroll-snap-align:start;scroll-snap-stop:always;padding:0 1px}
+.ccard-big{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;padding:26px 20px 22px}
+.ccard-big .cname{font:700 26px/1.2 var(--f-body);overflow-wrap:anywhere}
+.ccard-big .cown{font:600 34px/1.1 var(--f-display);font-variant-numeric:tabular-nums}
+.ccard-big .cown.bad{color:var(--bad)}
+.ccard-big .cown small{display:block;font:600 15px var(--f-body);color:var(--ink-2);margin-top:4px}
+.ccard-big .cok{font:700 18px var(--f-body);color:var(--ok)}
+.ccard-big .cmeta{color:var(--ink-2)}
+.cacts{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:4px}
+.cacts .btn{min-width:96px}
+.cacts.contact{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:8px;width:100%;max-width:420px}
+.cacts.contact .btn{min-width:0;padding:0 8px}
+.cnav{display:flex;align-items:center;justify-content:center;gap:16px;margin:12px 0 18px;color:var(--ink-2);font-weight:700}
+.cnav .btn{min-width:52px;padding:0 14px}
+
 /* ---------- swipeable paperwork pages ---------- */
 .ptabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--line);margin-bottom:16px;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg)}
 .ptabs::-webkit-scrollbar{display:none}
@@ -584,6 +612,62 @@ dialog.wide{width:min(780px,calc(100vw - 20px))}
 
 :root[data-calm] body::before{display:none}
 
+/* =================== CLEAN LOOK (default) ===================
+   Built for ADHD eyes: sentence case (no ALL CAPS, no wide tracking), one
+   readable font for words, larger text, quiet panel edges, plain headings,
+   no decorative noise. The game feel stays in the shapes: cut corners,
+   the core, the hotbar and the inventory. Full HUD is opt-in in Settings. */
+:root:not([data-hud]){--fs:17px}
+:root:not([data-hud])[data-big]{--fs:19px}
+:root:not([data-hud]) body{background-image:none}
+:root:not([data-hud]) body::before{display:none}
+:root:not([data-hud]) :is(main,.nav,dialog,#toast) :is(*):not(.paper *){text-transform:none!important;letter-spacing:normal!important}
+:root:not([data-hud]) :is(.btn,label.f,.chip,.seg button,.seg a,.lib-tabs button,.filters button,.ptab,.steps .st,.eyebrow,.stat .lbl,.gauge .lbl,.monthbar,.lines-head,.mlbl,.terms button,#toast,.core-btn .verb,.qcard .qn){font-family:var(--f-body)}
+:root:not([data-hud]) .card,:root:not([data-hud]) .frame{background:var(--panel);box-shadow:none}
+:root:not([data-hud]) .card::before,:root:not([data-hud]) .frame::before{background:linear-gradient(135deg,color-mix(in srgb,var(--cy) 55%,var(--line)),var(--line) 18%,var(--line) 82%,color-mix(in srgb,var(--cy) 55%,var(--line)))}
+:root:not([data-hud]) .card::after,:root:not([data-hud]) .frame::after{background:
+  linear-gradient(to bottom right,transparent calc(50% - 1px),color-mix(in srgb,var(--cy) 55%,var(--line)) 50%,transparent calc(50% + 1px)) left top/var(--c) var(--c) no-repeat,
+  linear-gradient(to bottom left,transparent calc(50% - 1px),var(--line) 50%,transparent calc(50% + 1px)) right top/var(--c) var(--c) no-repeat,
+  linear-gradient(to bottom left,transparent calc(50% - 1px),var(--line) 50%,transparent calc(50% + 1px)) left bottom/var(--c) var(--c) no-repeat,
+  linear-gradient(to bottom right,transparent calc(50% - 1px),color-mix(in srgb,var(--cy) 55%,var(--line)) 50%,transparent calc(50% + 1px)) right bottom/var(--c) var(--c) no-repeat}
+:root:not([data-hud]) .card > h2,:root:not([data-hud]) .frame .tag{position:static;transform:none;display:block;background:none;clip-path:none;padding:0;margin:0 0 14px;max-width:none;color:var(--ink);font:700 19px/1.3 var(--f-body);white-space:normal}
+:root:not([data-hud]) .frame .tag{color:var(--ink-2);font-size:16px}
+:root:not([data-hud]) .clock .tag{text-align:center}
+:root:not([data-hud]) .card:has(> h2){padding-top:20px}
+:root:not([data-hud]) .clock{padding-top:18px}
+:root:not([data-hud]) .page-head::after{display:none}
+:root:not([data-hud]) .page-head{padding-bottom:0}
+:root:not([data-hud]) .nav::after{display:none}
+:root:not([data-hud]) .nav a.on span::before{content:none}
+:root:not([data-hud]) .btn{font:700 16px/1.1 var(--f-body);background:var(--panel-2);border:1.5px solid color-mix(in srgb,var(--cy) 45%,var(--line-2));box-shadow:none}
+:root:not([data-hud]) .btn:hover{background:var(--cy-soft);border-color:var(--cy);box-shadow:none}
+:root:not([data-hud]) .btn.sm{font-size:15px}
+:root:not([data-hud]) .btn.big{font-size:17px}
+:root:not([data-hud]) .btn.primary{background:var(--hv);border-color:var(--hv);color:var(--hv-ink);box-shadow:none}
+:root:not([data-hud]) .btn.primary:hover{background:var(--hv-hover)}
+:root:not([data-hud]) .btn.primary::before,:root:not([data-hud]) .btn.primary::after{content:none}
+:root:not([data-hud]) .btn.ghost{background:transparent;border-color:transparent}
+:root:not([data-hud]) label.f{font:700 15px/1.3 var(--f-body);color:var(--ink)}
+:root:not([data-hud]) .inp,:root:not([data-hud]) select.inp,:root:not([data-hud]) textarea.inp{background:var(--bg-2);font-size:17px}
+:root:not([data-hud]) .eyebrow{font:700 15px/1.3 var(--f-body);color:var(--cy)}
+:root:not([data-hud]) .chip{font:700 13px/1.2 var(--f-body)}
+:root:not([data-hud]) .chip i{display:none}
+:root:not([data-hud]) .li{padding-top:16px;padding-bottom:16px}
+:root:not([data-hud]) .li .who b{font-size:1.05em}
+:root:not([data-hud]) .li .when{font-size:.95em}
+:root:not([data-hud]) .slot b{font-size:1em}
+:root:not([data-hud]) .lib-tabs button.on{background:var(--hv);color:var(--hv-ink)}
+:root:not([data-hud]) #toast::before{content:none}
+:root:not([data-hud]) .steps .st{font:700 14px var(--f-body)}
+:root:not([data-hud]) .stephead{font:700 21px/1.3 var(--f-body)}
+
+/* list rows: who + how much, one line for when */
+.li.simple{grid-template-columns:minmax(0,1fr) auto;row-gap:4px}
+.li.simple .who{grid-column:1;grid-row:1 / span 2;align-self:center}
+.li.simple .amt{grid-column:2;grid-row:1}
+.li.simple .chip{grid-column:2;grid-row:2;justify-self:end}
+@media (max-width:560px){.li.simple .who,.li.simple .amt,.li.simple .chip{grid-row:auto}.li.simple .who{grid-row:1 / span 2}.li.simple .amt{grid-row:1}.li.simple .chip{grid-row:2}}
+
 /* calm mode + reduced motion: no glow, no animation */
 :root[data-calm]{--glow:0 0 0 1px var(--line);--hv-glow:none}
 :root[data-calm] .core-btn{box-shadow:0 0 0 2px color-mix(in srgb,var(--tone) 25%,transparent)}
@@ -627,7 +711,7 @@ const DEFAULT = {
     paymentTermsDays: 14, quoteValidDays: 30, defaultRate: '95', chargeBy: 'hour',
     invoicePrefix: 'INV-', nextInvoice: 1, quotePrefix: 'Q-', nextQuote: 1,
     footerNote: 'Thanks for your business!', logo: '', cardLink: '', clientBase: '',
-    monthlyGoal: '15000', bigText: false, calm: false, celebrate: true, accent: 'gold', display: 'auto', focusHome: false, reminderTone: 'friendly'
+    monthlyGoal: '15000', bigText: false, calm: false, celebrate: true, look: 'clean', accent: 'gold', display: 'auto', focusHome: false, reminderTone: 'friendly'
   },
   clients: [],
   docs: [],
@@ -817,6 +901,7 @@ const I = {
   x: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>',
   print: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>',
   chat: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.9A8 8 0 1 1 21 12z"/></svg>',
+  phone: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>',
   mail: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 6-10 7L2 6"/></svg>',
   back: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>',
   cash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/></svg>'
@@ -835,6 +920,7 @@ function applyComfort() {
   const disp = S.settings.display;
   if (disp === 'light' || disp === 'dark') { r.setAttribute('data-theme', disp); r.dataset.docketTheme = '1'; }
   else if (r.dataset.docketTheme) { r.removeAttribute('data-theme'); delete r.dataset.docketTheme; }
+  if (S.settings.look === 'hud') r.setAttribute('data-hud', ''); else r.removeAttribute('data-hud');
   if (S.settings.accent && S.settings.accent !== 'gold') r.setAttribute('data-accent', S.settings.accent); else r.removeAttribute('data-accent');
 }
 function route() {
@@ -854,6 +940,7 @@ function route() {
 
 function afterRender() {
   setupPager();
+  setupClientPager();
   setupEditPager();
   const abnInput = document.querySelector('[data-abn-hint]');
   if (abnInput) updateAbnHint(abnInput);
@@ -998,14 +1085,15 @@ function viewHome() {
 </div>`;
 }
 
-function rowHtml(d) {
+function rowHtml(d, showChip = true, jobTitle = false) {
   const c = getClient(d.clientId), t = totals(d), due = dueInfo(d);
+  const first = (d.lines.find(l => l.desc) || {}).desc;
+  const title = jobTitle ? `${docLabel(d)} · ${d.site || first || d.number}` : (c ? c.name : 'No client yet');
   const showBal = d.type === 'invoice' && t.paid > 0 && t.balance > 0;
-  return `<a class="li" data-st="${esc(status(d))}" href="#/view/${d.id}">
-    <span class="num">${esc(d.number)}</span>
-    <span class="who"><b>${esc(c ? c.name : 'No client yet')}</b><span class="when ${due.tone}">${esc(due.text)}${d.site ? ' · ' + esc(d.site) : ''}</span></span>
-    ${chip(d)}
+  return `<a class="li simple" data-st="${esc(status(d))}" href="#/view/${d.id}" aria-label="${esc((c ? c.name : 'No client') + ', ' + d.number + ', ' + money(showBal ? t.balance : t.total) + ', ' + due.text)}">
+    <span class="who"><b>${esc(title)}</b><span class="when ${due.tone}">${esc(due.text)}</span></span>
     <span class="amt">${money(showBal ? t.balance : t.total)}${showBal ? '<small>left to pay</small>' : ''}</span>
+    ${showChip === true ? chip(d) : ''}
   </a>`;
 }
 
@@ -1044,7 +1132,7 @@ function pageBody(pg) {
   const counted = pg.kind === 'open' ? docs.filter(d => d.status === 'sent') : docs;
   const sum = counted.reduce((a, d) => a + (pg.kind === 'balance' ? totals(d).balance : totals(d).total), 0);
   return `<div class="phead"><span class="big ${pg.tone === 'bad' ? 'bad' : pg.tone === 'ok' ? 'ok' : ''}">${money(sum)}</span><span class="muted">${pg.word} · ${plural(counted.length, pg.key === 'quotes' ? 'quote' : 'invoice')}${counted.length !== docs.length ? ` (${docs.length} in total)` : ''}</span></div>
-    <div class="card"><div class="list">${docs.map(rowHtml).join('')}</div></div>`;
+    <div class="card"><div class="list">${docs.map(d => rowHtml(d, pg.key === 'quotes')).join('')}</div></div>`;
 }
 function startPage(key) {
   if (key) return Math.max(0, PAGES.findIndex(p => p.key === key));
@@ -1057,10 +1145,10 @@ function viewWork(key) {
   workPage = PAGES[start].key;
   return `
   <div class="page-head">
-    <div><div class="eyebrow">Paperwork</div><h1>Invoices & quotes</h1></div>
+    <h1>Invoices & quotes</h1>
     <div class="row"><button class="btn" data-act="new" data-type="quote">${I.plus}New quote</button><button class="btn primary" data-act="new" data-type="invoice">${I.plus}New invoice</button></div>
   </div>
-  <div class="row" style="margin-bottom:6px"><input class="inp" style="max-width:340px" type="search" id="f-search" placeholder="Search client, number, site…" value="${esc(listFilter.q)}" data-bind="search"><span class="swipehint">Swipe for more →</span></div>
+  <div class="row" style="margin-bottom:6px"><input class="inp" style="max-width:340px" type="search" id="f-search" placeholder="Search client, number, site…" value="${esc(listFilter.q)}" data-bind="search"></div>
   <div class="ptabs" role="tablist" id="ptabs">${PAGES.map((pg, i) => { const n = pageDocs(pg).length; return `<button type="button" role="tab" id="tab-${pg.key}" aria-controls="pg-${pg.key}" aria-selected="${i === start}" tabindex="${i === start ? 0 : -1}" class="ptab t-${pg.tone} ${n ? 'has' : ''}" data-act="page" data-i="${i}">${pg.label}<b>${n}</b></button>`; }).join('')}</div>
   <div class="pager" id="pager" data-start="${start}">${PAGES.map(pg => `<section class="ppage" id="pg-${pg.key}" role="tabpanel" aria-labelledby="tab-${pg.key}">${pageBody(pg)}</section>`).join('')}</div>
   <div class="pdots" aria-hidden="true">${PAGES.map((_, i) => `<i class="${i === start ? 'on' : ''}"></i>`).join('')}</div>`;
@@ -1107,17 +1195,85 @@ function refreshPages() {
 window.addEventListener('resize', () => { const pg = document.getElementById('pager'); if (pg) { const i = PAGES.findIndex(p => p.key === workPage); pg.scrollLeft = i * pg.clientWidth; setPage(i); } });
 
 /* ---------- views: clients ---------- */
+let clQuery = '', clientSel = null;
+const initials = n => (String(n || '?').trim().split(/\s+/).map(w => w[0]).filter(Boolean).slice(0, 2).join('') || '?').toUpperCase();
+const avClass = id => 'a' + ([...String(id)].reduce((a, ch) => a + ch.charCodeAt(0), 0) % 5);
+function clientStats(c) {
+  const docs = S.docs.filter(d => d.clientId === c.id);
+  let owing = 0, overdue = 0;
+  for (const d of docs) if (d.type === 'invoice') { const s = status(d); if (['sent', 'part paid', 'overdue'].includes(s)) owing += totals(d).balance; if (s === 'overdue') overdue += totals(d).balance; }
+  return { docs, owing, overdue, inv: docs.filter(d => d.type === 'invoice').length, quo: docs.filter(d => d.type === 'quote').length };
+}
+function clientList() {
+  const q = clQuery.trim().toLowerCase();
+  const last = id => Math.max(0, ...S.docs.filter(x => x.clientId === id).map(x => x.createdAt || 0));
+  return S.clients.filter(c => !q || [c.name, c.contact, c.phone, c.email].some(x => String(x || '').toLowerCase().includes(q)))
+    .sort((a, b) => clientStats(b).owing - clientStats(a).owing || last(b.id) - last(a.id) || a.name.localeCompare(b.name));
+}
+function clientSlide(c) {
+  const st = clientStats(c), phone = String(c.phone || '').replace(/[^\d+]/g, '');
+  const acts = [
+    phone && `<a class="btn" href="tel:${esc(phone)}">${I.phone}Call</a>`,
+    phone && `<a class="btn" href="sms:${esc(phone)}">${I.chat}Text</a>`,
+    c.email && `<a class="btn" href="mailto:${esc(c.email)}">${I.mail}Email</a>`
+  ].filter(Boolean).join('');
+  return `<section class="cslide" data-id="${c.id}" aria-label="${esc(c.name)}"><div class="card ccard-big">
+    <div class="av big ${avClass(c.id)}" aria-hidden="true">${esc(initials(c.name))}</div>
+    <div class="cname">${esc(c.name)}</div>
+    ${st.owing ? `<div class="cown ${st.overdue ? 'bad' : ''}">${money(st.owing)}<small>${st.overdue ? `owing · ${money(st.overdue)} overdue` : 'owing'}</small></div>`
+      : `<div class="cok">${st.inv ? '✓ All paid up' : 'No invoices yet'}</div>`}
+    ${acts ? `<div class="cacts contact">${acts}</div>` : ''}
+    <div class="cacts"><button class="btn primary" data-act="new" data-type="invoice" data-client="${c.id}">${I.plus}Invoice</button><a class="btn ghost" href="#/client/${c.id}">Edit details</a></div>
+  </div></section>`;
+}
+function clientJobs(c) {
+  if (!c) return '';
+  const docs = clientStats(c).docs.sort((a, b) => (b.issueDate || '').localeCompare(a.issueDate || ''));
+  return `<div class="card"><h2>Jobs for ${esc(c.name)}</h2>${docs.length ? `<div class="list">${docs.map(d => rowHtml(d, true, true)).join('')}</div>` : '<div class="muted">Nothing yet.</div>'}</div>`;
+}
+function rosterHtml(list) {
+  return list.map(c => `<button type="button" class="rchip" data-act="pick-roster" data-id="${c.id}" aria-current="${c.id === clientSel}" aria-label="${esc(c.name)}"><span class="av ${avClass(c.id)}">${esc(initials(c.name))}</span><span>${esc(c.name.split(' ')[0])}</span></button>`).join('');
+}
 function viewClients() {
-  const cl = S.clients.slice().sort((a, b) => a.name.localeCompare(b.name));
+  const list = clientList();
+  if (!list.some(c => c.id === clientSel)) clientSel = list[0] ? list[0].id : null;
   return `
   <div class="page-head"><h1>Clients</h1><button class="btn primary" data-act="client-new">${I.plus}New client</button></div>
-  <div class="card"><h2>Your clients</h2>${cl.length ? `<div class="list">${cl.map(c => {
-    const docs = S.docs.filter(d => d.clientId === c.id && d.type === 'invoice');
-    const owing = docs.reduce((a, d) => { const s = status(d); return a + (['sent', 'part paid', 'overdue'].includes(s) ? totals(d).balance : 0); }, 0);
-    return `<a class="li" style="grid-template-columns:1fr auto" href="#/client/${c.id}">
-      <span class="who"><b>${esc(c.name)}</b><span class="muted small">${esc([c.contact, c.phone, c.email].filter(Boolean).join(' · ')) || '&nbsp;'}</span></span>
-      <span class="amt">${owing ? money(owing) + '<div class="muted small">owing</div>' : `<span class="muted small">${docs.length} invoice${docs.length === 1 ? '' : 's'}</span>`}</span></a>`;
-  }).join('')}</div>` : `<div class="empty"><b>No clients yet</b>Add the people and builders you work for.</div>`}</div>`;
+  ${S.clients.length ? `<input class="inp" type="search" id="c-search" data-bind="clsearch" value="${esc(clQuery)}" placeholder="Search clients" aria-label="Search clients" style="margin-bottom:14px">` : ''}
+  <div id="cbody">${clientsBody(list)}</div>`;
+}
+function clientsBody(list) {
+  if (!S.clients.length) return `<div class="card"><div class="empty"><b>No clients yet</b>Tap “New client” to add one.</div></div>`;
+  if (!list.length) return `<div class="card"><div class="empty"><b>No match</b>Try another name or number.</div></div>`;
+  const i = Math.max(0, list.findIndex(c => c.id === clientSel));
+  return `<div class="roster" id="roster" aria-label="Clients">${rosterHtml(list)}</div>
+    <div class="cpager" id="cpager" data-start="${i}">${list.map(clientSlide).join('')}</div>
+    ${list.length > 1 ? `<div class="cnav"><button class="btn" data-act="cprev" aria-label="Previous client">‹</button><span id="ccount">${i + 1} of ${list.length}</span><button class="btn" data-act="cnext" aria-label="Next client">›</button></div>` : '<div style="height:14px"></div>'}
+    <div id="cjobs">${clientJobs(getClient(clientSel))}</div>`;
+}
+function setClientSel(id, scrollRoster = true) {
+  clientSel = id;
+  const list = clientList(), i = list.findIndex(c => c.id === id);
+  document.querySelectorAll('.rchip').forEach(b => b.setAttribute('aria-current', b.dataset.id === id));
+  const cc = document.getElementById('ccount'); if (cc) cc.textContent = `${i + 1} of ${list.length}`;
+  const cj = document.getElementById('cjobs'); if (cj) cj.innerHTML = clientJobs(getClient(id));
+  if (scrollRoster) { const r = document.querySelector(`.rchip[data-id="${id}"]`); if (r) r.scrollIntoView({ block: 'nearest', inline: 'center' }); }
+}
+function goClient(i) {
+  const pg = document.getElementById('cpager'); if (!pg) return;
+  const list = clientList(); i = Math.max(0, Math.min(list.length - 1, i));
+  pg.scrollTo({ left: i * pg.clientWidth, behavior: S.settings.calm || matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  setClientSel(list[i].id);
+}
+function setupClientPager() {
+  const pg = document.getElementById('cpager'); if (!pg) return;
+  pg.scrollLeft = Number(pg.dataset.start) * pg.clientWidth;
+  setClientSel(clientSel);
+  let raf;
+  pg.addEventListener('scroll', () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => {
+    const list = clientList(), i = Math.round(pg.scrollLeft / Math.max(1, pg.clientWidth));
+    if (list[i] && list[i].id !== clientSel) setClientSel(list[i].id);
+  }); }, { passive: true });
 }
 
 function clientFields(c = {}) {
@@ -1133,6 +1289,7 @@ function clientFields(c = {}) {
 
 function viewClient(id) {
   const c = getClient(id);
+  if (c) clientSel = id;
   if (!c) return `<div class="empty"><b>Client not found</b><a href="#/clients">Back to clients</a></div>`;
   const docs = S.docs.filter(d => d.clientId === id).sort((a, b) => (b.issueDate || '').localeCompare(a.issueDate || ''));
   return `
@@ -1141,7 +1298,7 @@ function viewClient(id) {
     <div class="row"><button class="btn ghost danger" data-act="client-del" data-id="${c.id}">Delete</button><button class="btn primary" data-act="new" data-type="invoice" data-client="${c.id}">${I.plus}Invoice</button></div></div>
   <form class="card" id="clientform" data-id="${c.id}"><h2>Details</h2>${clientFields(c)}
     <div class="row mt"><span class="muted small">Changes save automatically.</span></div></form>
-  <div class="card"><h2>Jobs</h2>${docs.length ? `<div class="list">${docs.map(rowHtml).join('')}</div>` : '<div class="muted">No quotes or invoices yet.</div>'}</div>`;
+  <div class="card"><h2>Jobs</h2>${docs.length ? `<div class="list">${docs.map(d => rowHtml(d, true, true)).join('')}</div>` : '<div class="muted">No quotes or invoices yet.</div>'}</div>`;
 }
 
 /* ---------- views: settings ---------- */
@@ -1149,7 +1306,7 @@ function viewSettings() {
   const s = S.settings;
   const field = (key, label, attrs = '') => `<label class="f">${label}<input class="inp" data-bind="set" data-key="${key}" value="${esc(s[key])}" ${attrs}></label>`;
   return `
-  <div class="page-head"><h1>Settings</h1><span class="muted small">Saves as you type</span></div>
+  <div class="page-head"><h1>Settings</h1></div>
   <div class="card"><h2>Your business</h2>
     <div class="grid g2">
       ${field('businessName', 'Business / legal name *', 'autocomplete="organization"')}
@@ -1173,12 +1330,11 @@ function viewSettings() {
   </div>
 
   <div class="card"><h2>Sending to clients</h2>
-    <div class="muted small" style="margin-bottom:12px">When you text or email an invoice, your client gets a link to a page where they can see it and pay. The invoice details travel inside the link, so nothing is stored online.</div>
     <div class="grid g2">
       <label class="f">Card payment link (optional)<input class="inp" type="url" data-bind="set" data-key="cardLink" id="f-cardlink" value="${esc(s.cardLink)}" placeholder="https://buy.stripe.com/…"></label>
       <label class="f">Client page address<input class="inp" type="url" data-bind="set" data-key="clientBase" id="f-clientbase" value="${esc(s.clientBase)}" placeholder="${esc(defaultClientBase())}"></label>
     </div>
-    <div class="muted small mt">Card link: create a payment link in Stripe or Square where the customer types the amount, and paste it here. Client page: leave blank unless you host Docket somewhere else.</div>
+    <div class="muted small mt">Card link: from Stripe or Square. Client page: leave blank.</div>
   </div>
 
   <div class="card"><h2>How you get paid</h2>
@@ -1194,9 +1350,7 @@ function viewSettings() {
 
   <div class="card"><h2>How you charge</h2>
     <div class="seg">${[['hour', 'By the hour'], ['job', 'Per job (fixed price)']].map(([k, l]) => `<button type="button" class="${(s.chargeBy || 'hour') === k ? 'on' : ''}" data-act="charge" data-val="${k}" aria-pressed="${(s.chargeBy || 'hour') === k}">${l}</button>`).join('')}</div>
-    <div class="muted small" style="margin-top:8px">${(s.chargeBy || 'hour') === 'job' ? 'Logging a job asks for one price for the whole job. You can still switch to hours on any job.' : 'Logging a job asks for your hours and works out the labour. You can still switch to a fixed price on any job.'}</div>
     <div class="grid g3 mt">${field('defaultRate', `Hourly rate $${s.gstRegistered ? ' (ex GST)' : ''}`, 'inputmode="decimal" placeholder="e.g. 95"')}</div>
-    <div class="muted small mt">Used for “+ Labour” and when you log hours. You can change it on any job, e.g. for after-hours work.</div>
   </div>
 
   <div class="card"><h2>Numbering & defaults</h2>
@@ -1210,6 +1364,8 @@ function viewSettings() {
   </div>
 
   <div class="card"><h2>Comfort & focus</h2>
+    <div class="f" style="margin-bottom:8px">Look</div>
+    <div class="seg" style="margin-bottom:16px">${[['clean', 'Clean (easiest to read)'], ['hud', 'Full HUD']].map(([k, l]) => `<button type="button" class="${(s.look || 'clean') === k ? 'on' : ''}" data-act="look" data-val="${k}" aria-pressed="${(s.look || 'clean') === k}">${l}</button>`).join('')}</div>
     <div class="row">
       <label class="check"><input type="checkbox" data-bind="set" data-key="bigText" ${s.bigText ? 'checked' : ''}>Bigger text</label>
       <label class="check"><input type="checkbox" data-bind="set" data-key="calm" ${s.calm ? 'checked' : ''}>Calm mode (no glow or motion)</label>
@@ -1217,20 +1373,18 @@ function viewSettings() {
     </div>
     <div class="f mt" style="font-size:13px;font-weight:700;color:var(--ink-2)">Screen</div>
     <div class="seg" style="margin-top:8px">${[['auto', 'Match my phone'], ['light', 'Light'], ['dark', 'Dark']].map(([k, l]) => `<button type="button" class="${(s.display || 'auto') === k ? 'on' : ''}" data-act="display" data-val="${k}">${l}</button>`).join('')}</div>
-    <div class="muted small" style="margin-top:6px">Light is easier to read for many people, especially with astigmatism. Dark is nice at night.</div>
     <div class="f mt" style="font-size:13px;font-weight:700;color:var(--ink-2)">Colour</div>
     <div class="swatches mt" style="margin-top:8px">${[['gold', 'Gold', '#ffc21a'], ['cyan', 'Cyan', '#22e4ff'], ['pink', 'Neon pink', '#ff4fd8'], ['green', 'Toxic green', '#3dff8b']].map(([k, l, c]) => `<button type="button" class="${(s.accent || 'gold') === k ? 'on' : ''}" data-act="accent" data-val="${k}"><i style="background:${c};color:${c}"></i>${l}</button>`).join('')}</div>
     <div class="grid g3 mt">${field('monthlyGoal', 'Monthly income goal ($)', 'inputmode="decimal"')}</div>
-    <div class="muted small mt">The goal fills the ring on your home screen. Set it to what a good month looks like for you.</div>
   </div>
 
   <div class="card pricelist"><div class="row" style="margin-bottom:10px"><h2 style="margin:0">Your jobs & costs</h2><button class="btn sm right" data-act="item-new">${I.plus}Add</button></div>
-    <div class="muted small" style="margin-bottom:8px">These show as tap-to-add tiles when you make an invoice or quote. Tip: tap ☆ on any line to save it here without leaving the invoice.</div>
+    <div class="muted small" style="margin-bottom:8px">Tip: tap ☆ on any invoice line to save it here.</div>
     ${KINDS.map(([k, l]) => { const its = S.items.filter(it => kindOf(it) === k); return `<div class="eyebrow" style="margin:14px 0 4px">${l}</div>` + (its.length ? its.map(it => `<div class="pl"><span>${esc(it.desc)}${it.gst ? '' : ' <span class="muted small">(GST-free)</span>'}</span><span class="muted small">/ ${esc(it.unit)}</span><b>${money(toCents(it.price))}</b><button class="icon-btn" title="Remove" aria-label="Remove ${esc(it.desc)}" data-act="item-del" data-id="${it.id}">${I.x}</button></div>`).join('') : `<div class="muted small">${k === 'labour' && num(s.defaultRate) ? `Your hourly rate ($${esc(s.defaultRate)}/hr) is always here.` : 'Nothing yet.'}</div>`); }).join('')}
   </div>
 
   <div class="card"><h2>Your data</h2>
-    <div class="muted small" style="margin-bottom:12px">Everything is stored in this browser only. Download a backup regularly, and before switching phones or clearing your browser.</div>
+    <div class="muted small" style="margin-bottom:12px">Saved in this browser only. Back up often.</div>
     <div class="row">
       <button class="btn" data-act="backup">Download backup</button>
       <label class="btn">Restore backup<input type="file" accept="application/json,.json" data-act-change="restore" hidden></label>
@@ -1295,7 +1449,7 @@ function openQuotes(d) {
 function quoteCardsHtml(d) {
   const qs = openQuotes(d);
   if (!qs.length) return '';
-  return `<div class="card"><h2>Start from a quote</h2><div class="muted small">Copies the quote’s lines in. You can change anything on the next slide.</div>
+  return `<div class="card"><h2>Start from a quote</h2>
     ${qs.slice(0, 5).map(q => { const c = getClient(q.clientId); const n = q.lines.filter(l => l.desc || num(l.price)).length;
       return `<button type="button" class="qcard" data-act="from-quote" data-id="${q.id}"><span class="qn">${esc(q.number)}</span><span class="qd"><b>${esc(c ? c.name : 'No client')}${q.site ? ' · ' + esc(q.site) : ''}</b><span>${plural(n, 'item')} · ${esc(q.status)} · ${ago(q.issueDate)}${d.fromQuote === q.number ? ' · in use' : ''}</span></span><span class="qa">${money(totals(q).total)}</span></button>`; }).join('')}</div>`;
 }
@@ -1501,7 +1655,7 @@ function viewDoc(id) {
 
   const due = dueInfo(d);
   return `
-  <div class="card docstate no-print"><span class="eyebrow">${docLabel(d)} ${esc(d.number)}</span>${chip(d)}<span class="${due.tone === 'bad' ? 'hint bad' : 'muted'}" style="font-size:15px">${esc(due.text)}</span>
+  <div class="card docstate no-print"><span class="eyebrow">${docLabel(d)} ${esc(d.number)}</span><span class="${due.tone === 'bad' ? 'hint bad' : 'muted'}" style="font-size:15px">${esc(due.text)}</span>
     <span class="big right">${money(isQ ? t.total : t.balance)} <span class="muted small" style="font-family:var(--f-body)">${isQ ? 'quoted' : t.balance > 0 ? 'to collect' : 'collected'}</span></span></div>
   <div class="toolbar no-print" style="margin-bottom:8px;gap:2px">${minor.join('')}</div>
   <div class="toolbar no-print">${actions.join('')}</div>
@@ -1640,7 +1794,7 @@ const ACT = {
     go('/edit/' + d.id);
   },
   page(ds) { goPage(Number(ds.i)); },
-  'client-new'() { clientModal(c => go('/client/' + c.id)); },
+  'client-new'() { clientModal(c => { clientSel = c.id; clQuery = ''; route(); }); },
   'client-del'(ds) {
     const n = S.docs.filter(d => d.clientId === ds.id).length;
     ask('Delete client?', n ? `This client has ${n} quote/invoice(s). They’ll be kept but show “No client”.` : 'This can’t be undone.', 'Delete client', () => {
@@ -1737,6 +1891,7 @@ const ACT = {
   accent(ds) { S.settings.accent = ds.val; save(); route(); },
   charge(ds) { S.settings.chargeBy = ds.val; save(); route(); toast(ds.val === 'job' ? 'Set to fixed price per job' : 'Set to charge by the hour'); },
   display(ds) { S.settings.display = ds.val; save(); route(); },
+  look(ds) { S.settings.look = ds.val; save(); route(); },
   quick() {
     const st = S.settings, gstNote = st.gstRegistered ? (st.pricesIncGst ? ' (inc GST)' : ' (ex GST)') : '';
     let rate = num(st.defaultRate);
@@ -1744,13 +1899,12 @@ const ACT = {
     const mode0 = st.chargeBy === 'job' ? 'job' : 'hour';
     const opts = S.clients.slice().sort((a, b) => a.name.localeCompare(b.name)).map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join('');
     const m = openModal('Log a job', `
-      <p class="muted small" style="margin:0 0 14px">Jot it down while it’s fresh. It becomes a draft invoice you can tidy up and send later.</p>
       <label class="f">What did you do?<textarea class="inp" name="what" id="q-what" rows="2" required placeholder="e.g. Replaced hot water system"></textarea></label>
       <div class="grid g2 mt">
         <label class="f">Who for<select class="inp" name="client" id="q-client"><option value="">— Pick a client —</option>${opts}</select></label>
         <label class="f">…or a new client<input class="inp" name="newname" id="q-new" placeholder="Name"></label>
       </div>
-      <div class="f mt" style="font-size:13px;font-weight:700;color:var(--ink-2)">How are you charging for this one?</div>
+      <div class="f mt" style="font-size:13px;font-weight:700;color:var(--ink-2)">Charge by</div>
       <input type="hidden" name="mode" id="q-mode" value="${mode0}">
       <div class="seg" style="margin-top:6px">${[['hour', 'Hourly'], ['job', 'Fixed price']].map(([k, l]) => `<button type="button" data-mode="${k}" class="${mode0 === k ? 'on' : ''}" aria-pressed="${mode0 === k}">${l}</button>`).join('')}</div>
       <div class="grid g2 mt" id="q-hourly" ${mode0 === 'hour' ? '' : 'hidden'}>
@@ -1802,7 +1956,6 @@ const ACT = {
     const smsHref = (ph, m) => `sms:${String(ph || '').replace(/[^\d+]/g, '')}?&body=${encodeURIComponent(m)}`;
     const sent = () => { if (d.status === 'draft') { d.status = 'sent'; save(); toast('Marked as sent'); } };
     const m = openModal(s === 'overdue' ? 'Text a reminder' : `Text ${docLabel(d).toLowerCase()} ${esc(d.number)}`, `
-      <p class="muted small" style="margin:0">It sends from your own phone, so it comes from a number they know. The link opens a page where they can ${isQ ? 'see the quote and say yes' : 'see the invoice and pay'}.</p>
       <label class="f mt">Their mobile<input class="inp" type="tel" name="phone" id="t-phone" value="${esc(c ? c.phone : '')}" placeholder="04xx xxx xxx" autocomplete="off"></label>
       <label class="f mt">Message<textarea class="inp" name="msg" id="t-msg" rows="6">${esc(msg)}</textarea></label>
       <div class="row mt">
@@ -1810,17 +1963,20 @@ const ACT = {
         <button type="button" class="btn sm" id="t-copy">Copy message</button>
         <a class="btn sm ghost" href="${esc(link)}" target="_blank" rel="noopener">See their page ↗</a>
       </div>
-      <div class="muted small mt" id="t-hint">${c && c.phone ? '' : 'Add their mobile so it goes straight to them.'}</div>`, 'Done', data => {
+      <div class="muted small mt" id="t-hint">${c && c.phone ? '' : 'Add their mobile.'}</div>`, 'Done', data => {
       if (c && data.phone.trim() && data.phone.trim() !== c.phone) { c.phone = data.phone.trim(); save(); }
       route();
     });
     m.querySelector('button[value=ok]').classList.remove('primary');
     const ph = m.querySelector('#t-phone'), tx = m.querySelector('#t-msg'), open = m.querySelector('#t-open');
-    const upd = () => { open.href = smsHref(ph.value, tx.value); m.querySelector('#t-hint').textContent = ph.value.trim() ? '' : 'Add their mobile so it goes straight to them.'; };
+    const upd = () => { open.href = smsHref(ph.value, tx.value); m.querySelector('#t-hint').textContent = ph.value.trim() ? '' : 'Add their mobile.'; };
     ph.addEventListener('input', upd); tx.addEventListener('input', upd);
     open.addEventListener('click', () => { if (c && ph.value.trim()) { c.phone = ph.value.trim(); } sent(); });
     m.querySelector('#t-copy').addEventListener('click', () => { copyText(tx.value, tx); sent(); });
   },
+  'pick-roster'(ds) { const i = clientList().findIndex(c => c.id === ds.id); goClient(i); },
+  cprev() { goClient(clientList().findIndex(c => c.id === clientSel) - 1); },
+  cnext() { goClient(clientList().findIndex(c => c.id === clientSel) + 1); },
   skip(ds) { skipped.add(ds.id); route(); },
   unskip() { skipped.clear(); route(); },
   remind(ds) { go('/view/' + ds.id); const c = getClient(getDoc(ds.id).clientId); (c && c.phone ? ACT.text : ACT.email)(); },
@@ -1872,9 +2028,9 @@ const ACT = {
     }
     const href = `mailto:${encodeURIComponent(c.email || '')}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     const m = openModal(s === 'overdue' ? 'Send a reminder' : `Email ${docLabel(d).toLowerCase()}`, `
-      <p class="muted small" style="margin:0">Your email is written for you. Copy it into your mail app, or try the button below. Attach the PDF from “Print / PDF”.</p>
+      <p class="muted small" style="margin:0">Attach the PDF from Print / PDF.</p>
       ${tones ? `<div class="f mt" style="font-size:13px;font-weight:700;color:var(--ink-2)">How firm?</div><div class="seg" style="margin-top:6px" id="tone">${[['friendly', 'Friendly nudge'], ['firm', 'Firm'], ['final', 'Final notice']].map(([k, l]) => `<button type="button" data-tone="${k}" class="${(st.reminderTone || 'friendly') === k ? 'on' : ''}">${l}</button>`).join('')}</div>
-      <div class="muted small" style="margin-top:6px">Most late payers just forgot. Start friendly; you can always get firmer next time.</div>` : ''}
+` : ''}
       ${[['To', c.email || '(no email saved for this client)'], ['Subject', subject]].map(([l, v], i) => `<div class="copybox"><div class="row"><b class="small">${l}</b><button type="button" class="btn sm" data-copy="${i}">Copy</button></div><input class="inp" id="copy-${i}" readonly value="${esc(v)}"></div>`).join('')}
       <div class="copybox"><div class="row"><b class="small">Message</b><button type="button" class="btn sm" data-copy="2">Copy</button></div><textarea class="inp" id="copy-2" readonly rows="8">${esc(body)}</textarea></div>
       <div class="row mt"><a class="btn sm" href="${esc(href)}" target="_blank" rel="noopener">${I.mail}Open in mail app</a></div>`,
@@ -2038,6 +2194,7 @@ document.addEventListener('input', e => {
     return;
   }
   if (b === 'search') { listFilter.q = val; refreshPages(); return; }
+  if (b === 'clsearch') { clQuery = val; const list = clientList(); if (!list.some(c => c.id === clientSel)) clientSel = list[0] ? list[0].id : null; document.getElementById('cbody').innerHTML = clientsBody(list); setupClientPager(); return; }
   if (b === 'libsearch') { libQuery = val; const d0 = getDoc(current.id); document.getElementById('tiles').innerHTML = tilesHtml(d0); return; }
   if (b === 'csearch') { clientQuery = val; const d0 = getDoc(current.id); document.getElementById('cgrid').innerHTML = clientCardsHtml(d0); syncEditUI(d0); return; }
 
