@@ -1999,14 +1999,7 @@ function viewHome() {
   const hr = now.getHours(), part = hr < 12 ? 'Morning' : hr < 17 ? 'Arvo' : 'Evening';
   const who = st.tradingName || st.businessName;
   const line = (href, tone, k, v) => `<${href ? `a href="${href}"` : 'div'} class="ln"><span class="p" style="color:var(--${tone})">›</span><span class="k">${esc(k)}</span><span class="dots"></span><span class="v">${esc(v)}</span></${href ? 'a' : 'div'}>`;
-  const pageLine = key => { const pg = PAGES.find(p => p.key === key), docs = S.docs.filter(pg.match), counted = key === 'quotes' ? docs.filter(d => d.status === 'sent') : docs;
-    return counted.length ? { n: counted.length, sum: counted.reduce((a, d) => a + (pg.kind === 'balance' ? totals(d).balance : totals(d).total), 0) } : null; };
-  const L = { overdue: pageLine('overdue'), tosend: pageLine('tosend'), waiting: pageLine('waiting'), quotes: pageLine('quotes') };
   const logLines = [
-    L.overdue && line('#/invoices/overdue', 'bad', `${L.overdue.n} overdue`, money(L.overdue.sum)),
-    L.tosend && line('#/invoices/tosend', 'warn', `${L.tosend.n} ready to send`, money(L.tosend.sum)),
-    L.waiting && line('#/invoices/waiting', 'cy', `${L.waiting.n} waiting on payment`, money(L.waiting.sum)),
-    L.quotes && line('#/quotes', 'hv', `${plural(L.quotes.n, 'quote')} awaiting answer`, money(L.quotes.sum)),
     st.gstRegistered ? line('', 'ink-3', `GST ${q.label}`, money(gst)) : '',
     st.gstRegistered ? line('', 'ink-3', 'BAS due', q.due) : ''
   ].filter(Boolean).join('');
@@ -2018,7 +2011,7 @@ function viewHome() {
     <section class="coreblock" aria-label="Next up">${coreHtml()}</section>
   </div>
   <div class="c-right">
-    ${S.settings.overwhelm === 'full' ? `<section class="frame game-panel" aria-label="Missions"><span class="tag">Missions</span>${missionsDrawer()}</section>` : ''}
+    ${S.settings.overwhelm === 'full' ? `<section class="frame game-panel" aria-label="Missions">${missionsDrawer()}</section>` : ''}
     <section class="frame hud-money"><span class="tag">Money</span><div class="gauges">
       ${gaugeHtml('#/invoices/paid', 'This month', moneyShort(paidMonth), `${Math.round(pct * 100)}% of ${moneyShort(goal)} goal`, pct, 'hv')}
       ${gaugeHtml('#/invoices/overdue', 'Overdue', moneyShort(overdueSum), overdueN ? plural(overdueN, 'invoice') : 'None ✓', outstanding ? overdueSum / outstanding : 0, 'bad')}
