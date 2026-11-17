@@ -1357,7 +1357,22 @@ body{background:radial-gradient(80% 45% at 50% 0%,rgba(190,40,200,.22),transpare
 .today .time{font:600 clamp(48px,13vw,68px)/1 var(--f-display);letter-spacing:.03em;font-variant-numeric:tabular-nums}
 .today .date{color:var(--ink-2);font-weight:700}
 .today .time small{font-size:.3em;letter-spacing:.12em;color:var(--ink-2);margin-left:8px}
-.console>.today{grid-column:1/-1}
+.console>.today-pager{grid-column:1/-1;min-width:0}
+/* home top: swipe sideways between the time and each job that needs you */
+.tpager{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;padding:2px 2px 6px}
+.tpager::-webkit-scrollbar{display:none}
+.tslide{flex:0 0 min(86%,360px);min-width:0;scroll-snap-align:start;scroll-snap-stop:always;display:flex;flex-direction:column;align-items:flex-start;gap:8px;padding-top:36px;min-height:230px}
+.tslide .time{font:600 clamp(48px,13vw,64px)/1 var(--f-display);letter-spacing:.03em;font-variant-numeric:tabular-nums}
+.tslide .time small{font-size:.3em;letter-spacing:.12em;color:var(--ink-2);margin-left:8px}
+.tslide .date{color:var(--ink-2);font-weight:700}
+.tslide .monthbar{width:100%;margin-top:auto}
+.tslide .today-lvl{width:100%}
+.tjob-client{font:600 22px/1.2 var(--f-display);color:var(--ink);overflow-wrap:anywhere}
+.tjob-meta{font-size:13px;color:var(--ink-2)}
+.tjob-amt{font:600 32px/1 var(--f-display);font-variant-numeric:tabular-nums;color:var(--ink);margin-top:auto}
+.tjob-amt.bad{color:var(--bad)}
+.tslide .btn{margin-top:4px}
+.tswipe{display:flex;justify-content:space-between;gap:12px;font:600 12px var(--f-display);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);padding:2px 4px}
 .today-lvl{display:flex;flex-direction:column;gap:6px}
 .today-lvl .lvl-row{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap}
 .today-lvl .lvl-row b{font:600 22px var(--f-display);color:var(--ink)}
@@ -1934,25 +1949,35 @@ function viewWelcome() {
   return `<section class="welcome card"><div class="wdots">${dots}</div>${body}
     ${welcomeStep > 0 ? `<div class="wback"><button class="btn ghost sm" data-act="w-back">← Back</button></div>` : ''}</section>`;
 }
-function todayHtml(part, who, now, day, dim, todo) {
-  // the top of home: time, level and what needs you, so the main info is visible without scrolling
+function jobsNeedingYou() {
+  // jobs that need a decision: overdue invoices, drafts ready to send, quotes waiting for an answer
+  const out = [];
+  for (const d of S.docs) {
+    const s = status(d), t = totals(d), client = (getClient(d.clientId) || {}).name || 'No client yet';
+    if (d.type === 'invoice' && s === 'overdue') out.push({ id: d.id, rank: 0, kind: 'Overdue', tone: 'bad', client, number: d.number, amt: t.balance });
+    else if (d.type === 'invoice' && d.status === 'draft' && t.total > 0) out.push({ id: d.id, rank: 1, kind: 'Ready to send', tone: '', client, number: d.number, amt: t.total });
+    else if (d.type === 'quote' && s === 'sent') out.push({ id: d.id, rank: 2, kind: 'Awaiting answer', tone: '', client, number: d.number, amt: t.total });
+  }
+  return out.sort((a, b) => a.rank - b.rank).slice(0, 6);
+}
+function todayHtml(part, who, now, day, dim, jobs) {
+  // swipeable top row: the time first, then one card per job that needs you
   const x = xpInfo(), pct = Math.round(x.into / 50 * 100), full = S.settings.overwhelm === 'full';
-  const rows = todo.length ? todo.map(t => {
-    const inner = `<span class="p" style="color:var(--${t.tone})">›</span><span>${esc(t.text)}</span>`;
-    return t.href ? `<a class="todo-row" href="${t.href}">${inner}</a>` : `<div class="todo-row">${inner}</div>`;
-  }).join('') : `<div class="todo-row clear"><span class="p" style="color:var(--ok)">✓</span><span>All clear. Nothing needs you right now.</span></div>`;
-  return `<section class="frame today" aria-label="Today">
-    <span class="tag">${esc(part)}${who ? ' · ' + esc(who) : ''}</span>
-    <div class="today-grid">
-      <div class="today-time">
-        <div class="time" id="clock">${clockText()}</div>
-        <div class="date">${now.toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' })}</div>
-      </div>
+  const timeCard = `<article class="tslide frame" aria-label="Date and time"><span class="tag">${esc(part)}${who ? ' · ' + esc(who) : ''}</span>
+      <div class="time" id="clock">${clockText()}</div>
+      <div class="date">${now.toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' })}</div>
       ${full ? `<div class="today-lvl"><div class="lvl-row"><b>Level ${x.level}</b><span>${x.xp} XP · ${50 - x.into} to next</span></div><div class="xpbar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></div></div>` : ''}
-    </div>
-    <div class="todo"><div class="todo-h">Needs you</div>${rows}</div>
-    <div class="monthbar" role="img" aria-label="Day ${day} of ${dim}, ${plural(dim - day, 'day')} left this month"><span>${now.toLocaleDateString('en-AU', { month: 'short' })}</span>
-      <div class="cells">${Array.from({ length: dim }, (_, i) => `<i class="${i + 1 < day ? 'p' : i + 1 === day ? 't' : ''}"></i>`).join('')}</div><span>${dim - day}d left</span></div>
+      <div class="monthbar" role="img" aria-label="Day ${day} of ${dim}, ${plural(dim - day, 'day')} left this month"><span>${now.toLocaleDateString('en-AU', { month: 'short' })}</span>
+        <div class="cells">${Array.from({ length: dim }, (_, i) => `<i class="${i + 1 < day ? 'p' : i + 1 === day ? 't' : ''}"></i>`).join('')}</div><span>${dim - day}d left</span></div>
+    </article>`;
+  const jobCards = jobs.length ? jobs.map(j => `<article class="tslide frame"><span class="tag">${esc(j.kind)}</span>
+      <b class="tjob-client">${esc(j.client)}</b><span class="tjob-meta">${esc(j.number || 'Draft')}</span>
+      <div class="tjob-amt ${j.tone}">${money(j.amt)}</div>
+      <a class="btn primary sm" href="#/view/${j.id}">Open</a></article>`).join('')
+    : `<article class="tslide frame"><span class="tag">All clear</span><b class="tjob-client">Nothing needs you right now</b><span class="tjob-meta">Overdue invoices, drafts and open quotes show here.</span></article>`;
+  return `<section class="today-pager" aria-label="Today and jobs needing you">
+    <div class="tpager">${timeCard}${jobCards}</div>
+    <div class="tswipe"><span>Jobs needing you · ${jobs.length}</span><span>Swipe →</span></div>
   </section>`;
 }
 function viewHome() {
@@ -1986,13 +2011,7 @@ function viewHome() {
     st.gstRegistered ? line('', 'ink-3', 'BAS due', q.due) : ''
   ].filter(Boolean).join('');
 
-  const todo = [
-    L.overdue && { tone: 'bad', text: `${L.overdue.n} overdue · ${money(L.overdue.sum)}`, href: '#/invoices/overdue' },
-    L.tosend && { tone: 'warn', text: `${L.tosend.n} ready to send`, href: '#/invoices/tosend' },
-    L.quotes && { tone: 'hv', text: `${plural(L.quotes.n, 'quote')} awaiting an answer`, href: '#/quotes' },
-    ...(st.overwhelm === 'full' ? missionList().filter(m => m.done < m.goal).map(m => ({ tone: 'cy', text: m.label, href: '' })) : [])
-  ].filter(Boolean);
-  return `<div class="console">${todayHtml(part, who, now, day, dim, todo)}
+  return `<div class="console">${todayHtml(part, who, now, day, dim, jobsNeedingYou())}
   ${S.example ? `<div class="strip"><b>Example data</b><span>Smithy’s Plumbing isn’t real. Have a play.</span><button class="link" data-act="examples-clear">Clear examples</button></div>`
     : (!st.businessName || !st.abn) ? `<div class="strip"><b>Setup</b><span>Add your business name, ABN and bank details.</span><a class="link" href="#/settings/business">Add details</a></div>` : ''}
   <div class="c-left">
