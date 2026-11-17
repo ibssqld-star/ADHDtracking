@@ -1339,6 +1339,18 @@ body{background:radial-gradient(80% 45% at 50% 0%,rgba(190,40,200,.22),transpare
 .gbadge.on{border-color:var(--ok);color:var(--ok);background:var(--ok-soft)}
 .mission-row{border:1px solid var(--line-2);background:var(--bg-2);padding:10px 12px;margin-top:8px;clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px)}
 .mission-row.done{border-color:var(--ok);background:var(--ok-soft)}
+/* missions, streak and badges sit in one bar that opens on tap; closed by default to keep the screen calm */
+.gdrawer{margin-top:14px;border:1px solid var(--line-2);background:var(--bg-2)}
+.gdrawer>summary{list-style:none;cursor:pointer;display:flex;gap:16px;align-items:center;flex-wrap:wrap;padding:11px 12px;font:600 14px var(--f-display);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)}
+.gdrawer>summary::-webkit-details-marker{display:none}
+.gdrawer>summary b{color:var(--ink);font-variant-numeric:tabular-nums}
+.gdrawer>summary:focus-visible{outline:2px solid var(--cy);outline-offset:-2px}
+.gchev{margin-left:auto;color:var(--cy);font-style:normal;font-size:18px;line-height:1;transition:transform .15s}
+.gdrawer[open] .gchev{transform:rotate(90deg)}
+.gdrawer .missions,.gdrawer .streak,.gdrawer .badges{padding-inline:12px}
+.gdrawer .missions{padding-bottom:4px}
+.gdrawer .streak{padding-bottom:0}
+.gdrawer .badges{padding-bottom:12px}
 @media (prefers-reduced-motion:reduce){.gbanner,.lvl-pulse,.spark{animation:none!important}.gbanner{transform:translate(-50%,0)}}
 /* calm mode + reduced motion: no glow, no animation */
 :root[data-calm]{--glow:0 0 0 1px var(--line);--hv-glow:none}
@@ -1777,9 +1789,11 @@ function gamePanel() {
     <span class="tag">Level ${x.level}</span>
     <div class="lvl"><div class="lvl-row"><b>${x.xp} XP</b><span>${50 - x.into} to level ${x.level + 1}</span></div>
       <div class="xpbar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></div></div>
+    <details class="gdrawer"><summary><span>Missions <b>${ms.filter(m => m.done >= m.goal).length}/${ms.length}</b></span><span>Streak <b>${streakInfo().cur}</b></span><i class="gchev" aria-hidden="true">▸</i></summary>
     <div class="missions">${ms.map(m => { const p = Math.round(m.done / m.goal * 100);
       return `<div class="mission-row ${m.done >= m.goal ? 'done' : ''}"><span class="mtick">${m.done >= m.goal ? '✓' : ''}</span><div class="mtxt"><b>${esc(m.label)}</b><div class="mbar2"><i style="width:${p}%"></i></div></div><span class="mcount">${m.done}/${m.goal}</span></div>`; }).join('')}</div>
     ${gameExtrasHtml()}
+    </details>
   </section>`;
 }
 function hasRecentPayments() {
