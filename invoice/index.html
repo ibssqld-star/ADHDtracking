@@ -1373,6 +1373,21 @@ body{background:radial-gradient(80% 45% at 50% 0%,rgba(190,40,200,.22),transpare
 .tjob-amt.bad{color:var(--bad)}
 .tslide .btn{margin-top:4px}
 .tswipe{display:flex;justify-content:space-between;gap:12px;font:600 12px var(--f-display);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);padding:2px 4px}
+/* receipts */
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);opacity:0;pointer-events:none}
+.rcpt-sum{margin-bottom:16px}
+.rcpt-total{display:flex;flex-direction:column;margin:8px 0 14px}
+.rcpt-total b{font:600 34px/1.1 var(--f-display);font-variant-numeric:tabular-nums;color:var(--hv-text)}
+.rcpt-total span{font-size:13px;color:var(--ink-2)}
+.rcpt-cat{padding:6px 0;border-top:1px solid var(--line)}
+.rcpt-row{display:grid;grid-template-columns:56px minmax(0,1fr) auto;gap:12px;align-items:center;width:100%;margin-top:8px;padding:10px;text-align:left;background:var(--bg-2);border:1px solid var(--line-2);color:var(--ink);font:inherit;cursor:pointer}
+.rcpt-thumb{width:56px;height:56px;object-fit:cover;display:grid;place-items:center;background:var(--muted-soft);color:var(--ink-3);font-size:11px;text-align:center}
+.rcpt-txt{min-width:0}
+.rcpt-txt b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rcpt-txt span{font-size:12px;color:var(--ink-2)}
+.rcpt-amt{font:600 17px var(--f-display);font-variant-numeric:tabular-nums;text-align:right}
+.rcpt-warn{color:var(--warn);font-weight:700}
+.rcpt-big{display:block;width:100%;max-height:320px;object-fit:contain;background:var(--muted-soft);margin-bottom:12px}
 .today-lvl{display:flex;flex-direction:column;gap:6px}
 .today-lvl .lvl-row{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap}
 .today-lvl .lvl-row b{font:600 22px var(--f-display);color:var(--ink)}
@@ -1691,7 +1706,7 @@ function route() {
   current = { view, id };
   renderNav();
   const v = document.getElementById('view');
-  const r = { welcome: viewWelcome, home: viewHome, invoices: () => viewWork(id || null), quotes: () => viewWork('quotes'), clients: viewClients, client: viewClient, settings: viewSettings, edit: viewEdit, view: viewDoc }[view] || viewHome;
+  const r = { welcome: viewWelcome, home: viewHome, invoices: () => viewWork(id || null), quotes: () => viewWork('quotes'), clients: viewClients, client: viewClient, settings: viewSettings, receipts: viewReceipts, edit: viewEdit, view: viewDoc }[view] || viewHome;
   v.innerHTML = r(id);
   if (view !== 'edit') window.scrollTo(0, 0);
   afterRender();
@@ -1699,6 +1714,7 @@ function route() {
 
 function afterRender() {
   playPendingFx();
+  hydratePhotos();
   setupPager();
   setupClientPager();
   setupJobPager();
@@ -1902,6 +1918,117 @@ function playPendingFx() {
   q.forEach((b, i) => setTimeout(() => showGameBanner(b), 500 + i * 3800)); // one banner at a time
   if (q.some(b => b.kind === 'level')) pulseLevel();
 }
+/* ---------- receipts: photo, amount and category, gathered for the end of the financial year ---------- */
+const RCPT_CATS = ['Materials', 'Tools & equipment', 'Vehicle & fuel', 'Phone & internet', 'Insurance', 'Training & licences', 'Software & subscriptions', 'Safety gear', 'Other'];
+function rcpts() { if (!Array.isArray(S.receipts)) S.receipts = []; return S.receipts; }
+function fyRange(d = new Date()) {
+  // Australian financial year runs 1 July to 30 June
+  const y = d.getMonth() >= 6 ? d.getFullYear() : d.getFullYear() - 1;
+  return { start: `${y}-07-01`, end: `${y + 1}-06-30`, label: `1 Jul ${y} – 30 Jun ${y + 1}` };
+}
+function rcptTidyCount() { return rcpts().filter(r => !r.category || !r.amount).length; }
+function rcptDate(iso) { return iso ? new Date(iso + 'T00:00').toLocaleDateString('en-AU', { day: 'numeric', month: 'short' }) : 'No date'; }
+function rcptClaim(r) { return Math.round((r.amount || 0) * (r.bizPct ?? 100) / 100); }
+// photos live in IndexedDB, which holds far more than localStorage
+let photoDbP = null;
+function photoDb() {
+  return photoDbP || (photoDbP = new Promise((res, rej) => {
+    const rq = indexedDB.open('docket-photos', 1);
+    rq.onupgradeneeded = () => rq.result.createObjectStore('photos');
+    rq.onsuccess = () => res(rq.result); rq.onerror = () => rej(rq.error);
+  }));
+}
+async function photoPut(id, blob) {
+  const db = await photoDb();
+  return new Promise((res, rej) => { const tx = db.transaction('photos', 'readwrite'); tx.objectStore('photos').put(blob, id); tx.oncomplete = () => res(); tx.onerror = () => rej(tx.error); });
+}
+async function photoGet(id) {
+  const db = await photoDb();
+  return new Promise((res, rej) => { const rq = db.transaction('photos').objectStore('photos').get(id); rq.onsuccess = () => res(rq.result || null); rq.onerror = () => rej(rq.error); });
+}
+async function photoDel(id) {
+  const db = await photoDb();
+  return new Promise(res => { const tx = db.transaction('photos', 'readwrite'); tx.objectStore('photos').delete(id); tx.oncomplete = () => res(); tx.onerror = () => res(); });
+}
+function shrinkImage(file) {
+  // resize the long side to 1400px and re-encode as JPEG so each receipt stays small
+  return new Promise((res, rej) => {
+    const url = URL.createObjectURL(file), img = new Image();
+    img.onload = () => {
+      const k = Math.min(1, 1400 / Math.max(img.width, img.height));
+      const c = document.createElement('canvas');
+      c.width = Math.max(1, Math.round(img.width * k)); c.height = Math.max(1, Math.round(img.height * k));
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url);
+      c.toBlob(b => b ? res(b) : rej(new Error('encode')), 'image/jpeg', 0.8);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error('read')); };
+    img.src = url;
+  });
+}
+async function captureReceipt(file) {
+  const r = { id: uid(), date: today(), supplier: '', amount: 0, category: '', bizPct: 100, gst: false, note: '', hasPhoto: false, createdAt: new Date().toISOString() };
+  try { await photoPut(r.id, await shrinkImage(file)); r.hasPhoto = true; }
+  catch (e) { toast('That photo would not save, so the receipt is entered without one.'); }
+  rcpts().unshift(r); save(); route(); openReceiptForm(r.id);
+}
+function hydratePhotos() {
+  document.querySelectorAll('img[data-photo]').forEach(async el => {
+    if (el.dataset.loaded) return; el.dataset.loaded = '1';
+    try { const b = await photoGet(el.dataset.photo); if (b) el.src = URL.createObjectURL(b); } catch (e) { /* keep the placeholder */ }
+  });
+}
+function rcptRow(r) {
+  const thumb = r.hasPhoto ? `<img class="rcpt-thumb" data-photo="${r.id}" alt="Receipt">` : `<div class="rcpt-thumb">No photo</div>`;
+  const cat = r.category ? esc(r.category) : '<span class="rcpt-warn">Needs a category</span>';
+  return `<button class="rcpt-row" data-rcpt="${r.id}">${thumb}<div class="rcpt-txt"><b>${esc(r.supplier || 'Add supplier')}</b><span>${rcptDate(r.date)} · ${cat}</span></div><div class="rcpt-amt">${r.amount ? money(r.amount) : '<span class="rcpt-warn">$?</span>'}</div></button>`;
+}
+function viewReceipts() {
+  const fy = fyRange(), all = rcpts().slice().sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  const inFy = all.filter(r => r.date >= fy.start && r.date <= fy.end);
+  const byCat = {};
+  for (const r of inFy) { const k = r.category || 'Not sorted'; byCat[k] = (byCat[k] || 0) + rcptClaim(r); }
+  const total = Object.values(byCat).reduce((a, v) => a + v, 0);
+  const cats = Object.entries(byCat).sort((a, b) => b[1] - a[1]).map(([k, v]) => `<div class="row rcpt-cat"><span>${esc(k)}</span><span class="right">${money(v)}</span></div>`).join('');
+  const tidy = rcptTidyCount();
+  return `<div class="page-head"><h1>Receipts</h1><label class="btn primary" for="rcpt-file">${I.plus}Snap a receipt</label></div>
+  <input type="file" id="rcpt-file" accept="image/*" capture="environment" class="sr-only">
+  <section class="frame rcpt-sum"><span class="tag">This financial year</span>
+    <div class="muted">${fy.label}</div>
+    <div class="rcpt-total"><b>${money(total)}</b><span>business share of spending so far</span></div>
+    ${cats || '<p class="muted">No receipts this year yet.</p>'}
+  </section>
+  <p class="muted">${tidy ? `${plural(tidy, 'receipt')} to tidy: add an amount or a category.` : 'Everything is tidy.'}</p>
+  <div class="list">${all.length ? all.map(rcptRow).join('') : '<div class="empty"><b>No receipts yet</b>Snap one when you pay for something for the job.</div>'}</div>`;
+}
+function openReceiptForm(id) {
+  const r = rcpts().find(x => x.id === id); if (!r) return;
+  const body = `${r.hasPhoto ? `<img class="rcpt-big" data-photo="${r.id}" alt="Receipt photo">` : '<p class="muted">No photo for this one.</p>'}
+    <div class="grid g2">
+      <label class="f">Supplier<input class="inp" name="supplier" value="${esc(r.supplier)}" placeholder="e.g. Bunnings"></label>
+      <label class="f">Amount<input class="inp" name="amount" inputmode="decimal" value="${r.amount ? (r.amount / 100).toFixed(2) : ''}" placeholder="0.00"></label>
+      <label class="f">Date<input class="inp" type="date" name="date" value="${esc(r.date)}"></label>
+      <label class="f">Category<select class="inp" name="category"><option value="">Choose…</option>${RCPT_CATS.map(c => `<option ${c === r.category ? 'selected' : ''}>${esc(c)}</option>`).join('')}</select></label>
+      <label class="f">Business use %<input class="inp" type="number" name="biz" min="0" max="100" value="${r.bizPct ?? 100}"></label>
+    </div>
+    ${S.settings.gstRegistered ? `<label class="check mt"><input type="checkbox" name="gst" ${r.gst ? 'checked' : ''}>GST paid on this (I can claim it back)</label>` : ''}
+    <label class="f mt">Note<textarea class="inp" name="note">${esc(r.note)}</textarea></label>
+    <label class="check mt"><input type="checkbox" name="del">Delete this receipt and its photo</label>`;
+  openModal('Receipt', body, 'Save receipt', data => {
+    if (data.del) { rcpts().splice(rcpts().indexOf(r), 1); photoDel(r.id); save(); route(); toast('Receipt deleted.'); return; }
+    const b = parseInt(data.biz, 10);
+    r.supplier = (data.supplier || '').trim(); r.amount = toCents(data.amount || 0); r.date = data.date || today();
+    r.category = data.category || ''; r.bizPct = isNaN(b) ? 100 : Math.min(100, Math.max(0, b));
+    r.gst = !!data.gst; r.note = data.note || ''; save(); route(); toast('Receipt saved.');
+  });
+  hydratePhotos();
+}
+document.addEventListener('change', e => {
+  if (e.target.id !== 'rcpt-file' || !e.target.files[0]) return;
+  const f = e.target.files[0]; e.target.value = ''; captureReceipt(f);
+});
+document.addEventListener('click', e => { const b = e.target.closest('[data-rcpt]'); if (b) openReceiptForm(b.dataset.rcpt); });
+
 let audioCtx = null;
 function blip(freq = 880, ms = 120) {
   if (!S.settings.sound) return;
@@ -2000,6 +2127,7 @@ function viewHome() {
   const who = st.tradingName || st.businessName;
   const line = (href, tone, k, v) => `<${href ? `a href="${href}"` : 'div'} class="ln"><span class="p" style="color:var(--${tone})">›</span><span class="k">${esc(k)}</span><span class="dots"></span><span class="v">${esc(v)}</span></${href ? 'a' : 'div'}>`;
   const logLines = [
+    rcptTidyCount() ? line('#/receipts', 'cy', 'Receipts to tidy', String(rcptTidyCount())) : '',
     st.gstRegistered ? line('', 'ink-3', `GST ${q.label}`, money(gst)) : '',
     st.gstRegistered ? line('', 'ink-3', 'BAS due', q.due) : ''
   ].filter(Boolean).join('');
